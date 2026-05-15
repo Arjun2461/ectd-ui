@@ -36,9 +36,17 @@ export class JobService {
     this.currentJob.set(job);
   }
 
-  createJob(selectedServices: string[]): Job {
+  createJob(
+    selectedServices: string[],
+    options?: { targetLanguage?: string }
+  ): Job {
     const id = `JOB-${String(this.jobCounter++).padStart(4, '0')}`;
-    const job = createProcessingJob(id, selectedServices);
+    const job = {
+      ...createProcessingJob(id, selectedServices),
+      ...(options?.targetLanguage
+        ? { targetLanguage: options.targetLanguage }
+        : {}),
+    };
     this.jobs.update((list) => [job, ...list]);
     this.currentJob.set(job);
     return job;

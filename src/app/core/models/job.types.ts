@@ -64,6 +64,7 @@ export interface Job {
   status: JobStatus;
   createdAt: string;
   selectedServices: string[];
+  targetLanguage?: string;
   overallProgress: number;
   serviceProgress?: ServiceProgress[];
   liveLogs?: string[];

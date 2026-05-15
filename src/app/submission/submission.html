@@ -1,94 +1,243 @@
 <!-- Page Header -->
-<div class="page-header">
+<div class="page-header fade-in">
   <h1>New submission</h1>
   <p>Upload modules and pick the AI services you'd like to run.</p>
 </div>
 
 <!-- Section 1: Upload Modules -->
-<div class="section-card">
+<div class="section-card fade-in" style="animation-delay: 0.06s">
   <div class="section-title">
     <strong>1. Upload modules</strong>
-    <p>Drop PDF files into the modules below.</p>
+    <p>Drop one or more PDF, DOCX, or XML files into each module.</p>
   </div>
 
   <div class="modules-grid">
-    <div
-      *ngFor="let mod of modules; let i = index"
-      class="module-card"
-      [class.drag-over]="mod.dragOver"
-      (dragover)="onDragOver($event, mod)"
-      (dragleave)="onDragLeave(mod)"
-      (drop)="onDrop($event, mod)"
-      (click)="triggerFileInput(i)"
-    >
-      <div class="module-top">
-        <span class="module-tag">{{ mod.tag }}</span>
-        <i class="ti ti-cloud-upload upload-icon"></i>
-      </div>
-      <div class="module-info">
-        <strong>{{ mod.title }}</strong>
-        <p>{{ mod.description }}</p>
-      </div>
-      <p class="drop-text" *ngIf="!mod.file">Drag &amp; drop or click to upload</p>
-      <p class="file-name" *ngIf="mod.file">{{ mod.file.name }}</p>
+    @for (mod of modules(); track mod.tag; let i = $index) {
+      <div
+        class="module-card"
+        [class.has-files]="mod.files.length > 0"
+        [style.animation-delay.ms]="i * 70"
+      >
+        <div class="module-header">
+          <span class="module-tag">{{ mod.tag }}</span>
+          <div class="module-top-actions">
+            @if (mod.files.length > 0) {
+              <span class="file-count-badge">{{ mod.files.length }}</span>
+            }
+            <i class="ti ti-cloud-upload upload-icon" aria-hidden="true"></i>
+          </div>
+        </div>
 
-      <input
-        [id]="'file-input-' + i"
-        type="file"
-        accept=".pdf,.docx,.xml"
-        style="display:none"
-        (change)="onFileSelect($event, mod)"
-        (click)="$event.stopPropagation()"
-      />
-    </div>
+        <div class="module-info">
+          <strong>{{ mod.title }}</strong>
+          <p>{{ mod.description }}</p>
+        </div>
+
+        @if (mod.files.length > 0) {
+          <ul class="file-list">
+            @for (entry of mod.files; track entry.id; let fi = $index) {
+              <li
+                class="file-item"
+                [style.animation-delay.ms]="fi * 45"
+              >
+                <i class="ti ti-file-text file-item-icon" aria-hidden="true"></i>
+                <div class="file-item-meta">
+                  <span class="file-item-name" [title]="entry.file.name">{{
+                    entry.file.name
+                  }}</span>
+                  <span class="file-item-size">{{
+                    formatFileSize(entry.file.size)
+                  }}</span>
+                </div>
+                <button
+                  type="button"
+                  class="file-remove"
+                  (click)="removeFile($event, mod.tag, entry.id)"
+                  [attr.aria-label]="'Remove ' + entry.file.name"
+                >
+                  <i class="ti ti-x" aria-hidden="true"></i>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+
+        <div
+          class="module-dropzone"
+          [class.module-dropzone--compact]="mod.files.length > 0"
+          [class.drag-over]="mod.dragOver"
+          (dragover)="onDragOver($event, mod.tag)"
+          (dragleave)="onDragLeave(mod.tag)"
+          (drop)="onDrop($event, mod.tag)"
+          (click)="triggerFileInput(i, $event)"
+          role="button"
+          tabindex="0"
+          (keydown.enter)="triggerFileInput(i, $event)"
+          (keydown.space)="$event.preventDefault(); triggerFileInput(i, $event)"
+          [attr.aria-label]="
+            mod.files.length > 0
+              ? 'Add more files to ' + mod.title
+              : 'Upload files for ' + mod.title
+          "
+        >
+          @if (mod.files.length === 0) {
+            <p class="drop-text">Drag &amp; drop or click to upload</p>
+          } @else {
+            <i class="ti ti-plus" aria-hidden="true"></i>
+            <span>Add more files</span>
+          }
+        </div>
+
+        <input
+          [id]="'file-input-' + i"
+          type="file"
+          accept=".pdf,.docx,.xml"
+          multiple
+          hidden
+          (change)="onFileSelect($event, mod.tag)"
+        />
+      </div>
+    }
   </div>
 </div>
 
 <!-- Section 2: Choose Services -->
-<div class="section-card">
+<div class="section-card fade-in" style="animation-delay: 0.12s">
   <div class="section-title">
     <strong>2. Choose services</strong>
     <p>Combine services to run them in a single pass.</p>
   </div>
 
   <div class="services-grid">
-    <div
-      *ngFor="let svc of services"
-      class="service-card"
-      [class.selected]="svc.selected"
-      (click)="toggleService(svc)"
-    >
-      <div class="service-icon-wrap" [class.selected]="svc.selected">
-        <i [class]="svc.icon"></i>
+    @for (svc of services(); track svc.id) {
+      <div
+        class="service-card"
+        [class.selected]="svc.selected"
+        (click)="toggleService(svc)"
+        role="button"
+        tabindex="0"
+        (keydown.enter)="toggleService(svc)"
+        (keydown.space)="$event.preventDefault(); toggleService(svc)"
+        [attr.aria-pressed]="svc.selected"
+      >
+        <div class="service-icon-wrap" [class.selected]="svc.selected">
+          <i [class]="svc.icon" aria-hidden="true"></i>
+        </div>
+        <div class="service-info">
+          <strong>{{ svc.title }}</strong>
+          <p>{{ svc.description }}</p>
+        </div>
+        <div class="service-check" [class.checked]="svc.selected">
+          @if (svc.selected) {
+            <i class="ti ti-check" aria-hidden="true"></i>
+          }
+        </div>
       </div>
-      <div class="service-info">
-        <strong>{{ svc.title }}</strong>
-        <p>{{ svc.description }}</p>
+    }
+  </div>
+
+  @if (translationSelected()) {
+    <div class="translate-panel fade-in">
+      <div class="translate-panel-header">
+        <i class="ti ti-world" aria-hidden="true"></i>
+        <div>
+          <strong>Translation settings</strong>
+          <p>Choose the target language for dossier translation.</p>
+        </div>
       </div>
-      <div class="service-check" [class.checked]="svc.selected">
-        <i class="ti ti-check" *ngIf="svc.selected"></i>
+      <div class="translate-field">
+        <label for="target-language">Target language</label>
+        <div class="translate-input-wrap">
+          <i class="ti ti-language" aria-hidden="true"></i>
+          <input
+            id="target-language"
+            type="text"
+            list="language-options"
+            placeholder="e.g. French, German, Japanese"
+            [ngModel]="targetLanguage()"
+            (ngModelChange)="targetLanguage.set($event)"
+            autocomplete="off"
+          />
+        </div>
+        <datalist id="language-options">
+          @for (lang of languageOptions; track lang) {
+            <option [value]="lang"></option>
+          }
+        </datalist>
       </div>
     </div>
-  </div>
+  }
 </div>
 
-<!-- Section 3: Footer / Run -->
-<div class="run-bar">
-  <div class="run-left">
-    <div class="run-icon">
-      <i class="ti ti-sparkles"></i>
+<!-- Section 3: Run AI Pipeline -->
+<div
+  class="pipeline-launch fade-in"
+  [class.pipeline-launch--ready]="canRun()"
+  style="animation-delay: 0.18s"
+>
+  <div class="pipeline-launch-inner">
+    <div class="launch-left">
+      <div class="launch-icon" [class.launch-icon--pulse]="canRun()">
+        <i class="ti ti-sparkles" aria-hidden="true"></i>
+      </div>
+      <div>
+        <h3>Run AI pipeline</h3>
+        <p>
+          @if (selectedCount() === 0) {
+            Select at least one service to continue
+          } @else if (translationSelected() && !targetLanguage().trim()) {
+            Enter a target language to run translation
+          } @else {
+            {{ selectedCount() }} service{{ selectedCount() !== 1 ? 's' : '' }}
+            ready &middot; {{ totalFiles() }} file{{ totalFiles() !== 1 ? 's' : '' }}
+            across {{ modulesWithFiles() }} module{{ modulesWithFiles() !== 1 ? 's' : '' }}
+          }
+        </p>
+      </div>
     </div>
-    <div>
-      <strong>Ready to process</strong>
-      <p>{{ selectedCount }} service{{ selectedCount !== 1 ? 's' : '' }} selected</p>
+
+    <div class="launch-stats">
+      <div class="stat-chip">
+        <span class="stat-value">{{ totalFiles() }}</span>
+        <span class="stat-label">Documents</span>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-value">{{ selectedCount() }}</span>
+        <span class="stat-label">Services</span>
+      </div>
+      <div class="stat-chip" [class.stat-chip--accent]="modulesWithFiles() > 0">
+        <span class="stat-value">{{ modulesWithFiles() }}/5</span>
+        <span class="stat-label">Modules</span>
+      </div>
     </div>
+
+    <button
+      type="button"
+      class="launch-btn"
+      [disabled]="!canRun()"
+      [class.launch-btn--loading]="isRunning()"
+      (click)="runPipeline()"
+    >
+      @if (isRunning()) {
+        <i class="ti ti-loader-2 spin" aria-hidden="true"></i>
+        <span>Starting pipeline…</span>
+      } @else {
+        <i class="ti ti-player-play-filled" aria-hidden="true"></i>
+        <span>Run AI pipeline</span>
+      }
+    </button>
   </div>
 
-  <button
-    class="run-btn"
-    [disabled]="selectedCount === 0"
-    (click)="runPipeline()"
-  >
-    <span>Run AI pipeline</span>
-  </button>
+  @if (selectedCount() > 0) {
+    <div class="launch-services">
+      @for (svc of services(); track svc.id) {
+        @if (svc.selected) {
+          <span class="launch-service-pill">
+            <i [class]="svc.icon" aria-hidden="true"></i>
+            {{ svc.title }}
+          </span>
+        }
+      }
+    </div>
+  }
 </div>

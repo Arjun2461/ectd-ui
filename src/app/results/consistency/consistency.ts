@@ -346,18 +346,16 @@ export class Consistency implements AfterViewInit, OnDestroy {
     const chart = new Chart(canvas, {
       type: 'bar',
       data: {
-        labels: ['module-2', 'module-3', 'clinical', 'csr-013', 'labeling'],
-        datasets: [
-          {
-            data: [6, 4, 9, 5, 2],
-            backgroundColor: gradient,
-            hoverBackgroundColor: '#5b21b6',
-            borderRadius: 10,
-            borderSkipped: false,
-            barPercentage: 0.55,
-            categoryPercentage: 0.72,
-          },
-        ],
+        labels: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5'],
+        datasets: [{
+          data: [6, 4, 9, 5, 2],
+          backgroundColor: gradient,
+          hoverBackgroundColor: '#5b21b6',
+          borderRadius: 10,
+          borderSkipped: false,
+          barPercentage: 0.55,
+          categoryPercentage: 0.72,
+        }],
       },
       options: {
         responsive: true,
