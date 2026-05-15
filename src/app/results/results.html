@@ -1,0 +1,144 @@
+<!-- ══════════════════════════════════════
+     1. AI PROCESSING PIPELINE BANNER
+══════════════════════════════════════ -->
+<div class="pipeline-card">
+
+  <!-- HEADER -->
+  <div class="pc-header">
+
+    <!-- LEFT -->
+    <div class="pc-left">
+      <div class="pc-icon">
+        <i class="ti ti-activity"></i>
+      </div>
+
+      <div>
+        <h3>AI Processing Pipeline</h3>
+        <p>Analyzing your submission across selected services</p>
+      </div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="pc-center">
+      <span class="pc-job">JOB ID</span>
+      <strong>{{ jobId }}</strong>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="pc-right">
+      <div class="pc-status">
+        <span class="pulse-dot"></span>
+        Processing  
+      </div>
+
+      <div class="pc-progress">
+        {{ progress | number:'1.0-0' }}%
+        <span>Overall</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PROGRESS BAR -->
+
+  <!-- TOGGLE -->
+  <div class="pc-services-header"
+       (click)="showServiceProgress = !showServiceProgress">
+
+    <span>View service progress</span>
+
+    <i class="ti"
+       [ngClass]="showServiceProgress ? 'ti-chevron-up' : 'ti-chevron-down'">
+    </i>
+  </div>
+
+  <!-- EXPANDED SERVICES -->
+  <div class="pc-services" *ngIf="showServiceProgress">
+
+    <div class="pc-row" *ngFor="let s of services">
+
+      <!-- NAME -->
+      <div class="pc-name">
+        <span class="pc-service-icon" [ngClass]="s.iconClass">
+          <i class="ti" [ngClass]="s.icon"></i>
+        </span>
+        {{ s.name }}
+      </div>
+
+      <!-- BAR -->
+      <div class="pc-bar">
+        <div class="pc-bar-fill" [style.width.%]="s.progress"></div>
+      </div>
+
+      <!-- % -->
+      <div class="pc-value">
+        {{ s.progress }}%
+      </div>
+
+      <!-- STATUS -->
+      <div class="pc-tag"
+        [ngClass]="{
+          'run': s.status==='Processing',
+          'done': s.status==='completed',
+          'wait': s.status==='waiting'
+        }">
+
+        {{ s.status }}
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+<!-- ══════════════════════════════════════
+     2. SERVICE OUTPUTS HEADER
+══════════════════════════════════════ -->
+<div class="outputs-header">
+  <h2>Service Outputs</h2>
+  <span class="services-running">3 services running</span>
+</div>
+
+<!-- ══════════════════════════════════════
+     3. TABS
+══════════════════════════════════════ -->
+<div class="tabs-bar">
+  <button class="tab-btn" [class.active]="activeTab==='Hyperlinking'" (click)="setTab('Hyperlinking')">
+    <i class="ti ti-link"></i> Hyperlinking
+  </button>
+   <button class="tab-btn" [class.active]="activeTab==='Consistency'" (click)="setTab('Consistency')">
+    <i class="ti ti-shield-check"></i> Consistency
+  </button>
+  <button class="tab-btn" [class.active]="activeTab==='Translation'" (click)="setTab('Translation')">
+    <i class="ti ti-language"></i> Translation
+  </button>
+ 
+</div>
+
+
+<!-- ══════════════════════════════════════
+     TAB CONTENT RENDERING
+══════════════════════════════════════ -->
+
+<div class="tab-content">
+
+  <!-- Hyperlinking -->
+  <app-hyperlinking
+    *ngIf="activeTab==='Hyperlinking'"
+    [hitlEvent]="hitlEvent"
+    [hitlSuggestions]="hitlSuggestions"
+    [resolvedRefs]="resolvedRefs">
+  </app-hyperlinking>
+
+  <!-- Translation -->
+  <!-- <app-translation
+    *ngIf="activeTab==='Translation'">
+  </app-translation> -->
+
+  <!-- Consistency -->
+  <app-consistency
+    *ngIf="activeTab==='Consistency'">
+  </app-consistency>
+
+</div>

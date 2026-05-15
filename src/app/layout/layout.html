@@ -1,0 +1,76 @@
+<div class="app-container">
+  <!-- Sidebar (unchanged) -->
+  <aside class="sidebar" [class.collapsed]="isCollapsed">
+    <div class="logo">
+      <div class="logo-icon">
+        <img src="assets/VTlogo.png" alt="logo" />
+      </div>
+      <div *ngIf="!isCollapsed">
+        <h3>Regulon</h3>
+        <p class="p">eCTD AI Platform</p>
+      </div>
+    </div>
+
+    <div class="menu">
+      <div class="menu-section" *ngIf="!isCollapsed">WORKSPACE</div>
+
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <div class="icon-box">
+          <lucide-icon [img]="LayoutDashboard"></lucide-icon>
+        </div>
+        <span *ngIf="!isCollapsed">Dashboard</span>
+      </a>
+
+      <a routerLink="/upload" routerLinkActive="active">
+        <div class="icon-box">
+          <lucide-icon [img]="Upload"></lucide-icon>
+        </div>
+        <span *ngIf="!isCollapsed">Upload</span>
+      </a>
+
+         <a
+        routerLink="/results"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <div class="icon-box">
+          <lucide-icon [img]="LayoutDashboard"></lucide-icon>
+        </div>
+        <span *ngIf="!isCollapsed">Results</span>
+      </a>
+
+      <a routerLink="/history" routerLinkActive="active">
+        <div class="icon-box">
+          <lucide-icon [img]="History"></lucide-icon>
+        </div>
+        <span *ngIf="!isCollapsed">History</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- 🔥 GLASS HEADER -->
+    <header class="header">
+      <button class="menu-btn" (click)="toggleSidebar()">☰</button>
+
+      <div class="right">
+        <div class="status">
+          <span class="dot"></span>
+          All systems operational
+        </div>
+
+        <div class="avatar">RA</div>
+      </div>
+    </header>
+
+    <!-- ONLY THIS SCROLLS -->
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

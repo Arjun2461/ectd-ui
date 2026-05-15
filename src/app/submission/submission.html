@@ -1,0 +1,107 @@
+<!-- Page Header -->
+<div class="page-header">
+  <h1>New submission</h1>
+  <p>Upload modules and pick the AI services you'd like to run.</p>
+</div>
+
+<!-- Section 1: Upload Modules -->
+<div class="section-card">
+  <div class="section-title">
+    <strong>1. Upload modules</strong>
+    <p>Drop PDF files into the modules below.</p>
+  </div>
+
+  <div class="modules-grid">
+    <div
+      *ngFor="let mod of modules; let i = index"
+      class="module-card"
+      [class.drag-over]="mod.dragOver"
+      (dragover)="onDragOver($event, mod)"
+      (dragleave)="onDragLeave(mod)"
+      (drop)="onDrop($event, mod)"
+      (click)="triggerFileInput(i)"
+    >
+      <div class="module-top">
+        <span class="module-tag">{{ mod.tag }}</span>
+        <i class="ti ti-cloud-upload upload-icon"></i>
+      </div>
+      <div class="module-info">
+        <strong>{{ mod.title }}</strong>
+        <p>{{ mod.description }}</p>
+      </div>
+      <p class="drop-text" *ngIf="!mod.file">Drag &amp; drop or click to upload</p>
+      <p class="file-name" *ngIf="mod.file">{{ mod.file.name }}</p>
+
+      <input
+        [id]="'file-input-' + i"
+        type="file"
+        accept=".pdf,.docx,.xml"
+        style="display:none"
+        (change)="onFileSelect($event, mod)"
+        (click)="$event.stopPropagation()"
+      />
+    </div>
+  </div>
+</div>
+
+<!-- Section 2: Choose Services -->
+<div class="section-card">
+  <div class="section-title">
+    <strong>2. Choose services</strong>
+    <p>Combine services to run them in a single pass.</p>
+  </div>
+
+  <div class="services-grid">
+    <div
+      *ngFor="let svc of services"
+      class="service-card"
+      [class.selected]="svc.selected"
+      (click)="toggleService(svc)"
+    >
+      <div class="service-icon-wrap" [class.selected]="svc.selected">
+        <i [class]="svc.icon"></i>
+      </div>
+      <div class="service-info">
+        <strong>{{ svc.title }}</strong>
+        <p>{{ svc.description }}</p>
+      </div>
+      <div class="service-check" [class.checked]="svc.selected">
+        <i class="ti ti-check" *ngIf="svc.selected"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Section 3: Footer / Run -->
+<div class="run-bar" [class.processing]="isProcessing">
+  <div class="run-left">
+    <div class="run-icon">
+      <i class="ti ti-sparkles"></i>
+    </div>
+    <div>
+      <strong>Ready to process</strong>
+      <p>{{ selectedCount }} service{{ selectedCount !== 1 ? 's' : '' }} selected</p>
+    </div>
+  </div>
+
+  <button
+    class="run-btn"
+    [class.loading]="isProcessing"
+    [disabled]="isProcessing || selectedCount === 0"
+    (click)="runPipeline()"
+  >
+    <i class="ti ti-loader-2 spin" *ngIf="isProcessing"></i>
+    <span>{{ isProcessing ? 'Processing...' : 'Run AI pipeline' }}</span>
+  </button>
+
+  <!-- Progress bar (visible when processing) -->
+  <div class="progress-wrap" *ngIf="isProcessing">
+    <div class="progress-label">
+      <span>Analyzing documents...</span>
+      <span>{{ progress | number:'1.0-0' }}%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" [style.width.%]="progress"></div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,161 @@
+<!-- ── Hero Banner ── -->
+
+<!-- ── Summary ── -->
+<div class="section-header">
+  <h2>Summary</h2>
+  <p>High-level breakdown of detected inconsistencies.</p>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon yellow"><i class="ti ti-alert-triangle"></i></div>
+    <div class="stat-number">11</div>
+    <div class="stat-label">Total issues</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon purple-light"><i class="ti ti-file-description"></i></div>
+    <div class="stat-number">4</div>
+    <div class="stat-label">Documents affected</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon purple-light"><i class="ti ti-variable"></i></div>
+    <div class="stat-number">5</div>
+    <div class="stat-label">Parameters affected</div>
+  </div>
+</div>
+
+<!-- ── Charts Row ── -->
+<div class="charts-row">
+  <div class="chart-card wide">
+    <div class="chart-card-header">
+      <strong>Inconsistencies per document</strong>
+      <p>Detected issues across the submission</p>
+    </div>
+    <div class="chart-wrap" style="height:240px"><canvas #barChart></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-card-header">
+      <strong>Issue type</strong>
+      <p>Value vs unit mismatch</p>
+    </div>
+    <div class="chart-wrap" style="height:180px"><canvas #doughnutChart></canvas></div>
+    <div class="legend">
+      <div class="legend-item">
+        <span class="legend-dot purple"></span><span>Value mismatch</span>
+        <span class="legend-count">3</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot brown"></span><span>Unit mismatch</span>
+        <span class="legend-count">2</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Parameter Distribution ── -->
+<div class="chart-card full">
+  <div class="chart-card-header">
+    <strong>Parameter distribution</strong>
+    <p>Issues per pharmacokinetic parameter</p>
+  </div>
+  <div class="chart-wrap" style="height:220px"><canvas #paramChart></canvas></div>
+</div>
+
+<!-- ── Detected Issues Table ── -->
+<div class="table-card">
+  <div class="table-header-row">
+    <div>
+      <strong>Detected issues</strong>
+      <p>Click a row to inspect mismatched values</p>
+    </div>
+    <div class="table-controls">
+      <div class="search-box">
+        <i class="ti ti-search"></i>
+        <input type="text" placeholder="Search parameters..." [(ngModel)]="searchQuery" />
+      </div>
+      <div class="filter-group">
+        <i class="ti ti-filter"></i>
+        <button [class.active]="activeFilter==='All'"            (click)="setFilter('All')">All</button>
+        <button [class.active]="activeFilter==='Value mismatch'" (click)="setFilter('Value mismatch')">Value mismatch</button>
+        <button [class.active]="activeFilter==='Unit mismatch'"  (click)="setFilter('Unit mismatch')">Unit mismatch</button>
+      </div>
+    </div>
+  </div>
+
+  <table class="issues-table">
+    <thead>
+      <tr>
+        <th>PARAMETER</th><th>ISSUE TYPE</th><th>DOCUMENTS</th><th>VALUES</th><th>ACTION</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let issue of filteredIssues" [class.unit-row]="issue.issueType==='Unit mismatch'">
+        <td class="param-cell">{{ issue.parameter }}</td>
+        <td>
+          <span class="badge" [class.badge-value]="issue.issueType==='Value mismatch'" [class.badge-unit]="issue.issueType==='Unit mismatch'">
+            <span class="badge-dot"></span>{{ issue.issueType }}
+          </span>
+        </td>
+        <td class="docs-cell">{{ issue.documents }} docs</td>
+        <td class="values-cell">
+          <span class="value-chip" *ngFor="let v of issue.values">{{ v }}</span>
+        </td>
+        <td class="action-cell">
+          <span class="view-link" (click)="openDetail(issue)">View <i class="ti ti-chevron-right"></i></span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════════════════════════════════════════
+     DETAIL POPUP
+════════════════════════════════════════ -->
+<div class="overlay" *ngIf="selectedIssue" (click)="closeDetail()">
+  <div class="drawer" (click)="$event.stopPropagation()">
+
+    <!-- Close -->
+    <button class="close-circle" (click)="closeDetail()">
+      <i class="ti ti-x"></i>
+    </button>
+
+    <!-- Title -->
+    <h2 class="drawer-title">{{ selectedIssue.parameter }}</h2>
+    <span class="badge drawer-badge"
+      [class.badge-value]="selectedIssue.issueType==='Value mismatch'"
+      [class.badge-unit]="selectedIssue.issueType==='Unit mismatch'">
+      <span class="badge-dot"></span>{{ selectedIssue.issueType }}
+    </span>
+
+    <div class="drawer-divider"></div>
+
+    <!-- Mismatched References -->
+    <div class="section-label">MISMATCHED REFERENCES</div>
+    <table class="ref-table">
+      <thead>
+        <tr><th>DOCUMENT</th><th>VALUE</th><th>UNIT</th><th>PAGE</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ref of selectedIssue.references">
+          <td class="ref-doc">{{ ref.document }}</td>
+          <td class="ref-value">{{ ref.value }}</td>
+          <td class="ref-unit">{{ ref.unit }}</td>
+          <td class="ref-page">{{ ref.page }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="drawer-divider"></div>
+
+    <!-- Source Excerpts -->
+    <div class="section-label">SOURCE EXCERPTS</div>
+    <div class="excerpt-card" *ngFor="let ex of selectedIssue.excerpts">
+      <div class="excerpt-header">
+        <span class="excerpt-doc">{{ ex.document }}</span>
+        <span class="excerpt-page">{{ ex.page }}</span>
+      </div>
+      <p class="excerpt-text" [innerHTML]="ex.text"></p>
+    </div>
+
+  </div>
+</div>

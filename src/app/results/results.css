@@ -1,0 +1,432 @@
+/* ===== PIPELINE CARD ===== */
+.pipeline-card {
+  margin: 0px 15px 0px;
+  padding: 20px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);
+}
+
+/* HEADER */
+.pc-header {
+  display: flex; /* 🔥 change from grid → flex */
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: nowrap; /* 🚀 prevent wrapping */
+}
+/* LEFT */
+.pc-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+
+.pc-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #ede9fe;
+  color: #7c3aed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pc-left h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.pc-left p {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 2px 0 0;
+}
+
+/* CENTER */
+.pc-center {
+  text-align: center;
+}
+
+.pc-job {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.pc-center strong {
+  font-size: 13px;
+  color: #5b21b6;
+}
+
+/* RIGHT */
+.pc-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pc-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fef3c7;
+  color: #92400e;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* PULSE DOT */
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: #f59e0b;
+  border-radius: 50%;
+  animation: pulse 1.4s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.7);
+    opacity: 0.6;
+  }
+}
+
+/* PROGRESS TEXT */
+.pc-progress {
+  font-size: 28px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.pc-progress span {
+  display: block;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* MAIN PROGRESS BAR */
+.pc-progress-bar {
+  margin-top: 16px;
+  height: 6px;
+  background: #ede9fe;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.pc-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  transition: width 0.6s ease;
+}
+
+/* TOGGLE */
+.pc-services-header {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14px;
+  cursor: pointer;
+  color: #7c3aed;
+  font-weight: 600;
+}
+
+/* SERVICES */
+.pc-services {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ROW */
+.pc-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 60px 100px;
+  gap: 14px;
+  align-items: center;
+}
+
+/* NAME */
+.pc-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ICON COLORS */
+.pc-service-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pc-service-icon.link {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.pc-service-icon.translate {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.pc-service-icon.shield {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+/* BAR */
+.pc-bar {
+  height: 8px;
+  background: #f3f4f6;
+  border-radius: 999px;
+}
+
+.pc-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7c3aed, #8b5cf6);
+  border-radius: 999px;
+}
+
+/* VALUE */
+.pc-value {
+  text-align: right;
+  font-weight: 700;
+  color: #5b21b6;
+}
+
+/* TAG */
+.pc-tag {
+  text-align: center;
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+
+.pc-tag.run {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.pc-tag.done {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.pc-tag.wait {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* =========================================
+   SERVICE OUTPUT HEADER (KEEP SIMPLE)
+========================================= */
+.outputs-header {
+  max-width: 1050px;
+  margin: 20px 20px 2px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.outputs-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.services-running {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* =========================================
+   TABS (CLASSIC STYLE)
+========================================= */
+.tabs-bar {
+  max-width: 1050px;
+  margin: 10px 20px 30px;
+  display: flex;
+  gap: 45px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* TAB BUTTON */
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 10px 0;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+
+  cursor: pointer;
+  position: relative;
+}
+
+/* ICON */
+.tab-btn i {
+  font-size: 16px;
+}
+
+/* HOVER */
+.tab-btn:hover {
+  color: #111827;
+}
+
+/* ACTIVE TAB */
+.tab-btn.active {
+  color: #7c3aed;
+}
+
+/* UNDERLINE EFFECT */
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+
+  width: 100%;
+  height: 2px;
+  background: #7c3aed;
+  border-radius: 2px;
+}
+
+/* =========================================
+   TAB CONTENT ALIGNMENT
+========================================= */
+
+/* LEFT */
+.pc-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* CENTER (JOB ID INLINE) */
+.pc-center {
+   display: flex;
+  flex-direction: column;   /* 🔥 this makes it vertical */
+  align-items: center;      /* center horizontally */
+  justify-content: center;
+  gap: 2px;
+}
+
+.pc-job {
+  color: #6b7280;
+}
+
+.pc-center strong {
+  color: #7c3aed;
+  font-weight: 600;
+}
+
+/* RIGHT */
+.pc-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  white-space: nowrap; /* 🔥 keeps % inline */
+}
+
+/* STATUS */
+.pc-status {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* PROGRESS */
+.pc-progress {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.pc-progress span {
+  display: block;
+  font-size: 11px;
+  color: #6b7280;
+}
+.pc-left {
+  flex: 1; /* takes available space */
+}
+
+.pc-center {
+  flex-shrink: 0; /* never shrink */
+}
+
+.pc-right {
+  flex-shrink: 0;
+}
+
+/* SUGGESTION CELL */
+.rr-suggestions {
+  font-family: monospace;
+}
+
+/* TERMINAL STYLE */
+.suggestion-line {
+  display: flex;
+  gap: 6px;
+  font-size: 12px;
+  margin-bottom: 4px;
+  color: #334155;
+}
+
+.suggestion-line.selected {
+  color: #7c3aed;
+  font-weight: 600;
+}
+
+.index {
+  color: #9ca3af;
+}
+.file {
+  color: #111827;
+}
+.meta {
+  color: #64748b;
+}
+
+.score {
+  margin-left: auto;
+  color: #16a34a;
+}
+
+/* JOB ID label */
+.pc-job-label {
+  font-size: 11px;
+  color: #9ca3af;
+  letter-spacing: 0.08em;
+}
+
+/* JOB ID value */
+.pc-job-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #7c3aed;
+}

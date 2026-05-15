@@ -1,0 +1,223 @@
+<div class="tab-content">
+  <!-- TOP ROW -->
+  <div class="top-row">
+    <!-- LEFT: DONUT -->
+    <div class="hyper-card">
+      <div class="hyper-card-header">
+        <div class="hyper-icon"><i class="ti ti-link"></i></div>
+        <div>
+          <strong>Hyperlinking Analysis</strong>
+          <p>Cross-document reference validation</p>
+        </div>
+      </div>
+
+      <div class="donut-wrap">
+        <canvas #donutChart></canvas>
+
+        <div class="donut-center">
+          <span class="donut-num">1,413</span>
+          <span class="donut-lbl">total links</span>
+        </div>
+      </div>
+
+      <div class="link-stats">
+        <div class="link-stat">
+          <span class="dot teal"></span>
+          <span class="ls-label">Linked</span>
+          <strong>1,284</strong>
+        </div>
+
+        <div class="link-stat">
+          <span class="dot red"></span>
+          <span class="ls-label">Broken</span>
+          <strong>47</strong>
+        </div>
+
+        <div class="link-stat">
+          <span class="dot gray"></span>
+          <span class="ls-label">Missing</span>
+          <strong>82</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: TERMINAL -->
+    <div class="terminal-card">
+      <div class="terminal-header">
+        <span class="terminal-arrow">›</span>
+        <span class="terminal-title">HUMAN-IN-THE-LOOP</span>
+
+        <div class="terminal-dots">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+      </div>
+
+      <div class="terminal-body">
+        <p class="t-id">#HITL-{{ hitlEvent.id }}</p>
+
+        <p class="t-warn">⚠ Incorrect reference detected</p>
+
+        <!-- SOURCE + STATEMENT COMBINED -->
+        <div class="t-block">
+          <p><strong>Source:</strong> {{ hitlEvent.file }}</p>
+          <span class="label">Statement:</span>
+          <span class="t-white">{{ hitlEvent.anchor }}</span>
+        </div>
+
+        <div class="suggested-label">SUGGESTED MATCHES</div>
+
+        <div
+          class="suggestion"
+          *ngFor="let s of hitlSuggestions; let i = index"
+          [class.selected]="hitlEvent.selected === i"
+        >
+          <div class="sug-left">
+            <span class="radio" [class.active]="hitlEvent.selected === i"></span>
+
+            <div>
+              <div class="sug-file">{{ s.file }}</div>
+            </div>
+          </div>
+
+          <div class="sug-right">
+            <span *ngIf="s.recommended" class="badge">recommended</span>
+            <span class="score">{{ s.score }}%</span>
+          </div>
+        </div>
+        <!-- ✅ NONE OPTION (PASTE HERE) -->
+        <div
+          class="suggestion none-option"
+          [class.selected]="hitlEvent.selected === -1"
+          (click)="hitlEvent.selected = -1"
+        >
+          <div class="sug-left">
+            <span class="radio" [class.active]="hitlEvent.selected === -1" (click)="selectOption(-1)"></span>
+
+            <div class="sug-file muted">None (No match)</div>
+          </div>
+        </div>
+        <div class="ai-reason premium">
+          <div class="ai-head">
+            <span>LLM RECOMMENDATION</span>
+          </div>
+
+          <p>
+            Based on semantic similarity and section alignment, this reference best matches the
+            context.
+          </p>
+        </div>
+      </div>
+      <div class="terminal-actions">
+        <button class="confirm-btn">Confirm Selection</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="resolved-card">
+    <div class="resolved-header">
+      <strong>Resolved References</strong>
+      <p>{{ resolvedRefs.length }} references resolved</p>
+    </div>
+
+    <table class="resolved-table">
+      <!-- HEADER -->
+      <thead>
+        <tr>
+          <th>Source Document</th>
+          <th>Suggested Matches</th>
+          <th>User Action</th>
+          <th></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <ng-container *ngFor="let r of resolvedRefs; let i = index">
+          <!-- MAIN ROW -->
+          <tr class="main-row" (click)="toggleRow(i)">
+            <!-- SOURCE -->
+            <td class="rr-source">
+              {{ r.sourceDoc }}
+            </td>
+
+            <!-- ✅ THREE SUGGESTED DOCS -->
+            <td class="rr-suggestions">
+              <div
+                class="doc-pill"
+                *ngFor="let s of r.suggestions; let j = index"
+                [class.selected]="r.selectedIndex === j"
+              >
+                {{ s.file }}
+              </div>
+            </td>
+
+            <!-- ACTION -->
+            <td>
+              <span class="rr-badge" [class.auto]="r.badge === 'Auto-resolved'">
+                {{ r.userAction }}
+              </span>
+            </td>
+
+            <td class="rr-chevron">
+              <i class="ti" [ngClass]="expandedIndex === i ? 'ti-chevron-up' : 'ti-chevron-down'">
+              </i>
+            </td>
+          </tr>
+
+          <!-- EXPANDED ROW -->
+          <tr *ngIf="expandedIndex === i" class="expand-row">
+            <td colspan="4">
+              <div class="expand-box">
+                <!-- TOP INFO -->
+                <div class="exp-grid">
+                  <div>
+                    <span class="exp-label">Source Document</span>
+                    <p>{{ r.sourceDoc }}</p>
+                  </div>
+
+                  <div>
+                    <span class="exp-label">Statement</span>
+                    <p>{{ r.statement }}</p>
+                  </div>
+                </div>
+
+                <!-- SUGGESTED LIST (TEXT ONLY) -->
+                <div class="exp-suggested">
+                  <div class="exp-suggested-title">SUGGESTED MAPPINGS</div>
+
+                  <div
+                    class="exp-line"
+                    *ngFor="let s of r.suggestions; let j = index"
+                    [class.selected]="r.selectedIndex === j"
+                  >
+                    <span class="exp-dot"></span>
+
+                    <span class="col-file">{{ s.file }}</span>
+
+                    <span class="col-section">{{ s.section }}</span>
+
+                    <span class="col-page">Page {{ s.page }}</span>
+                  </div>
+                </div>
+
+                <!-- LLM -->
+                <div class="exp-llm">
+                  <span>LLM Recommendation</span>
+                  <p>{{ r.llmReason }}</p>
+                </div>
+
+                <!-- ACTION -->
+                <div class="exp-action">
+                  ✔ User selected:
+                  <strong>{{ r.suggestions[r.selectedIndex]?.file }}</strong>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</div>

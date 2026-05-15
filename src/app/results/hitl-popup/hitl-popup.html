@@ -1,0 +1,64 @@
+<div class="hitl-overlay" (click)="close.emit()">
+
+  <div class="hitl-modal" (click)="$event.stopPropagation()">
+
+    <!-- HEADER -->
+    <div class="hitl-header">
+      <span class="badge">⚠ Reference Error</span>
+      <button class="close-btn" (click)="close.emit()">✕</button>
+    </div>
+
+    <!-- BODY -->
+    <div class="hitl-body">
+
+      <p class="hitl-id">#HITL-{{ hitlEvent?.id }}</p>
+
+      <div class="block">
+        <strong>Source File:</strong>
+        <p>{{ hitlEvent?.file }}</p>
+      </div>
+
+      <div class="block">
+        <strong>Section:</strong>
+        <p>{{ hitlEvent?.section }}</p>
+      </div>
+
+      <div class="block">
+        <strong>Statement:</strong>
+        <p>{{ hitlEvent?.anchor }}</p>
+      </div>
+
+      <p class="warn">⚠ Reference mismatch detected</p>
+
+      <!-- SUGGESTIONS -->
+      <div class="suggested-label">SUGGESTED MATCHES</div>
+
+      <div
+        class="suggestion"
+        *ngFor="let s of hitlSuggestions; let i = index"
+        [class.active]="i === selectedIndex"
+        (click)="select(i)"
+      >
+        <div>
+          <div class="file">{{ s.file }}</div>
+        </div>
+
+        <span class="score">{{ s.score }}%</span>
+      </div>
+
+      <!-- FINAL -->
+      <div class="final-box" *ngIf="hitlSuggestions.length">
+        <strong>Selected:</strong>
+        {{ hitlSuggestions[selectedIndex]?.file }}
+      </div>
+
+      <!-- ACTION -->
+      <button class="confirm-btn" (click)="confirm()">
+        Confirm Selection
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
