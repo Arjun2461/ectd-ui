@@ -1,0 +1,16 @@
+<div class="toast-container" aria-live="polite">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div class="toast-item" [class]="toast.type">
+      <i class="ti" [ngClass]="iconFor(toast.type)"></i>
+      <span>{{ toast.text }}</span>
+      <button
+        type="button"
+        class="toast-close"
+        (click)="toastService.dismiss(toast.id)"
+        aria-label="Dismiss"
+      >
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+  }
+</div>

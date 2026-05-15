@@ -1,32 +1,50 @@
-import { Component, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  AfterViewInit,
+  ElementRef,
+  ViewChild,
+  OnDestroy,
+  PLATFORM_ID,
+  inject,
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   Chart,
-  BarController, BarElement, CategoryScale, LinearScale,
-  DoughnutController, ArcElement,
-  Tooltip, Legend
+  BarController,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  DoughnutController,
+  ArcElement,
+  Tooltip,
+  Legend,
 } from 'chart.js';
- 
+
 Chart.register(
-  BarController, BarElement, CategoryScale, LinearScale,
-  DoughnutController, ArcElement,
-  Tooltip, Legend
+  BarController,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  DoughnutController,
+  ArcElement,
+  Tooltip,
+  Legend
 );
- 
+
 interface Reference {
   document: string;
   value: string;
   unit: string;
   page: string;
 }
- 
+
 interface Excerpt {
   document: string;
   page: string;
-  text: string;  // may contain HTML highlights
+  text: string;
 }
- 
+
 interface Issue {
   parameter: string;
   issueType: 'Value mismatch' | 'Unit mismatch';
@@ -35,7 +53,11 @@ interface Issue {
   references: Reference[];
   excerpts: Excerpt[];
 }
- 
+
+interface ParamDistribution {
+  name: string;
+  count: number;
+}
 
 @Component({
   selector: 'app-consistency',
@@ -44,19 +66,40 @@ interface Issue {
   templateUrl: './consistency.html',
   styleUrl: './consistency.css',
 })
-
 export class Consistency implements AfterViewInit, OnDestroy {
- 
-  @ViewChild('barChart')      barChartRef!:      ElementRef<HTMLCanvasElement>;
+  private readonly platformId = inject(PLATFORM_ID);
+
+  @ViewChild('barChart') barChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('doughnutChart') doughnutChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('paramChart')    paramChartRef!:    ElementRef<HTMLCanvasElement>;
- 
+
   private charts: Chart[] = [];
- 
-  searchQuery   = '';
+
+  readonly pageSize = 6;
+  currentPage = 0;
+
+  searchQuery = '';
   activeFilter: 'All' | 'Value mismatch' | 'Unit mismatch' = 'All';
   selectedIssue: Issue | null = null;
- 
+
+  readonly totalIssuesCount = 11;
+  readonly documentsAffected = 4;
+  readonly parametersAffected = 5;
+  readonly donutTotal = 5;
+
+  displayTotalIssues = 0;
+  displayDocuments = 0;
+  displayParameters = 0;
+
+  readonly paramDistribution: ParamDistribution[] = [
+    { name: 't1/2', count: 3 },
+    { name: 'Cmax', count: 2 },
+    { name: 'AUC0-∞', count: 2 },
+    { name: 'Tmax', count: 2 },
+    { name: 'Vd', count: 2 },
+  ];
+
+  readonly paramMax = 3;
+
   allIssues: Issue[] = [
     {
       parameter: 't1/2',
@@ -64,9 +107,9 @@ export class Consistency implements AfterViewInit, OnDestroy {
       documents: 3,
       values: ['38', '8.2', '12.4'],
       references: [
-        { document: 'module-2-summary.pdf',  value: '38',   unit: 'h', page: 'p. 14' },
-        { document: 'clinical-overview.pdf', value: '8.2',  unit: 'h', page: 'p. 42' },
-        { document: 'module-5-csr-013.pdf',  value: '12.4', unit: 'h', page: 'p. 88' },
+        { document: 'module-2-summary.pdf', value: '38', unit: 'h', page: 'p. 14' },
+        { document: 'clinical-overview.pdf', value: '8.2', unit: 'h', page: 'p. 42' },
+        { document: 'module-5-csr-013.pdf', value: '12.4', unit: 'h', page: 'p. 88' },
       ],
       excerpts: [
         {
@@ -92,8 +135,8 @@ export class Consistency implements AfterViewInit, OnDestroy {
       documents: 2,
       values: ['120', '98'],
       references: [
-        { document: 'module-2-summary.pdf',  value: '120', unit: 'ng/mL', page: 'p. 18' },
-        { document: 'clinical-overview.pdf', value: '98',  unit: 'ng/mL', page: 'p. 55' },
+        { document: 'module-2-summary.pdf', value: '120', unit: 'ng/mL', page: 'p. 18' },
+        { document: 'clinical-overview.pdf', value: '98', unit: 'ng/mL', page: 'p. 55' },
       ],
       excerpts: [
         {
@@ -114,8 +157,8 @@ export class Consistency implements AfterViewInit, OnDestroy {
       documents: 2,
       values: ['540 ng·h/mL', '0.54 µg·h/mL'],
       references: [
-        { document: 'module-2-summary.pdf',  value: '540',  unit: 'ng·h/mL',  page: 'p. 20' },
-        { document: 'module-5-csr-013.pdf',  value: '0.54', unit: 'µg·h/mL',  page: 'p. 91' },
+        { document: 'module-2-summary.pdf', value: '540', unit: 'ng·h/mL', page: 'p. 20' },
+        { document: 'module-5-csr-013.pdf', value: '0.54', unit: 'µg·h/mL', page: 'p. 91' },
       ],
       excerpts: [
         {
@@ -136,7 +179,7 @@ export class Consistency implements AfterViewInit, OnDestroy {
       documents: 2,
       values: ['2.0', '1.5'],
       references: [
-        { document: 'module-2-summary.pdf',  value: '2.0', unit: 'h', page: 'p. 22' },
+        { document: 'module-2-summary.pdf', value: '2.0', unit: 'h', page: 'p. 22' },
         { document: 'clinical-overview.pdf', value: '1.5', unit: 'h', page: 'p. 60' },
       ],
       excerpts: [
@@ -158,8 +201,8 @@ export class Consistency implements AfterViewInit, OnDestroy {
       documents: 2,
       values: ['80 L', '1.1 L/kg'],
       references: [
-        { document: 'module-2-summary.pdf',  value: '80',  unit: 'L',    page: 'p. 25' },
-        { document: 'module-5-csr-013.pdf',  value: '1.1', unit: 'L/kg', page: 'p. 95' },
+        { document: 'module-2-summary.pdf', value: '80', unit: 'L', page: 'p. 25' },
+        { document: 'module-5-csr-013.pdf', value: '1.1', unit: 'L/kg', page: 'p. 95' },
       ],
       excerpts: [
         {
@@ -175,98 +218,223 @@ export class Consistency implements AfterViewInit, OnDestroy {
       ],
     },
   ];
- 
+
   get filteredIssues(): Issue[] {
-    return this.allIssues.filter(issue => {
-      const matchSearch = issue.parameter.toLowerCase().includes(this.searchQuery.toLowerCase());
-      const matchFilter = this.activeFilter === 'All' || issue.issueType === this.activeFilter;
+    return this.allIssues.filter((issue) => {
+      const matchSearch = issue.parameter
+        .toLowerCase()
+        .includes(this.searchQuery.toLowerCase());
+      const matchFilter =
+        this.activeFilter === 'All' || issue.issueType === this.activeFilter;
       return matchSearch && matchFilter;
     });
   }
- 
-  setFilter(f: 'All' | 'Value mismatch' | 'Unit mismatch') { this.activeFilter = f; }
- 
-  openDetail(issue: Issue): void  { this.selectedIssue = issue; document.body.style.overflow = 'hidden'; }
-  closeDetail(): void             { this.selectedIssue = null;  document.body.style.overflow = '';       }
- 
-  // ── Lifecycle ──────────────────────────────────────────────
+
+  get paginatedIssues(): Issue[] {
+    const start = this.currentPage * this.pageSize;
+    return this.filteredIssues.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredIssues.length / this.pageSize));
+  }
+
+  get pageStart(): number {
+    if (!this.filteredIssues.length) return 0;
+    return this.currentPage * this.pageSize + 1;
+  }
+
+  get pageEnd(): number {
+    return Math.min(
+      (this.currentPage + 1) * this.pageSize,
+      this.filteredIssues.length
+    );
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i);
+  }
+
+  paramPercent(count: number): number {
+    return Math.round((count / this.paramMax) * 100);
+  }
+
+  onSearchChange(): void {
+    this.currentPage = 0;
+  }
+
+  onFilterChange(value: string): void {
+    if (value === 'All' || value === 'Value mismatch' || value === 'Unit mismatch') {
+      this.activeFilter = value;
+      this.currentPage = 0;
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 0) this.currentPage--;
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages - 1) this.currentPage++;
+  }
+
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages) this.currentPage = page;
+  }
+
+  openDetail(issue: Issue): void {
+    this.selectedIssue = issue;
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  closeDetail(): void {
+    this.selectedIssue = null;
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = '';
+    }
+  }
+
   ngAfterViewInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.animateStat(this.totalIssuesCount, (v) => (this.displayTotalIssues = v));
+    this.animateStat(this.documentsAffected, (v) => (this.displayDocuments = v), 120);
+    this.animateStat(this.parametersAffected, (v) => (this.displayParameters = v), 200);
+
     setTimeout(() => {
       this.initBarChart();
       this.initDoughnutChart();
-      this.initParamChart();
     }, 80);
   }
- 
+
   ngOnDestroy(): void {
-    this.charts.forEach(c => c.destroy());
+    this.charts.forEach((c) => c.destroy());
     this.charts = [];
-    document.body.style.overflow = '';
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = '';
+    }
   }
- 
-  // ── Charts ─────────────────────────────────────────────────
+
+  private animateStat(
+    target: number,
+    setter: (v: number) => void,
+    delayMs = 0
+  ): void {
+    setTimeout(() => {
+      const duration = 700;
+      const start = performance.now();
+      const step = (now: number) => {
+        const t = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        setter(Math.round(target * eased));
+        if (t < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }, delayMs);
+  }
+
   private initBarChart(): void {
-    const chart = new Chart(this.barChartRef.nativeElement, {
+    const canvas = this.barChartRef.nativeElement;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+    gradient.addColorStop(0, '#c4b5fd');
+    gradient.addColorStop(1, '#6d28d9');
+
+    const chart = new Chart(canvas, {
       type: 'bar',
       data: {
         labels: ['module-2', 'module-3', 'clinical', 'csr-013', 'labeling'],
-        datasets: [{
-          data: [6, 4, 9, 5, 2],
-          backgroundColor: ['rgba(124,58,237,0.80)','rgba(139,92,246,0.70)','rgba(109,40,217,0.90)','rgba(139,92,246,0.75)','rgba(167,139,250,0.65)'],
-          hoverBackgroundColor: ['rgba(124,58,237,1)','rgba(139,92,246,1)','rgba(109,40,217,1)','rgba(139,92,246,1)','rgba(167,139,250,1)'],
-          borderRadius: 10, borderSkipped: false,
-        }]
+        datasets: [
+          {
+            data: [6, 4, 9, 5, 2],
+            backgroundColor: gradient,
+            hoverBackgroundColor: '#5b21b6',
+            borderRadius: 10,
+            borderSkipped: false,
+            barPercentage: 0.55,
+            categoryPercentage: 0.72,
+          },
+        ],
       },
       options: {
-        responsive: true, maintainAspectRatio: false,
-        animation: { duration: 900, easing: 'easeOutQuart', delay: (ctx) => ctx.dataIndex * 80 },
-        plugins: { legend: { display: false }, tooltip: { backgroundColor:'#1f2937', titleColor:'#f9fafb', bodyColor:'#d1d5db', padding:10, cornerRadius:8, callbacks:{ label:(c)=>` ${c.raw} issues` } } },
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 900,
+          easing: 'easeOutQuart',
+          delay: (ctx) => (ctx.dataIndex ?? 0) * 70,
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleColor: '#f8fafc',
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 10,
+            displayColors: false,
+            callbacks: { label: (c) => ` ${c.raw} issues` },
+          },
+        },
         scales: {
-          x: { grid:{display:false}, border:{display:false}, ticks:{color:'#6b7280',font:{size:12}} },
-          y: { grid:{color:'#f3f4f6',lineWidth:1}, border:{display:false,dash:[4,4]}, ticks:{stepSize:3,color:'#9ca3af',font:{size:11}}, min:0, max:12 }
-        }
-      }
+          x: {
+            grid: { display: false },
+            border: { display: false },
+            ticks: { color: '#64748b', font: { size: 12 } },
+          },
+          y: {
+            grid: { color: '#f1f5f9', lineWidth: 1 },
+            border: { display: false, dash: [4, 6] },
+            ticks: { stepSize: 3, color: '#94a3b8', font: { size: 11 } },
+            min: 0,
+            max: 12,
+          },
+        },
+      },
     });
     this.charts.push(chart);
   }
- 
+
   private initDoughnutChart(): void {
     const chart = new Chart(this.doughnutChartRef.nativeElement, {
       type: 'doughnut',
       data: {
-        labels: ['Value mismatch','Unit mismatch'],
-        datasets: [{ data:[3,2], backgroundColor:['#7c3aed','#92400e'], hoverBackgroundColor:['#6d28d9','#78350f'], borderWidth:0, hoverOffset:10 }]
+        labels: ['Value mismatch', 'Unit mismatch'],
+        datasets: [
+          {
+            data: [3, 2],
+            backgroundColor: ['#7c3aed', '#d97706'],
+            hoverBackgroundColor: ['#6d28d9', '#b45309'],
+            borderWidth: 0,
+            hoverOffset: 6,
+          },
+        ],
       },
       options: {
-        responsive: true, maintainAspectRatio: false, cutout:'62%',
-        animation: { animateRotate:true, animateScale:true, duration:900, easing:'easeOutQuart' },
-        plugins: { legend:{display:false}, tooltip:{ backgroundColor:'#1f2937', titleColor:'#f9fafb', bodyColor:'#d1d5db', padding:10, cornerRadius:8, callbacks:{label:(c)=>` ${c.label}: ${c.raw}`} } }
-      }
-    });
-    this.charts.push(chart);
-  }
- 
-  private initParamChart(): void {
-    const chart = new Chart(this.paramChartRef.nativeElement, {
-      type: 'bar',
-      data: {
-        labels: ['t1/2','Cmax','AUC0-∞','Tmax','Vd'],
-        datasets: [{
-          data: [3,2,2,2,2],
-          backgroundColor: ['#6d28d9','#a78bfa','#c4b5fd','#ca8a04','#a855f7'],
-          hoverBackgroundColor: ['#5b21b6','#8b5cf6','#a78bfa','#b45309','#9333ea'],
-          borderRadius: 8, borderSkipped: false,
-        }]
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '72%',
+        animation: {
+          animateRotate: true,
+          animateScale: true,
+          duration: 900,
+          easing: 'easeOutQuart',
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleColor: '#f8fafc',
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 10,
+            callbacks: { label: (c) => ` ${c.label}: ${c.raw}` },
+          },
+        },
       },
-      options: {
-        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-        animation: { duration:900, easing:'easeOutQuart', delay:(ctx)=>ctx.dataIndex*100 },
-        plugins: { legend:{display:false}, tooltip:{ backgroundColor:'#1f2937', titleColor:'#f9fafb', bodyColor:'#d1d5db', padding:10, cornerRadius:8, callbacks:{label:(c)=>` ${c.raw} issues`} } },
-        scales: {
-          x: { grid:{color:'#f3f4f6'}, border:{display:false}, ticks:{color:'#9ca3af',font:{size:11}}, min:0, max:3 },
-          y: { grid:{display:false}, border:{display:false}, ticks:{color:'#374151',font:{size:13}} }
-        }
-      }
     });
     this.charts.push(chart);
   }

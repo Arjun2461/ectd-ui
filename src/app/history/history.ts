@@ -1,5 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { JobService } from '../core/services/job.service';
+import { Job, SERVICE_META } from '../core/models/job.types';
 
 @Component({
   selector: 'app-history',
@@ -8,54 +11,47 @@ import { CommonModule } from '@angular/common';
   styleUrl: './history.css',
 })
 export class History {
-  jobs = [
-    {
-      id: 'JOB-10293',
-      date: 'May 11, 2026',
-      modules: ['M2', 'M3'],
-      services: 'Consistency, Hyperlinking',
-      status: 'completed'
-    },
-    {
-      id: 'JOB-10288',
-      date: 'May 10, 2026',
-      modules: ['M5'],
-      services: 'Translation',
-      status: 'processing'
-    },
-    {
-      id: 'JOB-10271',
-      date: 'May 09, 2026',
-      modules: ['M2','M3', 'M4','M5'],
-      services: 'Consistency',
-      status: 'completed'
-    },
-    {
-      id: 'JOB-10254',
-      date: 'May 07, 2026',
-      modules: ['M2'],
-      services: 'Hyperlinking',
-      status: 'error'
-    },
-    {
-      id: 'JOB-10241',
-      date: 'May 05, 2026',
-      modules: ['M2', 'M3', 'M5'],
-      services: 'Consistency, Translation, Hyperlinking',
-      status: 'completed'
-    },
-    {
-      id: 'JOB-10227',
-      date: 'May 03, 2026',
-      modules: ['M4'],
-      services: 'Translation',
-      status: 'completed'
-    }
-  ];
+  private readonly jobService = inject(JobService);
+  private readonly router = inject(Router);
 
-  getStatusLabel(status: string) {
+  readonly searchQuery = signal('');
+
+  readonly jobs = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    const list = this.jobService.getJobs();
+    if (!q) return list;
+    return list.filter((job) => {
+      const services = this.formatServices(job.selectedServices).toLowerCase();
+      return job.id.toLowerCase().includes(q) || services.includes(q);
+    });
+  });
+
+  onSearch(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(value);
+  }
+
+  formatServices(ids: string[]): string {
+    return ids.map((id) => SERVICE_META[id]?.name ?? id).join(', ');
+  }
+
+  formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  }
+
+  getStatusLabel(status: string): string {
     if (status === 'completed') return 'Completed';
     if (status === 'processing') return 'Processing';
-    return 'Error';
+    return status;
+  }
+
+  viewJob(job: Job, event?: Event): void {
+    event?.stopPropagation();
+    this.jobService.setCurrentJob(job);
+    this.router.navigate(['/results']);
   }
 }

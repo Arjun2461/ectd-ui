@@ -1,60 +1,53 @@
-<div class="history-page">
-  <!-- Header -->
+<div class="history-page fade-in">
   <h1>History</h1>
   <p class="subtitle">All your past submissions in one place.</p>
 
-  <!-- Card -->
   <div class="history-card">
-    <!-- Search + Filter -->
     <div class="toolbar">
       <div class="search-box">
         <i class="ti ti-search"></i>
-        <input type="text" placeholder="Search by job ID, module, or service..." />
+        <input
+          type="text"
+          placeholder="Search by job ID or service..."
+          [value]="searchQuery()"
+          (input)="onSearch($event)"
+        />
       </div>
 
-      <button class="filter-btn">
+      <button class="filter-btn" type="button">
         <i class="ti ti-filter"></i>
         All statuses
       </button>
     </div>
 
-    <!-- Table -->
     <div class="table">
-      <!-- Header Row -->
       <div class="table-header">
         <span>JOB ID</span>
         <span>DATE</span>
-        <span>MODULES</span>
         <span>SERVICES</span>
         <span>STATUS</span>
         <span>ACTION</span>
       </div>
 
-      <!-- Rows -->
-      <div class="table-row" *ngFor="let job of jobs">
-        <span class="job-id">{{ job.id }}</span>
-        <span>{{ job.date }}</span>
-
-        <span class="modules">
-          <span class="chip" *ngFor="let m of job.modules">{{ m }}</span>
-        </span>
-
-        <span class="services">{{ job.services }}</span>
-
-        <span>
-          <span class="status" [ngClass]="job.status">
-            <span class="status-dot"></span>
-            {{ getStatusLabel(job.status) }}
+      @for (job of jobs(); track job.id) {
+        <div class="table-row" (click)="viewJob(job)">
+          <span class="job-id">{{ job.id }}</span>
+          <span>{{ formatDate(job.createdAt) }}</span>
+          <span class="services">{{ formatServices(job.selectedServices) }}</span>
+          <span>
+            <span class="status" [ngClass]="job.status">
+              <span class="status-dot"></span>
+              {{ getStatusLabel(job.status) }}
+            </span>
           </span>
-        </span>
-
-        <span>
-          <button class="download-btn">
-            <i class="ti ti-download"></i>
-            Download
-          </button>
-        </span>
-      </div>
+          <span>
+            <button class="view-btn" type="button" (click)="viewJob(job, $event)">
+              <i class="ti ti-eye"></i>
+              View Job
+            </button>
+          </span>
+        </div>
+      }
     </div>
   </div>
 </div>

@@ -73,7 +73,7 @@
 </div>
 
 <!-- Section 3: Footer / Run -->
-<div class="run-bar" [class.processing]="isProcessing">
+<div class="run-bar">
   <div class="run-left">
     <div class="run-icon">
       <i class="ti ti-sparkles"></i>
@@ -86,22 +86,9 @@
 
   <button
     class="run-btn"
-    [class.loading]="isProcessing"
-    [disabled]="isProcessing || selectedCount === 0"
+    [disabled]="selectedCount === 0"
     (click)="runPipeline()"
   >
-    <i class="ti ti-loader-2 spin" *ngIf="isProcessing"></i>
-    <span>{{ isProcessing ? 'Processing...' : 'Run AI pipeline' }}</span>
+    <span>Run AI pipeline</span>
   </button>
-
-  <!-- Progress bar (visible when processing) -->
-  <div class="progress-wrap" *ngIf="isProcessing">
-    <div class="progress-label">
-      <span>Analyzing documents...</span>
-      <span>{{ progress | number:'1.0-0' }}%</span>
-    </div>
-    <div class="progress-track">
-      <div class="progress-fill" [style.width.%]="progress"></div>
-    </div>
-  </div>
 </div>

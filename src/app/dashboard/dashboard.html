@@ -1,0 +1,134 @@
+<div class="dashboard">
+  <!-- A. Welcome -->
+  <section class="welcome welcome-fade-in" aria-label="Welcome">
+    <div class="welcome-bg" aria-hidden="true">
+      <span class="welcome-orb welcome-orb--violet"></span>
+      <span class="welcome-orb welcome-orb--teal"></span>
+      <span class="welcome-shine"></span>
+    </div>
+
+    <div class="welcome-inner">
+      <div class="welcome-text">
+        <div class="welcome-brand">
+          <span class="welcome-logo" aria-hidden="true">
+            <lucide-icon [img]="Sparkles" [size]="18"></lucide-icon>
+          </span>
+          <span class="eyebrow">ReguLon · eCTD AI Platform</span>
+        </div>
+
+        <h1>
+          Welcome back
+          <span class="welcome-accent">— ready to review</span>
+        </h1>
+
+        <p class="subtitle">
+          Validate, translate, and ensure consistency across eCTD submissions
+          with AI-powered checks built for regulatory teams.
+        </p>
+
+        <div class="welcome-tags">
+          @for (tag of welcomeTags; track tag) {
+            <span class="welcome-tag">{{ tag }}</span>
+          }
+        </div>
+      </div>
+
+      <aside class="welcome-meta">
+        <span class="status-badge">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          All systems operational
+        </span>
+
+        <div class="welcome-stats">
+          @for (stat of welcomeStats; track stat.label) {
+            <div class="welcome-stat">
+              <span class="welcome-stat-value">{{ stat.value }}</span>
+              <span class="welcome-stat-label">{{ stat.label }}</span>
+            </div>
+          }
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- B. Services -->
+  <section class="section">
+    <h2 class="section-title">Services</h2>
+    <div class="services-grid">
+      @for (service of services; track service.title) {
+        <a class="service-card" [routerLink]="service.route">
+          <span class="service-icon">
+            <lucide-icon [img]="service.icon" [size]="20"></lucide-icon>
+          </span>
+          <h3>{{ service.title }}</h3>
+          <p>{{ service.description }}</p>
+          <span class="service-link">Open →</span>
+        </a>
+      }
+    </div>
+  </section>
+
+  <!-- C + D: Analytics & Recent Activity -->
+  <div class="dashboard-row">
+    <section class="section analytics-section">
+      <h2 class="section-title">Analytics</h2>
+      <div class="chart-card chart-fade-in">
+        <div class="chart-header">
+          <strong>Jobs by service</strong>
+          <p>Last 30 days across your workspace</p>
+        </div>
+        <div class="chart-wrap">
+          <canvas #analyticsChart aria-label="Jobs by service chart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="section activity-section">
+      <h2 class="section-title">Recent activity</h2>
+      <div class="activity-card activity-fade-in">
+        <div class="activity-table-wrap">
+          <table class="activity-table">
+            <thead>
+              <tr>
+                <th>Job</th>
+                <th>Service</th>
+                <th>Status</th>
+                <th>Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (job of recentJobs; track job.id) {
+                <tr class="activity-row">
+                  <td>
+                    <span class="job-id">{{ job.id }}</span>
+                    <span class="job-name">{{ job.name }}</span>
+                  </td>
+                  <td>{{ job.service }}</td>
+                  <td>
+                    <span class="job-status" [class]="statusClass(job.status)">
+                      {{ job.status }}
+                    </span>
+                  </td>
+                  <td class="job-time">{{ job.updated }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- E. Quick Actions -->
+  <section class="section quick-section">
+    <h2 class="section-title">Quick actions</h2>
+    <div class="quick-actions">
+      @for (action of quickActions; track action.label) {
+        <a class="quick-btn" [routerLink]="action.route">
+          <lucide-icon [img]="action.icon" [size]="18"></lucide-icon>
+          {{ action.label }}
+        </a>
+      }
+    </div>
+  </section>
+</div>

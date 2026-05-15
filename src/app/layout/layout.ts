@@ -1,13 +1,18 @@
 import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router'; // ✅ IMPORTANT
+import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon'; // ✅
+import { MatIconModule } from '@angular/material/icon';
 import { LucideAngularModule, LayoutDashboard, Upload, History, ShieldCheck } from 'lucide-angular';
+import { Toast } from '../shared/toast/toast';
 
 @Component({
   selector: 'app-layout',
   imports: [
-    RouterModule, CommonModule,MatIconModule, LucideAngularModule
+    RouterModule,
+    CommonModule,
+    MatIconModule,
+    LucideAngularModule,
+    Toast,
   ],
   templateUrl: './layout.html',
   styleUrl: './layout.css',

@@ -1,223 +1,256 @@
-<div class="tab-content">
-  <!-- TOP ROW -->
-  <div class="top-row">
-    <!-- LEFT: DONUT -->
-    <div class="hyper-card">
-      <div class="hyper-card-header">
-        <div class="hyper-icon"><i class="ti ti-link"></i></div>
-        <div>
-          <strong>Hyperlinking Analysis</strong>
-          <p>Cross-document reference validation</p>
-        </div>
-      </div>
+<div class="hyper-page hyper-fade-in">
+  <section class="hyper-top">
+    <div class="hyper-top-left">
+      <article class="hyper-card hyper-card--analytics">
+        <header class="analytics-header">
+          <div class="analytics-header-left">
+            <div class="hyper-icon" aria-hidden="true">
+              <i class="ti ti-link"></i>
+            </div>
+            <div class="hyper-card-titles">
+              <strong>Link analysis</strong>
+              <p>Cross-document reference validation</p>
+            </div>
+          </div>
+          <span class="analytics-badge">{{ displayTotal | number }} scanned</span>
+        </header>
 
-      <div class="donut-wrap">
-        <canvas #donutChart></canvas>
-
-        <div class="donut-center">
-          <span class="donut-num">1,413</span>
-          <span class="donut-lbl">total links</span>
-        </div>
-      </div>
-
-      <div class="link-stats">
-        <div class="link-stat">
-          <span class="dot teal"></span>
-          <span class="ls-label">Linked</span>
-          <strong>1,284</strong>
-        </div>
-
-        <div class="link-stat">
-          <span class="dot red"></span>
-          <span class="ls-label">Broken</span>
-          <strong>47</strong>
-        </div>
-
-        <div class="link-stat">
-          <span class="dot gray"></span>
-          <span class="ls-label">Missing</span>
-          <strong>82</strong>
-        </div>
-      </div>
-    </div>
-
-    <!-- RIGHT: TERMINAL -->
-    <div class="terminal-card">
-      <div class="terminal-header">
-        <span class="terminal-arrow">›</span>
-        <span class="terminal-title">HUMAN-IN-THE-LOOP</span>
-
-        <div class="terminal-dots">
-          <span class="dot red"></span>
-          <span class="dot yellow"></span>
-          <span class="dot green"></span>
-        </div>
-      </div>
-
-      <div class="terminal-body">
-        <p class="t-id">#HITL-{{ hitlEvent.id }}</p>
-
-        <p class="t-warn">⚠ Incorrect reference detected</p>
-
-        <!-- SOURCE + STATEMENT COMBINED -->
-        <div class="t-block">
-          <p><strong>Source:</strong> {{ hitlEvent.file }}</p>
-          <span class="label">Statement:</span>
-          <span class="t-white">{{ hitlEvent.anchor }}</span>
-        </div>
-
-        <div class="suggested-label">SUGGESTED MATCHES</div>
-
-        <div
-          class="suggestion"
-          *ngFor="let s of hitlSuggestions; let i = index"
-          [class.selected]="hitlEvent.selected === i"
-        >
-          <div class="sug-left">
-            <span class="radio" [class.active]="hitlEvent.selected === i"></span>
-
-            <div>
-              <div class="sug-file">{{ s.file }}</div>
+        <div class="analytics-chart-zone">
+          <div class="donut-panel">
+            <div class="donut-wrap">
+              <canvas #donutChart aria-label="Link status chart"></canvas>
+              <div class="donut-center">
+                <span class="donut-num">{{ displayTotal | number }}</span>
+                <span class="donut-lbl">Total links</span>
+              </div>
             </div>
           </div>
 
-          <div class="sug-right">
-            <span *ngIf="s.recommended" class="badge">recommended</span>
-            <span class="score">{{ s.score }}%</span>
-          </div>
+          <ul class="link-legend">
+            @for (item of linkBreakdown; track item.label) {
+              <li class="legend-item">
+                <span class="legend-dot" [class]="item.tone"></span>
+                <div class="legend-copy">
+                  <span class="legend-label">{{ item.label }}</span>
+                  <span class="legend-count">{{ item.count | number }}</span>
+                </div>
+                <span class="legend-pct">{{ statPercent(item.count) }}%</span>
+              </li>
+            }
+          </ul>
         </div>
-        <!-- ✅ NONE OPTION (PASTE HERE) -->
-        <div
-          class="suggestion none-option"
-          [class.selected]="hitlEvent.selected === -1"
-          (click)="hitlEvent.selected = -1"
-        >
-          <div class="sug-left">
-            <span class="radio" [class.active]="hitlEvent.selected === -1" (click)="selectOption(-1)"></span>
 
-            <div class="sug-file muted">None (No match)</div>
+        <div class="analytics-modules">
+          <div class="module-panel-head">
+            <span class="module-title">Module distribution</span>
+            <span class="module-sub">Links per eCTD module</span>
           </div>
-        </div>
-        <div class="ai-reason premium">
-          <div class="ai-head">
-            <span>LLM RECOMMENDATION</span>
-          </div>
-
-          <p>
-            Based on semantic similarity and section alignment, this reference best matches the
-            context.
-          </p>
-        </div>
-      </div>
-      <div class="terminal-actions">
-        <button class="confirm-btn">Confirm Selection</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- TABLE -->
-  <div class="resolved-card">
-    <div class="resolved-header">
-      <strong>Resolved References</strong>
-      <p>{{ resolvedRefs.length }} references resolved</p>
-    </div>
-
-    <table class="resolved-table">
-      <!-- HEADER -->
-      <thead>
-        <tr>
-          <th>Source Document</th>
-          <th>Suggested Matches</th>
-          <th>User Action</th>
-          <th></th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <ng-container *ngFor="let r of resolvedRefs; let i = index">
-          <!-- MAIN ROW -->
-          <tr class="main-row" (click)="toggleRow(i)">
-            <!-- SOURCE -->
-            <td class="rr-source">
-              {{ r.sourceDoc }}
-            </td>
-
-            <!-- ✅ THREE SUGGESTED DOCS -->
-            <td class="rr-suggestions">
-              <div
-                class="doc-pill"
-                *ngFor="let s of r.suggestions; let j = index"
-                [class.selected]="r.selectedIndex === j"
-              >
-                {{ s.file }}
+          <div class="module-list">
+            @for (mod of moduleStats; track mod.name; let i = $index) {
+              <div class="module-row">
+                <span class="m-name">{{ mod.name }}</span>
+                <div class="m-track">
+                  <span
+                    class="m-fill"
+                    [style.width.%]="mod.percent"
+                    [style.animation-delay.ms]="i * 80"
+                  ></span>
+                </div>
+                <span class="m-val">{{ mod.value | number }}</span>
               </div>
-            </td>
+            }
+          </div>
+        </div>
+      </article>
+    </div>
 
-            <!-- ACTION -->
-            <td>
-              <span class="rr-badge" [class.auto]="r.badge === 'Auto-resolved'">
-                {{ r.userAction }}
+    <div class="hyper-top-right">
+      <article class="terminal-card">
+        <header class="terminal-header">
+          <span class="terminal-arrow" aria-hidden="true">›</span>
+          <span class="terminal-title">Human-in-the-loop</span>
+          <div class="terminal-dots" aria-hidden="true">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </div>
+        </header>
+
+        <div class="terminal-scroll">
+          <p class="t-id">#HITL-{{ hitlEvent.id }}</p>
+          <p class="t-warn">Incorrect reference detected</p>
+
+          <div class="t-block">
+            <div class="t-row">
+              <span class="t-label">Source</span>
+              <span class="t-value">{{ hitlEvent.file }}</span>
+            </div>
+            <div class="t-row">
+              <span class="t-label">Statement</span>
+              <span class="t-value t-value--mono">{{ hitlEvent.anchor }}</span>
+            </div>
+          </div>
+
+          <p class="suggested-label">Suggested matches</p>
+
+          @for (s of hitlSuggestions; track s.file; let i = $index) {
+            <button
+              type="button"
+              class="suggestion"
+              [class.selected]="hitlEvent.selected === i"
+              (click)="selectOption(i)"
+            >
+              <span class="sug-left">
+                <span class="radio" [class.active]="hitlEvent.selected === i"></span>
+                <span class="sug-text">
+                  <span class="sug-file">{{ s.file }}</span>
+                  <span class="sug-section">{{ s.section }}</span>
+                </span>
               </span>
-            </td>
+              <span class="sug-right">
+                @if (s.recommended) {
+                  <span class="badge">Recommended</span>
+                }
+                <span class="score">{{ s.score }}%</span>
+              </span>
+            </button>
+          }
 
-            <td class="rr-chevron">
-              <i class="ti" [ngClass]="expandedIndex === i ? 'ti-chevron-up' : 'ti-chevron-down'">
-              </i>
-            </td>
+          <button
+            type="button"
+            class="suggestion none-option"
+            [class.selected]="hitlEvent.selected === -1"
+            (click)="selectOption(-1)"
+          >
+            <span class="sug-left">
+              <span class="radio" [class.active]="hitlEvent.selected === -1"></span>
+              <span class="sug-file muted">None (No match)</span>
+            </span>
+          </button>
+
+          <div class="ai-reason">
+            <span class="ai-head">LLM recommendation</span>
+            <p>
+              Based on semantic similarity and section alignment, the top match
+              best fits this reference context.
+            </p>
+          </div>
+        </div>
+
+        <footer class="terminal-actions">
+          <button type="button" class="confirm-btn" (click)="onConfirm()">
+            Confirm selection
+          </button>
+        </footer>
+      </article>
+    </div>
+  </section>
+
+  @if (!isProcessing && resolvedRefs.length) {
+  <section class="resolved-card">
+    <header class="resolved-header">
+      <div>
+        <strong>Resolved references</strong>
+        <p>{{ resolvedRefs.length }} references resolved</p>
+      </div>
+    </header>
+
+    <div class="resolved-table-wrap">
+      <table class="resolved-table">
+        <thead>
+          <tr>
+            <th>Source document</th>
+            <th>Suggested matches</th>
+            <th>User action</th>
+            <th class="th-chevron" aria-label="Expand"></th>
           </tr>
+        </thead>
+        <tbody>
+          @for (r of resolvedRefs; track r.sourceDoc; let i = $index) {
+            <tr class="main-row" (click)="toggleRow(i)">
+              <td class="rr-source">
+                <span class="rr-doc">{{ r.sourceDoc }}</span>
+              </td>
+              <td class="rr-suggestions">
+                <div class="rr-pills">
+                  @for (s of r.suggestions; track $index; let j = $index) {
+                    <span
+                      class="doc-pill"
+                      [class.selected]="r.selectedIndex === j"
+                      [title]="s.file"
+                    >
+                      {{ s.file }}
+                    </span>
+                  }
+                </div>
+              </td>
+              <td class="rr-action">
+                <span class="rr-badge" [class.auto]="r.badge === 'Auto-resolved'">
+                  {{ r.userAction }}
+                </span>
+              </td>
+              <td class="rr-chevron">
+                <i
+                  class="ti"
+                  [ngClass]="expandedIndex === i ? 'ti-chevron-up' : 'ti-chevron-down'"
+                ></i>
+              </td>
+            </tr>
 
-          <!-- EXPANDED ROW -->
-          <tr *ngIf="expandedIndex === i" class="expand-row">
-            <td colspan="4">
-              <div class="expand-box">
-                <!-- TOP INFO -->
-                <div class="exp-grid">
-                  <div>
-                    <span class="exp-label">Source Document</span>
-                    <p>{{ r.sourceDoc }}</p>
+            @if (expandedIndex === i) {
+              <tr class="expand-row">
+                <td colspan="4">
+                  <div class="expand-box">
+                    <div class="exp-grid">
+                      <div class="exp-cell">
+                        <span class="exp-label">Source document</span>
+                        <p>{{ r.sourceDoc }}</p>
+                      </div>
+                      <div class="exp-cell">
+                        <span class="exp-label">Statement</span>
+                        <p class="exp-mono">{{ r.statement }}</p>
+                      </div>
+                    </div>
+
+                    <div class="exp-suggested">
+                      <div class="exp-suggested-head">
+                        <span class="exp-suggested-title">Suggested mappings</span>
+                        <span class="exp-col-h">Section</span>
+                        <span class="exp-col-h">Page</span>
+                        <span class="exp-col-h exp-col-h--score">Score</span>
+                      </div>
+
+                      @for (s of r.suggestions; track $index; let j = $index) {
+                        <div
+                          class="exp-line"
+                          [class.selected]="r.selectedIndex === j"
+                        >
+                          <span class="exp-dot" aria-hidden="true"></span>
+                          <span class="col-file">{{ s.file }}</span>
+                          <span class="col-section">{{ s.section }}</span>
+                          <span class="col-page">Page {{ s.page }}</span>
+                          <span class="col-score">{{ s.score }}%</span>
+                        </div>
+                      }
+                    </div>
+
+                    <div class="exp-llm">
+                      <span class="exp-llm-label">LLM recommendation</span>
+                      <p>{{ r.llmReason }}</p>
+                    </div>
+
+                    <p class="exp-action">
+                      User selected:
+                      <strong>{{ r.suggestions[r.selectedIndex]?.file ?? '—' }}</strong>
+                    </p>
                   </div>
-
-                  <div>
-                    <span class="exp-label">Statement</span>
-                    <p>{{ r.statement }}</p>
-                  </div>
-                </div>
-
-                <!-- SUGGESTED LIST (TEXT ONLY) -->
-                <div class="exp-suggested">
-                  <div class="exp-suggested-title">SUGGESTED MAPPINGS</div>
-
-                  <div
-                    class="exp-line"
-                    *ngFor="let s of r.suggestions; let j = index"
-                    [class.selected]="r.selectedIndex === j"
-                  >
-                    <span class="exp-dot"></span>
-
-                    <span class="col-file">{{ s.file }}</span>
-
-                    <span class="col-section">{{ s.section }}</span>
-
-                    <span class="col-page">Page {{ s.page }}</span>
-                  </div>
-                </div>
-
-                <!-- LLM -->
-                <div class="exp-llm">
-                  <span>LLM Recommendation</span>
-                  <p>{{ r.llmReason }}</p>
-                </div>
-
-                <!-- ACTION -->
-                <div class="exp-action">
-                  ✔ User selected:
-                  <strong>{{ r.suggestions[r.selectedIndex]?.file }}</strong>
-                </div>
-              </div>
-            </td>
-          </tr>
-        </ng-container>
-      </tbody>
-    </table>
-  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+  }
 </div>

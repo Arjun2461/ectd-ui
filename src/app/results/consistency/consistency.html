@@ -1,161 +1,274 @@
-<!-- ── Hero Banner ── -->
-
-<!-- ── Summary ── -->
-<div class="section-header">
-  <h2>Summary</h2>
-  <p>High-level breakdown of detected inconsistencies.</p>
-</div>
-
-<div class="stats-grid">
-  <div class="stat-card">
-    <div class="stat-icon yellow"><i class="ti ti-alert-triangle"></i></div>
-    <div class="stat-number">11</div>
-    <div class="stat-label">Total issues</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon purple-light"><i class="ti ti-file-description"></i></div>
-    <div class="stat-number">4</div>
-    <div class="stat-label">Documents affected</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon purple-light"><i class="ti ti-variable"></i></div>
-    <div class="stat-number">5</div>
-    <div class="stat-label">Parameters affected</div>
-  </div>
-</div>
-
-<!-- ── Charts Row ── -->
-<div class="charts-row">
-  <div class="chart-card wide">
-    <div class="chart-card-header">
-      <strong>Inconsistencies per document</strong>
-      <p>Detected issues across the submission</p>
-    </div>
-    <div class="chart-wrap" style="height:240px"><canvas #barChart></canvas></div>
-  </div>
-  <div class="chart-card">
-    <div class="chart-card-header">
-      <strong>Issue type</strong>
-      <p>Value vs unit mismatch</p>
-    </div>
-    <div class="chart-wrap" style="height:180px"><canvas #doughnutChart></canvas></div>
-    <div class="legend">
-      <div class="legend-item">
-        <span class="legend-dot purple"></span><span>Value mismatch</span>
-        <span class="legend-count">3</span>
-      </div>
-      <div class="legend-item">
-        <span class="legend-dot brown"></span><span>Unit mismatch</span>
-        <span class="legend-count">2</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ── Parameter Distribution ── -->
-<div class="chart-card full">
-  <div class="chart-card-header">
-    <strong>Parameter distribution</strong>
-    <p>Issues per pharmacokinetic parameter</p>
-  </div>
-  <div class="chart-wrap" style="height:220px"><canvas #paramChart></canvas></div>
-</div>
-
-<!-- ── Detected Issues Table ── -->
-<div class="table-card">
-  <div class="table-header-row">
+<div class="consistency-page">
+  <!-- Summary -->
+  <header class="con-section-head con-fade">
     <div>
-      <strong>Detected issues</strong>
-      <p>Click a row to inspect mismatched values</p>
+      <h2>Summary</h2>
+      <p>High-level breakdown of detected inconsistencies.</p>
     </div>
-    <div class="table-controls">
-      <div class="search-box">
+  </header>
+
+  <div class="con-stats con-fade con-fade--delay-1">
+    <article class="con-stat-card">
+      <div class="con-stat-icon con-stat-icon--amber">
+        <i class="ti ti-alert-triangle"></i>
+      </div>
+      <p class="con-stat-num">{{ displayTotalIssues }}</p>
+      <p class="con-stat-label">Total issues</p>
+    </article>
+    <article class="con-stat-card">
+      <div class="con-stat-icon con-stat-icon--purple">
+        <i class="ti ti-file-description"></i>
+      </div>
+      <p class="con-stat-num">{{ displayDocuments }}</p>
+      <p class="con-stat-label">Documents affected</p>
+    </article>
+    <article class="con-stat-card">
+      <div class="con-stat-icon con-stat-icon--violet">
+        <i class="ti ti-variable"></i>
+      </div>
+      <p class="con-stat-num">{{ displayParameters }}</p>
+      <p class="con-stat-label">Parameters affected</p>
+    </article>
+  </div>
+
+  <!-- Charts: 2-column -->
+  <div class="con-charts-grid con-fade con-fade--delay-2">
+    <article class="con-chart-card con-chart-card--wide">
+      <header class="con-chart-head">
+        <strong>Inconsistencies per document</strong>
+        <p>Detected issues across the submission</p>
+      </header>
+      <div class="con-chart-body con-chart-body--bar">
+        <canvas #barChart aria-label="Inconsistencies per document"></canvas>
+      </div>
+    </article>
+
+    <article class="con-chart-card con-chart-card--donut">
+      <header class="con-chart-head">
+        <strong>Issue type</strong>
+        <p>Value vs unit mismatch</p>
+      </header>
+      <div class="con-donut-layout">
+        <div class="con-donut-wrap">
+          <canvas #doughnutChart aria-label="Issue type distribution"></canvas>
+          <div class="con-donut-center">
+            <span class="con-donut-center-label">Total Issues</span>
+            <span class="con-donut-center-num">{{ donutTotal }}</span>
+          </div>
+        </div>
+        <ul class="con-legend">
+          <li>
+            <span class="con-legend-dot con-legend-dot--purple"></span>
+            <span class="con-legend-text">Value mismatch</span>
+            <span class="con-legend-val">3</span>
+          </li>
+          <li>
+            <span class="con-legend-dot con-legend-dot--amber"></span>
+            <span class="con-legend-text">Unit mismatch</span>
+            <span class="con-legend-val">2</span>
+          </li>
+        </ul>
+      </div>
+    </article>
+  </div>
+
+  <!-- Parameter distribution -->
+  <article class="con-chart-card con-chart-card--full con-fade con-fade--delay-3">
+    <header class="con-chart-head">
+      <strong>Parameter distribution</strong>
+      <p>Issues per pharmacokinetic parameter</p>
+    </header>
+    <div class="con-param-list">
+      @for (param of paramDistribution; track param.name; let i = $index) {
+        <div class="con-param-row" [style.animation-delay.ms]="i * 60">
+          <span class="con-param-name">{{ param.name }}</span>
+          <div class="con-param-track">
+            <span
+              class="con-param-fill"
+              [style.width.%]="paramPercent(param.count)"
+            ></span>
+          </div>
+          <span class="con-param-value">{{ param.count }}</span>
+        </div>
+      }
+    </div>
+  </article>
+
+  <!-- Detected issues table -->
+  <article class="con-table-card con-fade con-fade--delay-4">
+    <div class="con-table-top">
+      <div>
+        <strong>Detected issues</strong>
+        <p>Click a row to inspect mismatched values</p>
+      </div>
+      <button type="button" class="con-download-btn">
+        <i class="ti ti-download"></i>
+        Download CSV
+      </button>
+    </div>
+
+    <div class="con-table-toolbar">
+      <div class="con-search">
         <i class="ti ti-search"></i>
-        <input type="text" placeholder="Search parameters..." [(ngModel)]="searchQuery" />
+        <input
+          type="text"
+          placeholder="Search parameters..."
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange()"
+        />
       </div>
-      <div class="filter-group">
+      <div class="con-filter">
         <i class="ti ti-filter"></i>
-        <button [class.active]="activeFilter==='All'"            (click)="setFilter('All')">All</button>
-        <button [class.active]="activeFilter==='Value mismatch'" (click)="setFilter('Value mismatch')">Value mismatch</button>
-        <button [class.active]="activeFilter==='Unit mismatch'"  (click)="setFilter('Unit mismatch')">Unit mismatch</button>
+        <select [ngModel]="activeFilter" (ngModelChange)="onFilterChange($event)">
+          <option value="All">All issues</option>
+          <option value="Value mismatch">Value mismatch</option>
+          <option value="Unit mismatch">Unit mismatch</option>
+        </select>
       </div>
     </div>
-  </div>
 
-  <table class="issues-table">
-    <thead>
-      <tr>
-        <th>PARAMETER</th><th>ISSUE TYPE</th><th>DOCUMENTS</th><th>VALUES</th><th>ACTION</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let issue of filteredIssues" [class.unit-row]="issue.issueType==='Unit mismatch'">
-        <td class="param-cell">{{ issue.parameter }}</td>
-        <td>
-          <span class="badge" [class.badge-value]="issue.issueType==='Value mismatch'" [class.badge-unit]="issue.issueType==='Unit mismatch'">
-            <span class="badge-dot"></span>{{ issue.issueType }}
-          </span>
-        </td>
-        <td class="docs-cell">{{ issue.documents }} docs</td>
-        <td class="values-cell">
-          <span class="value-chip" *ngFor="let v of issue.values">{{ v }}</span>
-        </td>
-        <td class="action-cell">
-          <span class="view-link" (click)="openDetail(issue)">View <i class="ti ti-chevron-right"></i></span>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<!-- ════════════════════════════════════════
-     DETAIL POPUP
-════════════════════════════════════════ -->
-<div class="overlay" *ngIf="selectedIssue" (click)="closeDetail()">
-  <div class="drawer" (click)="$event.stopPropagation()">
-
-    <!-- Close -->
-    <button class="close-circle" (click)="closeDetail()">
-      <i class="ti ti-x"></i>
-    </button>
-
-    <!-- Title -->
-    <h2 class="drawer-title">{{ selectedIssue.parameter }}</h2>
-    <span class="badge drawer-badge"
-      [class.badge-value]="selectedIssue.issueType==='Value mismatch'"
-      [class.badge-unit]="selectedIssue.issueType==='Unit mismatch'">
-      <span class="badge-dot"></span>{{ selectedIssue.issueType }}
-    </span>
-
-    <div class="drawer-divider"></div>
-
-    <!-- Mismatched References -->
-    <div class="section-label">MISMATCHED REFERENCES</div>
-    <table class="ref-table">
-      <thead>
-        <tr><th>DOCUMENT</th><th>VALUE</th><th>UNIT</th><th>PAGE</th></tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let ref of selectedIssue.references">
-          <td class="ref-doc">{{ ref.document }}</td>
-          <td class="ref-value">{{ ref.value }}</td>
-          <td class="ref-unit">{{ ref.unit }}</td>
-          <td class="ref-page">{{ ref.page }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="drawer-divider"></div>
-
-    <!-- Source Excerpts -->
-    <div class="section-label">SOURCE EXCERPTS</div>
-    <div class="excerpt-card" *ngFor="let ex of selectedIssue.excerpts">
-      <div class="excerpt-header">
-        <span class="excerpt-doc">{{ ex.document }}</span>
-        <span class="excerpt-page">{{ ex.page }}</span>
-      </div>
-      <p class="excerpt-text" [innerHTML]="ex.text"></p>
+    <div class="con-table-scroll">
+      <table class="con-table">
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Issue type</th>
+            <th>Documents</th>
+            <th>Values</th>
+            <th class="th-action">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (issue of paginatedIssues; track issue.parameter) {
+            <tr
+              [class.con-row--unit]="issue.issueType === 'Unit mismatch'"
+              (click)="openDetail(issue)"
+            >
+              <td class="con-param-cell">{{ issue.parameter }}</td>
+              <td>
+                <span
+                  class="con-badge"
+                  [class.con-badge--value]="issue.issueType === 'Value mismatch'"
+                  [class.con-badge--unit]="issue.issueType === 'Unit mismatch'"
+                >
+                  <span class="con-badge-dot"></span>
+                  {{ issue.issueType }}
+                </span>
+              </td>
+              <td class="con-docs-cell">{{ issue.documents }} docs</td>
+              <td class="con-values-cell">
+                @for (v of issue.values; track v) {
+                  <span class="con-value-chip">{{ v }}</span>
+                }
+              </td>
+              <td class="con-action-cell">
+                <span class="con-view-link">
+                  View <i class="ti ti-chevron-right"></i>
+                </span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="con-empty-row">No issues match your filters.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
 
-  </div>
+    <footer class="con-pagination">
+      <span class="con-page-info">
+        Showing {{ pageStart }}–{{ pageEnd }} of {{ filteredIssues.length }}
+      </span>
+      <div class="con-page-controls">
+        <button
+          type="button"
+          class="con-page-btn"
+          [disabled]="currentPage === 0"
+          (click)="prevPage()"
+          aria-label="Previous page"
+        >
+          <i class="ti ti-chevron-left"></i>
+        </button>
+        @for (p of pageNumbers; track p) {
+          <button
+            type="button"
+            class="con-page-btn con-page-num"
+            [class.active]="p === currentPage"
+            (click)="goToPage(p)"
+          >
+            {{ p + 1 }}
+          </button>
+        }
+        <button
+          type="button"
+          class="con-page-btn"
+          [disabled]="currentPage >= totalPages - 1"
+          (click)="nextPage()"
+          aria-label="Next page"
+        >
+          <i class="ti ti-chevron-right"></i>
+        </button>
+      </div>
+    </footer>
+  </article>
 </div>
+
+<!-- Detail drawer -->
+@if (selectedIssue) {
+  <div class="con-overlay" (click)="closeDetail()">
+    <div class="con-drawer" (click)="$event.stopPropagation()">
+      <button type="button" class="con-drawer-close" (click)="closeDetail()" aria-label="Close">
+        <i class="ti ti-x"></i>
+      </button>
+
+      <h2 class="con-drawer-title">{{ selectedIssue.parameter }}</h2>
+      <span
+        class="con-badge con-drawer-badge"
+        [class.con-badge--value]="selectedIssue.issueType === 'Value mismatch'"
+        [class.con-badge--unit]="selectedIssue.issueType === 'Unit mismatch'"
+      >
+        <span class="con-badge-dot"></span>
+        {{ selectedIssue.issueType }}
+      </span>
+
+      <div class="con-drawer-divider"></div>
+
+      <p class="con-drawer-section-label">Mismatched references</p>
+      <table class="con-ref-table">
+        <thead>
+          <tr>
+            <th>Document</th>
+            <th>Value</th>
+            <th>Unit</th>
+            <th>Page</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ref of selectedIssue.references; track ref.document) {
+            <tr>
+              <td>{{ ref.document }}</td>
+              <td class="con-ref-value">{{ ref.value }}</td>
+              <td>{{ ref.unit }}</td>
+              <td class="con-ref-page">{{ ref.page }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <div class="con-drawer-divider"></div>
+
+      <p class="con-drawer-section-label">Source excerpts</p>
+      @for (ex of selectedIssue.excerpts; track ex.document) {
+        <article class="con-excerpt">
+          <div class="con-excerpt-head">
+            <span>{{ ex.document }}</span>
+            <span>{{ ex.page }}</span>
+          </div>
+          <p class="con-excerpt-text" [innerHTML]="ex.text"></p>
+        </article>
+      }
+    </div>
+  </div>
+}
+
