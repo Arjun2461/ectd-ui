@@ -70,13 +70,13 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     if (!s) {
       return [
         { label: 'Linked', count: 0, tone: 'teal' },
-        { label: 'Broken', count: 0, tone: 'red' },
+        { label: 'Changed', count: 0, tone: 'red' },
         { label: 'Missing', count: 0, tone: 'gray' },
       ];
     }
     return [
       { label: 'Linked', count: this.scaled(s.linked), tone: 'teal' },
-      { label: 'Broken', count: this.scaled(s.broken), tone: 'red' },
+      { label: 'Changed', count: this.scaled(s.broken), tone: 'red' },
       { label: 'Missing', count: this.scaled(s.missing), tone: 'gray' },
     ];
   }
@@ -166,7 +166,7 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     this.chart = new Chart(this.donutRef.nativeElement, {
       type: 'doughnut',
       data: {
-        labels: ['Linked', 'Broken', 'Missing'],
+        labels: ['Linked', 'Changed', 'Missing'],
         datasets: [
           {
             data: [linked || 1, broken, missing],
