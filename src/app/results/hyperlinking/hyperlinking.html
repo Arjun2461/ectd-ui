@@ -12,7 +12,18 @@
               <p>Cross-document reference validation</p>
             </div>
           </div>
-          <span class="analytics-badge">{{ displayTotal | number }} scanned</span>
+          <div class="analytics-header-actions">
+            <button
+              type="button"
+              class="svc-download-btn"
+              [disabled]="isProcessing"
+              aria-label="Download hyperlinking report"
+            >
+              <i class="ti ti-download" aria-hidden="true"></i>
+              Download CSV
+            </button>
+            <span class="analytics-badge">{{ displayTotal | number }} scanned</span>
+          </div>
         </header>
 
         <div class="analytics-chart-zone">
@@ -153,6 +164,14 @@
         <strong>Resolved references</strong>
         <p>{{ resolvedRefs.length }} references resolved</p>
       </div>
+      <button
+        type="button"
+        class="svc-download-btn svc-download-btn--ghost"
+        aria-label="Download resolved references"
+      >
+        <i class="ti ti-download" aria-hidden="true"></i>
+        Export
+      </button>
     </header>
 
     <div class="resolved-table-wrap">

@@ -1,12 +1,15 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { JobService } from '../core/services/job.service';
-import { Job, SERVICE_META } from '../core/models/job.types';
+import {
+  Job,
+  ModuleDistribution,
+  SERVICE_META,
+} from '../core/models/job.types';
 
 @Component({
   selector: 'app-history',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './history.html',
   styleUrl: './history.css',
 })
@@ -22,7 +25,12 @@ export class History {
     if (!q) return list;
     return list.filter((job) => {
       const services = this.formatServices(job.selectedServices).toLowerCase();
-      return job.id.toLowerCase().includes(q) || services.includes(q);
+      const modules = this.getJobModules(job).join(' ').toLowerCase();
+      return (
+        job.id.toLowerCase().includes(q) ||
+        services.includes(q) ||
+        modules.includes(q)
+      );
     });
   });
 
@@ -33,6 +41,15 @@ export class History {
 
   formatServices(ids: string[]): string {
     return ids.map((id) => SERVICE_META[id]?.name ?? id).join(', ');
+  }
+
+  getJobModules(job: Job): string[] {
+    if (job.modules?.length) return job.modules;
+    const dist = job.moduleDistribution;
+    if (!dist) return [];
+    return (Object.keys(dist) as (keyof ModuleDistribution)[]).filter(
+      (key) => (dist[key] ?? 0) > 0
+    );
   }
 
   formatDate(iso: string): string {

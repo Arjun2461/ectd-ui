@@ -5,45 +5,65 @@
   <div class="history-card">
     <div class="toolbar">
       <div class="search-box">
-        <i class="ti ti-search"></i>
+        <i class="ti ti-search" aria-hidden="true"></i>
         <input
           type="text"
-          placeholder="Search by job ID or service..."
+          placeholder="Search by job ID, module, or service..."
           [value]="searchQuery()"
           (input)="onSearch($event)"
         />
       </div>
 
       <button class="filter-btn" type="button">
-        <i class="ti ti-filter"></i>
+        <i class="ti ti-filter" aria-hidden="true"></i>
         All statuses
       </button>
     </div>
 
-    <div class="table">
+    <div class="table-wrap">
       <div class="table-header">
         <span>JOB ID</span>
         <span>DATE</span>
+        <span>MODULES</span>
         <span>SERVICES</span>
         <span>STATUS</span>
-        <span>ACTION</span>
+        <span>ACTIONS</span>
       </div>
 
       @for (job of jobs(); track job.id) {
         <div class="table-row" (click)="viewJob(job)">
           <span class="job-id">{{ job.id }}</span>
-          <span>{{ formatDate(job.createdAt) }}</span>
+          <span class="col-date">{{ formatDate(job.createdAt) }}</span>
+          <span class="modules">
+            @for (mod of getJobModules(job); track mod) {
+              <span class="chip">{{ mod }}</span>
+            } @empty {
+              <span class="chip chip--muted">—</span>
+            }
+          </span>
           <span class="services">{{ formatServices(job.selectedServices) }}</span>
           <span>
-            <span class="status" [ngClass]="job.status">
+            <span
+              class="status"
+              [class.completed]="job.status === 'completed'"
+              [class.processing]="job.status === 'processing'"
+            >
               <span class="status-dot"></span>
               {{ getStatusLabel(job.status) }}
             </span>
           </span>
-          <span>
+          <span class="actions" (click)="$event.stopPropagation()">
+            <button
+              type="button"
+              class="icon-dl-btn"
+              [attr.aria-label]="'Download reports for ' + job.id"
+              title="Download"
+            >
+              <i class="ti ti-download" aria-hidden="true"></i>
+            </button>
             <button class="view-btn" type="button" (click)="viewJob(job, $event)">
-              <i class="ti ti-eye"></i>
-              View Job
+              <i class="ti ti-eye" aria-hidden="true"></i>
+              View
             </button>
           </span>
         </div>

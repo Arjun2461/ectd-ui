@@ -12,6 +12,7 @@ import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Hyperlinking } from './hyperlinking/hyperlinking';
 import { Consistency } from './consistency/consistency';
+import { Translation } from './translation/translation';
 import { JobService } from '../core/services/job.service';
 import { ToastService } from '../core/services/toast.service';
 import {
@@ -27,7 +28,14 @@ type ViewMode = 'empty' | 'processing' | 'completed';
 
 @Component({
   selector: 'app-results',
-  imports: [DecimalPipe, CommonModule, Hyperlinking, Consistency, RouterModule],
+  imports: [
+    DecimalPipe,
+    CommonModule,
+    Hyperlinking,
+    Consistency,
+    Translation,
+    RouterModule,
+  ],
   templateUrl: './results.html',
   styleUrl: './results.css',
 })

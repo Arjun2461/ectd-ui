@@ -3,146 +3,166 @@
   border-radius: 16px;
   border: 1px solid #e5e7eb;
   overflow: hidden;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.06);
 }
 
-/* HEADER */
 .translation-top {
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 20px;
   border-bottom: 1px solid #f3f4f6;
+  flex-wrap: wrap;
 }
 
 .translation-icon {
-  width: 40px;
-  height: 40px;
-  background: #ede9fe;
-  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #7c3aed;
+  font-size: 22px;
+  flex-shrink: 0;
 }
 
-.translation-top strong {
+.translation-titles {
+  flex: 1;
+  min-width: 160px;
+}
+
+.translation-titles strong {
   font-size: 15px;
   display: block;
+  color: #111827;
 }
 
-.translation-top p {
+.translation-titles p {
   font-size: 12px;
   color: #6b7280;
+  margin: 4px 0 0;
 }
 
-/* DOWNLOAD BUTTON */
-.download-btn {
+.translation-top .svc-download-btn {
   margin-left: auto;
-  background: #7c3aed;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
 }
 
-/* BODY */
 .translation-body {
   padding: 20px;
 }
 
-/* STATS */
 .tl-stat-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 20px;
 }
 
 .tl-stat {
   background: #f9fafb;
+  border: 1px solid #f3f4f6;
+  border-radius: 12px;
   padding: 14px;
-  border-radius: 10px;
   text-align: center;
 }
 
 .tl-num {
+  display: block;
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
+  color: #111827;
 }
 
 .tl-lbl {
+  display: block;
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.tl-lang-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tl-lang-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #f3f4f6;
+  background: #fafafa;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.tl-lang-row:hover {
+  background: #f5f3ff;
+  border-color: #e9d5ff;
+}
+
+.tl-lang-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.tl-lang-pages {
   font-size: 12px;
   color: #6b7280;
 }
 
-/* LANG LIST */
-.tl-lang-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.tl-lang-row {
-  display: flex;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #f3f4f6;
-  gap: 12px;
-}
-
-.tl-lang-name {
-  flex: 1;
-  font-weight: 600;
-}
-
-.tl-lang-pages {
-  width: 100px;
-  font-size: 13px;
-  color: #6b7280;
-}
-
-/* STATUS */
 .tl-lang-status {
-  background: #fef9c3;
-  color: #92400e;
-  padding: 4px 10px;
-  border-radius: 20px;
   font-size: 11px;
-  width: 100px;
-  text-align: center;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
 }
 
 .tl-lang-status.complete {
   background: #dcfce7;
-  color: #166534;
+  color: #15803d;
 }
 
-/* BUTTON */
-.tl-dl-btn {
-  border: 1px solid #7c3aed;
-  background: transparent;
-  color: #7c3aed;
-  padding: 6px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.tl-dl-btn:hover {
-  background: #7c3aed;
-  color: white;
-}
-
-/* RESPONSIVE */
 @media (max-width: 900px) {
   .tl-stat-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .translation-top .svc-download-btn {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
   }
 
   .tl-lang-row {
-    flex-wrap: wrap;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
   }
 
   .tl-lang-pages {
-    width: auto;
+    grid-column: 1;
+  }
+
+  .tl-lang-status {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .tl-lang-row .svc-download-btn--compact {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 480px) {
+  .tl-stat-grid {
+    grid-template-columns: 1fr;
   }
 }

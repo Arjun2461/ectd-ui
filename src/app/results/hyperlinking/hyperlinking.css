@@ -79,6 +79,15 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
+}
+
+.analytics-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .analytics-header-left {
@@ -669,6 +678,11 @@
 }
 
 .resolved-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
   padding: 18px 20px;
   border-bottom: 1px solid #f1f5f9;
 }

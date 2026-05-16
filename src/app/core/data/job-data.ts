@@ -213,6 +213,7 @@ export const INITIAL_JOBS: Job[] = [
     status: 'completed',
     createdAt: '2026-05-11T09:24:00.000Z',
     selectedServices: ['consistency', 'hyperlinking'],
+    modules: ['M2', 'M3', 'M4', 'M5'],
     overallProgress: 100,
     serviceProgress: buildServiceProgress(
       ['consistency', 'hyperlinking'],
@@ -227,6 +228,8 @@ export const INITIAL_JOBS: Job[] = [
     status: 'processing',
     createdAt: '2026-05-10T14:10:00.000Z',
     selectedServices: ['translation'],
+    modules: ['M5'],
+    targetLanguage: 'Japanese',
     overallProgress: 58,
     serviceProgress: buildServiceProgress(['translation'], [
       { progress: 58, status: 'processing' },
@@ -243,6 +246,7 @@ export const INITIAL_JOBS: Job[] = [
     status: 'completed',
     createdAt: '2026-05-09T11:05:00.000Z',
     selectedServices: ['consistency'],
+    modules: ['M2', 'M3'],
     overallProgress: 100,
     serviceProgress: buildServiceProgress(['consistency'], [
       { progress: 100, status: 'completed' },
@@ -281,6 +285,8 @@ export const INITIAL_JOBS: Job[] = [
     status: 'completed',
     createdAt: '2026-05-05T16:42:00.000Z',
     selectedServices: ['consistency', 'translation', 'hyperlinking'],
+    modules: ['M1', 'M2', 'M3', 'M4', 'M5'],
+    targetLanguage: 'German',
     overallProgress: 100,
     serviceProgress: buildServiceProgress(
       ['consistency', 'translation', 'hyperlinking'],

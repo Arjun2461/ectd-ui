@@ -1,5 +1,10 @@
-import { Component , Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
+interface LanguageRow {
+  name: string;
+  pages: number;
+  status: string;
+}
 
 @Component({
   selector: 'app-translation',
@@ -8,18 +13,16 @@ import { Component , Input } from '@angular/core';
   styleUrl: './translation.css',
 })
 export class Translation {
-    @Input() stats = {
+  @Input() stats = {
     pages: 847,
     languages: 3,
     confidence: 98.4,
-    flagged: 12
+    flagged: 12,
   };
 
-  @Input() languagesList = [
+  @Input() languagesList: LanguageRow[] = [
     { name: 'Japanese (JA)', pages: 847, status: 'Complete' },
     { name: 'German (DE)', pages: 847, status: 'Complete' },
-    { name: 'French (FR)', pages: 831, status: 'In progress' }
+    { name: 'French (FR)', pages: 831, status: 'In progress' },
   ];
-
-
 }

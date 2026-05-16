@@ -1,74 +1,65 @@
 <div class="translation-card">
-
-  <!-- HEADER -->
   <div class="translation-top">
     <div class="translation-icon">
-      <i class="ti ti-language"></i>
+      <i class="ti ti-language" aria-hidden="true"></i>
     </div>
 
-    <div>
+    <div class="translation-titles">
       <strong>Translation Output</strong>
       <p>Dossier translated across regulatory languages</p>
     </div>
 
-    <button class="download-btn">
-      <i class="ti ti-download"></i> Download PDF
+    <button
+      type="button"
+      class="svc-download-btn"
+      aria-label="Download full translation report"
+    >
+      <i class="ti ti-download" aria-hidden="true"></i>
+      Download PDF
     </button>
   </div>
 
-  <!-- BODY -->
   <div class="translation-body">
-
-    <!-- STATS -->
     <div class="tl-stat-grid">
-
       <div class="tl-stat">
         <span class="tl-num">{{ stats.pages }}</span>
         <span class="tl-lbl">Pages translated</span>
       </div>
-
       <div class="tl-stat">
         <span class="tl-num">{{ stats.languages }}</span>
         <span class="tl-lbl">Languages</span>
       </div>
-
       <div class="tl-stat">
         <span class="tl-num">{{ stats.confidence }}%</span>
         <span class="tl-lbl">Confidence score</span>
       </div>
-
       <div class="tl-stat">
         <span class="tl-num">{{ stats.flagged }}</span>
         <span class="tl-lbl">Flagged segments</span>
       </div>
-
     </div>
 
-    <!-- LANGUAGE LIST -->
     <div class="tl-lang-list">
-
-      <div class="tl-lang-row" *ngFor="let lang of languagesList">
-
-        <span class="tl-lang-name">{{ lang.name }}</span>
-
-        <span class="tl-lang-pages">
-          {{ lang.pages }} pages
-        </span>
-
-        <span
-          class="tl-lang-status"
-          [class.complete]="lang.status === 'Complete'">
-          {{ lang.status }}
-        </span>
-
-        <button class="tl-dl-btn">
-          <i class="ti ti-download"></i> PDF
-        </button>
-
-      </div>
-
+      @for (lang of languagesList; track lang.name) {
+        <div class="tl-lang-row">
+          <span class="tl-lang-name">{{ lang.name }}</span>
+          <span class="tl-lang-pages">{{ lang.pages }} pages</span>
+          <span
+            class="tl-lang-status"
+            [class.complete]="lang.status === 'Complete'"
+          >
+            {{ lang.status }}
+          </span>
+          <button
+            type="button"
+            class="svc-download-btn svc-download-btn--compact"
+            [attr.aria-label]="'Download ' + lang.name + ' translation'"
+          >
+            <i class="ti ti-download" aria-hidden="true"></i>
+            PDF
+          </button>
+        </div>
+      }
     </div>
-
   </div>
-
 </div>

@@ -45,7 +45,6 @@ export interface LinkBreakdownItem {
 })
 export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
-
   @Input() hitlEvent: any;
   @Input() hitlSuggestions: any[] = [];
   @Input() resolvedRefs: any[] = [];
