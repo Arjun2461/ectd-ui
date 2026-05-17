@@ -1,6 +1,8 @@
-<div class="history-page fade-in">
-  <h1>History</h1>
-  <p class="subtitle">All your past submissions in one place.</p>
+<div class="history-page page-root fade-in">
+  <header class="history-header">
+    <h1>History</h1>
+    <p class="subtitle">All your past submissions in one place.</p>
+  </header>
 
   <div class="history-card">
     <div class="toolbar">
@@ -16,58 +18,82 @@
 
       <button class="filter-btn" type="button">
         <i class="ti ti-filter" aria-hidden="true"></i>
-        All statuses
+        <span>All statuses</span>
+        <i class="ti ti-chevron-down filter-chevron" aria-hidden="true"></i>
       </button>
     </div>
 
-    <div class="table-wrap">
-      <div class="table-header">
-        <span>JOB ID</span>
-        <span>DATE</span>
-        <span>MODULES</span>
-        <span>SERVICES</span>
-        <span>STATUS</span>
-        <span>ACTIONS</span>
-      </div>
-
-      @for (job of jobs(); track job.id) {
-        <div class="table-row" (click)="viewJob(job)">
-          <span class="job-id">{{ job.id }}</span>
-          <span class="col-date">{{ formatDate(job.createdAt) }}</span>
-          <span class="modules">
-            @for (mod of getJobModules(job); track mod) {
-              <span class="chip">{{ mod }}</span>
-            } @empty {
-              <span class="chip chip--muted">—</span>
+    <div class="table-panel">
+      <div class="table-wrap">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th scope="col" class="col-job-id">Job ID</th>
+              <th scope="col" class="col-date">Date</th>
+              <th scope="col" class="col-modules">Modules</th>
+              <th scope="col" class="col-services">Services</th>
+              <th scope="col" class="col-status">Status</th>
+              <th scope="col" class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (job of jobs(); track job.id) {
+              <tr class="history-row" (click)="viewJob(job)">
+                <td class="col-job-id">
+                  <span class="job-id">{{ job.id }}</span>
+                </td>
+                <td class="col-date">
+                  <span class="date-text">{{ formatDate(job.createdAt) }}</span>
+                </td>
+                <td class="col-modules">
+                  <div class="modules">
+                    @for (mod of getJobModules(job); track mod) {
+                      <span class="chip">{{ mod }}</span>
+                    } @empty {
+                      <span class="chip chip--muted">—</span>
+                    }
+                  </div>
+                </td>
+                <td class="col-services">
+                  <span class="services-text">{{
+                    formatServices(job.selectedServices)
+                  }}</span>
+                </td>
+                <td class="col-status">
+                  <span
+                    class="status"
+                    [class.completed]="job.status === 'completed'"
+                    [class.processing]="job.status === 'processing'"
+                  >
+                    <span class="status-dot" aria-hidden="true"></span>
+                    {{ getStatusLabel(job.status) }}
+                  </span>
+                </td>
+                <td class="col-actions" (click)="$event.stopPropagation()">
+                  <div class="actions">
+                    <button
+                      type="button"
+                      class="action-btn action-btn--icon"
+                      [attr.aria-label]="'Download reports for ' + job.id"
+                      title="Download"
+                    >
+                      <i class="ti ti-download" aria-hidden="true"></i>
+                    </button>
+                    <button
+                      class="action-btn action-btn--view"
+                      type="button"
+                      (click)="viewJob(job, $event)"
+                    >
+                      <i class="ti ti-eye" aria-hidden="true"></i>
+                      <span>View</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
             }
-          </span>
-          <span class="services">{{ formatServices(job.selectedServices) }}</span>
-          <span>
-            <span
-              class="status"
-              [class.completed]="job.status === 'completed'"
-              [class.processing]="job.status === 'processing'"
-            >
-              <span class="status-dot"></span>
-              {{ getStatusLabel(job.status) }}
-            </span>
-          </span>
-          <span class="actions" (click)="$event.stopPropagation()">
-            <button
-              type="button"
-              class="icon-dl-btn"
-              [attr.aria-label]="'Download reports for ' + job.id"
-              title="Download"
-            >
-              <i class="ti ti-download" aria-hidden="true"></i>
-            </button>
-            <button class="view-btn" type="button" (click)="viewJob(job, $event)">
-              <i class="ti ti-eye" aria-hidden="true"></i>
-              View
-            </button>
-          </span>
-        </div>
-      }
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
