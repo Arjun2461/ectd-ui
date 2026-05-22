@@ -9,13 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import {
-  Chart,
-  DoughnutController,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js';
 import {
   LucideAngularModule,
   Link2,
@@ -73,32 +67,28 @@ export class Dashboard implements AfterViewInit, OnDestroy {
 
   welcomeTags = ['Hyperlinking', 'Translation', 'Consistency'];
 
-  welcomeStats = [
-    { label: 'Active jobs', value: '12' },
-    { label: 'Pass rate', value: '98.2%' },
-  ];
+  welcomeStats = [{ label: 'Active jobs', value: '12' }];
 
   services: ServiceCard[] = [
     {
       title: 'Hyperlinking',
       description:
-        'AI resolves cross-references across modules and flags broken or ambiguous links.',
+        'Automatically create structured hyperlinks across documents to enable clear navigation and accurate cross-referencing.',
       icon: Link2,
-      route: '/results',
-    },
-    {
-      title: 'Translation',
-      description:
-        'Validate multilingual labels and harmonize terminology across regional dossiers.',
-      icon: Languages,
       route: '/results',
     },
     {
       title: 'Consistency',
       description:
-        'Detect parameter mismatches and narrative drift between sections and versions.',
+      'Detect inconsistencies in scientific data, values, and terminology across documents to improve accuracy and reliability.',
       icon: GitCompare,
       route: '/consistency',
+    },
+    {
+      title: 'Translation',
+      description:'Translate scientific documents into different languages while preserving technical meaning and context.',
+      icon: Languages,
+      route: '/results',
     },
   ];
 

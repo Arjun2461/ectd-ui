@@ -4,16 +4,11 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { LucideAngularModule, LayoutDashboard, Upload, History, ShieldCheck } from 'lucide-angular';
 import { Toast } from '../shared/toast/toast';
+import { LogOut } from 'lucide-angular';
 
 @Component({
   selector: 'app-layout',
-  imports: [
-    RouterModule,
-    CommonModule,
-    MatIconModule,
-    LucideAngularModule,
-    Toast,
-  ],
+  imports: [RouterModule, CommonModule, MatIconModule, LucideAngularModule, Toast],
   templateUrl: './layout.html',
   styleUrl: './layout.css',
 })
@@ -24,7 +19,9 @@ export class Layout {
   History = History;
   ShieldCheck = ShieldCheck;
 
+  LogOut = LogOut;
+
   toggleSidebar() {
     this.isCollapsed = !this.isCollapsed;
-}
+  }
 }

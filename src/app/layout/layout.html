@@ -33,7 +33,7 @@
         <span *ngIf="!isCollapsed">Upload</span>
       </a>
 
-         <a
+      <a
         routerLink="/results"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
@@ -50,6 +50,16 @@
         </div>
         <span *ngIf="!isCollapsed">History</span>
       </a>
+    </div>
+
+    <!-- Logout Button -->
+    <div class="logout-section">
+      <button class="logout-btn">
+        <div class="icon-box1">
+          <lucide-icon [img]="LogOut"></lucide-icon>
+        </div>
+        <span *ngIf="!isCollapsed">Logout</span>
+      </button>
     </div>
   </aside>
 

@@ -71,29 +71,6 @@
       </div>
     </article>
   </div>
-
-  <!-- Parameter distribution -->
-  <article class="con-chart-card con-chart-card--full con-fade con-fade--delay-3">
-    <header class="con-chart-head">
-      <strong>Parameter distribution</strong>
-      <p>Issues per pharmacokinetic parameter</p>
-    </header>
-    <div class="con-param-list">
-      @for (param of paramDistribution; track param.name; let i = $index) {
-        <div class="con-param-row" [style.animation-delay.ms]="i * 60">
-          <span class="con-param-name">{{ param.name }}</span>
-          <div class="con-param-track">
-            <span
-              class="con-param-fill"
-              [style.width.%]="paramPercent(param.count)"
-            ></span>
-          </div>
-          <span class="con-param-value">{{ param.count }}</span>
-        </div>
-      }
-    </div>
-  </article>
-
   <!-- Detected issues table -->
   <article class="con-table-card con-fade con-fade--delay-4">
     <div class="con-table-top">

@@ -85,6 +85,7 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     const dist = this.moduleDistribution;
     if (!dist) {
       return [
+        { name: 'M1', value: 0, percent: 0 },
         { name: 'M2', value: 0, percent: 0 },
         { name: 'M3', value: 0, percent: 0 },
         { name: 'M4', value: 0, percent: 0 },
@@ -92,10 +93,15 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
       ];
     }
 
-    const max = Math.max(dist.M2, dist.M3, dist.M4, dist.M5, 1);
+    const max = Math.max(dist.M1, dist.M2, dist.M3, dist.M4, dist.M5, 1);
     const factor = this.revealFactor;
 
     return [
+      {
+        name: 'M1',
+        value: Math.round(dist.M1 * factor),
+        percent: Math.round((dist.M1 / max) * 100 * factor),
+      },
       {
         name: 'M2',
         value: Math.round(dist.M2 * factor),

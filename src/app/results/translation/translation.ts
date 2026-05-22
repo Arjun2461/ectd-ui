@@ -14,10 +14,8 @@ interface LanguageRow {
 })
 export class Translation {
   @Input() stats = {
-    pages: 847,
+    pages: 47,
     languages: 3,
-    confidence: 98.4,
-    flagged: 12,
   };
 
   @Input() languagesList: LanguageRow[] = [

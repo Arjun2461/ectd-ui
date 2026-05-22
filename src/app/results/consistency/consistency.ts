@@ -90,13 +90,6 @@ export class Consistency implements AfterViewInit, OnDestroy {
   displayDocuments = 0;
   displayParameters = 0;
 
-  readonly paramDistribution: ParamDistribution[] = [
-    { name: 't1/2', count: 3 },
-    { name: 'Cmax', count: 2 },
-    { name: 'AUC0-∞', count: 2 },
-    { name: 'Tmax', count: 2 },
-    { name: 'Vd', count: 2 },
-  ];
 
   readonly paramMax = 3;
 

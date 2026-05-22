@@ -19,6 +19,7 @@ export interface JobStats {
 }
 
 export interface ModuleDistribution {
+  M1: number;
   M2: number;
   M3: number;
   M4: number;

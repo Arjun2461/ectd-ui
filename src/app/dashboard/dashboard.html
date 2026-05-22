@@ -32,22 +32,6 @@
           }
         </div>
       </div>
-
-      <aside class="welcome-meta">
-        <span class="status-badge">
-          <span class="pulse-dot" aria-hidden="true"></span>
-          All systems operational
-        </span>
-
-        <div class="welcome-stats">
-          @for (stat of welcomeStats; track stat.label) {
-            <div class="welcome-stat">
-              <span class="welcome-stat-value">{{ stat.value }}</span>
-              <span class="welcome-stat-label">{{ stat.label }}</span>
-            </div>
-          }
-        </div>
-      </aside>
     </div>
   </section>
 
@@ -56,13 +40,12 @@
     <h2 class="section-title">Services</h2>
     <div class="services-grid">
       @for (service of services; track service.title) {
-        <a class="service-card" [routerLink]="service.route">
+        <a class="service-card">
           <span class="service-icon">
             <lucide-icon [img]="service.icon" [size]="20"></lucide-icon>
           </span>
           <h3>{{ service.title }}</h3>
           <p>{{ service.description }}</p>
-          <span class="service-link">Open →</span>
         </a>
       }
     </div>

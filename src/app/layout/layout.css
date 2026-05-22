@@ -14,8 +14,8 @@
   transition: 0.3s;
   border-right: 1px solid #e7e7ee;
 
-  flex-shrink: 0;   /* 🔥 prevent shrinking */
-  height: 100vh;    /* 🔥 full height */
+  flex-shrink: 0; /* 🔥 prevent shrinking */
+  height: 100vh; /* 🔥 full height */
   overflow: hidden; /* 🔥 NO scroll */
 }
 
@@ -34,7 +34,7 @@
 .logo-icon {
   width: 35px;
   height: 35px;
-  background:  linear-gradient(135deg, rgb(120 68 240), rgb(174 137 255));
+  background: linear-gradient(135deg, rgb(120 68 240), rgb(174 137 255));
   color: white;
   border-radius: 50%;
   display: flex;
@@ -44,13 +44,13 @@
 
 /* Menu */
 .menu a {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    padding: 5px 11px;
-    border-radius: 12px;
-    margin-bottom: 5px;
-    transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 5px 11px;
+  border-radius: 12px;
+  margin-bottom: 5px;
+  transition: 0.2s;
 }
 
 /* ICON BOX */
@@ -60,7 +60,7 @@
   border-radius: 14px;
   background: transparent;
   display: grid;
-    place-items: center;  /* ✅ perfectly centered */
+  place-items: center; /* ✅ perfectly centered */
   transition: 0.2s;
 }
 
@@ -74,7 +74,7 @@
 }
 /* Text */
 .menu span {
-  font-size: 14px;  /* ✅ reduced font */
+  font-size: 14px; /* ✅ reduced font */
   color: #374151;
   letter-spacing: 0.2px;
 }
@@ -98,7 +98,7 @@
 }
 
 .menu a.active .icon-box {
-background:  linear-gradient(135deg, rgb(120 68 240), rgb(174 137 255)); /* subtle inner */
+  background: linear-gradient(135deg, rgb(120 68 240), rgb(174 137 255)); /* subtle inner */
 }
 
 ::ng-deep .menu a.active lucide-icon svg {
@@ -117,8 +117,8 @@ background:  linear-gradient(135deg, rgb(120 68 240), rgb(174 137 255)); /* subt
   display: flex;
   flex-direction: column;
 
-  overflow: hidden;  /* 🔥 prevents whole page scroll */
-  min-width: 0;      /* 🔥 prevents layout overflow bug */
+  overflow: hidden; /* 🔥 prevents whole page scroll */
+  min-width: 0; /* 🔥 prevents layout overflow bug */
 }
 
 /* Header */
@@ -177,7 +177,7 @@ background:  linear-gradient(135deg, rgb(120 68 240), rgb(174 137 255)); /* subt
 /* Content */
 .content {
   flex: 1;
-  overflow-y: auto;   /* 🔥 ONLY THIS SCROLLS */
+  overflow-y: auto; /* 🔥 ONLY THIS SCROLLS */
   background: white;
   padding: 15px;
 }
@@ -191,8 +191,8 @@ background:  linear-gradient(135deg, rgb(120 68 240), rgb(174 137 255)); /* subt
 }
 
 .p {
-    font-size: 12px;
-    color: gray;
+  font-size: 12px;
+  color: gray;
 }
 .logo-icon {
   width: 40px;
@@ -216,4 +216,39 @@ background:  linear-gradient(135deg, rgb(120 68 240), rgb(174 137 255)); /* subt
   background: #f3f2ff;
   padding: 6px;
   border-radius: 14px;
+}
+
+
+.logout-btn {
+  width: 60%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: none;
+  color: #4f00a4;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 8px;
+  transition: 0.2s;
+  /* border: 1px solid red; */
+  text-align: center;
+  background: linear-gradient(135deg, #ede9fe, #e3e0f7);
+}
+
+
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.menu {
+  flex: 1; /* THIS pushes logout to bottom */
+}
+
+
+::ng-deep .icon-box1 lucide-icon svg {
+  width: 15px !important;
+  height: 15px !important;
+  color: #4f00a4;
 }

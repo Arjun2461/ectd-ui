@@ -1,11 +1,4 @@
-import {
-  Component,
-  DestroyRef,
-  OnDestroy,
-  OnInit,
-  PLATFORM_ID,
-  inject,
-} from '@angular/core';
+import { Component, DestroyRef, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
@@ -28,14 +21,7 @@ type ViewMode = 'empty' | 'processing' | 'completed';
 
 @Component({
   selector: 'app-results',
-  imports: [
-    DecimalPipe,
-    CommonModule,
-    Hyperlinking,
-    Consistency,
-    Translation,
-    RouterModule,
-  ],
+  imports: [DecimalPipe, CommonModule, Hyperlinking, Consistency, Translation, RouterModule],
   templateUrl: './results.html',
   styleUrl: './results.css',
 })
@@ -61,6 +47,7 @@ export class Results implements OnInit, OnDestroy {
   };
 
   private readonly previewModules: ModuleDistribution = {
+    M1: 380,
     M2: 420,
     M3: 310,
     M4: 268,
@@ -89,14 +76,20 @@ export class Results implements OnInit, OnDestroy {
     this.router.events
       .pipe(
         filter((e): e is NavigationEnd => e instanceof NavigationEnd),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(() => this.refreshJobView());
+      .subscribe(() => {
+        this.refreshJobView();
+
+        // 🔥 ADD THIS
+        if (isPlatformBrowser(this.platformId)) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
   }
 
   private refreshJobView(): void {
-    const job =
-      this.jobService.activeJob() ?? this.jobService.getLastJob() ?? null;
+    const job = this.jobService.activeJob() ?? this.jobService.getLastJob() ?? null;
     if (job) {
       this.jobService.setCurrentJob(job);
     }
@@ -128,7 +121,7 @@ export class Results implements OnInit, OnDestroy {
         this.job.selectedServices.map(() => ({
           progress: 100,
           status: 'completed' as const,
-        }))
+        })),
       );
     }
 
@@ -163,9 +156,7 @@ export class Results implements OnInit, OnDestroy {
   } {
     const h =
       this.job?.hitl ??
-      (this.viewMode === 'processing' && this.progress > 55
-        ? this.previewHitl
-        : null);
+      (this.viewMode === 'processing' && this.progress > 55 ? this.previewHitl : null);
     if (!h) {
       return {
         id: 0,
@@ -187,10 +178,7 @@ export class Results implements OnInit, OnDestroy {
   }
 
   get hitlSuggestions() {
-    return (
-      this.job?.hitl?.suggestions ??
-      (this.progress > 55 ? this.previewHitl.suggestions : [])
-    );
+    return this.job?.hitl?.suggestions ?? (this.progress > 55 ? this.previewHitl.suggestions : []);
   }
 
   get resolvedRefs() {
@@ -199,10 +187,7 @@ export class Results implements OnInit, OnDestroy {
   }
 
   get stats() {
-    return (
-      this.job?.stats ??
-      (this.viewMode === 'processing' ? this.previewStats : undefined)
-    );
+    return this.job?.stats ?? (this.viewMode === 'processing' ? this.previewStats : undefined);
   }
 
   get moduleDistribution(): ModuleDistribution | undefined {
@@ -275,14 +260,8 @@ export class Results implements OnInit, OnDestroy {
     this.progressInterval = setInterval(() => {
       if (!this.job || this.job.id !== job.id) return;
 
-      const nextProgress = Math.min(
-        this.job.overallProgress + 0.55 + Math.random() * 0.9,
-        100
-      );
-      const updatedServices = this.advanceServices(
-        this.job.serviceProgress ?? [],
-        nextProgress
-      );
+      const nextProgress = Math.min(this.job.overallProgress + 0.55 + Math.random() * 0.9, 100);
+      const updatedServices = this.advanceServices(this.job.serviceProgress ?? [], nextProgress);
       const patch: Job = {
         ...this.job,
         overallProgress: nextProgress,
@@ -299,10 +278,7 @@ export class Results implements OnInit, OnDestroy {
     }, 140);
   }
 
-  private advanceServices(
-    services: ServiceProgress[],
-    overall: number
-  ): ServiceProgress[] {
+  private advanceServices(services: ServiceProgress[], overall: number): ServiceProgress[] {
     if (!services.length) return services;
 
     const slice = 100 / services.length;
@@ -345,8 +321,6 @@ export class Results implements OnInit, OnDestroy {
   }
 
   formatServices(ids: string[]): string {
-    return ids
-      .map((id) => SERVICE_META[id]?.name ?? id)
-      .join(', ');
+    return ids.map((id) => SERVICE_META[id]?.name ?? id).join(', ');
   }
 }

@@ -15,6 +15,7 @@ const COMPLETED_RESULTS_TEMPLATE = {
     missing: 82,
   },
   moduleDistribution: {
+    M1:389,
     M2: 420,
     M3: 310,
     M4: 268,
@@ -221,7 +222,7 @@ export const INITIAL_JOBS: Job[] = [
     ),
     ...COMPLETED_RESULTS_TEMPLATE,
     stats: { totalLinks: 987, linked: 901, broken: 32, missing: 54 },
-    moduleDistribution: { M2: 312, M3: 245, M4: 198, M5: 232 },
+    moduleDistribution: { M1:280,M2: 312, M3: 245, M4: 198, M5: 232 },
   },
   {
     id: 'JOB-10288',
@@ -252,7 +253,7 @@ export const INITIAL_JOBS: Job[] = [
       { progress: 100, status: 'completed' },
     ]),
     stats: { totalLinks: 654, linked: 610, broken: 21, missing: 23 },
-    moduleDistribution: { M2: 180, M3: 210, M4: 142, M5: 122 },
+    moduleDistribution: { M1:280,M2: 180, M3: 210, M4: 142, M5: 122 },
     hitl: {
       id: 2,
       file: 'M3.2-quality-report.pdf',
@@ -298,6 +299,6 @@ export const INITIAL_JOBS: Job[] = [
     ),
     ...COMPLETED_RESULTS_TEMPLATE,
     stats: { totalLinks: 2104, linked: 1988, broken: 61, missing: 55 },
-    moduleDistribution: { M2: 512, M3: 498, M4: 445, M5: 649 },
+    moduleDistribution: { M1:600,M2: 512, M3: 498, M4: 445, M5: 649 },
   },
 ];
