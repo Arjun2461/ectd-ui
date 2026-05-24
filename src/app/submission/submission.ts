@@ -10,6 +10,9 @@ import { Router } from '@angular/router';
 import { JobService } from '../core/services/job.service';
 import { ToastService } from '../core/services/toast.service';
 
+// ── NEW: SSE pipeline service ─────────────────────────────────────────────────
+import { PipelineSseService } from '../core/services/Pipeline-sse.service';
+
 interface ModuleFile {
   id: string;
   file: File;
@@ -42,8 +45,10 @@ const ACCEPTED_EXTENSIONS = ['.pdf', '.docx', '.xml'];
 })
 export class Submission {
   private readonly jobService = inject(JobService);
-  private readonly router = inject(Router);
-  private readonly toast = inject(ToastService);
+  private readonly router     = inject(Router);
+  private readonly toast      = inject(ToastService);
+  // ── NEW ──
+  private readonly pipeline   = inject(PipelineSseService);
 
   private fileIdCounter = 0;
 
@@ -110,7 +115,10 @@ export class Submission {
   ]);
 
   readonly targetLanguage = signal('');
-  readonly isRunning = signal(false);
+  readonly isRunning      = signal(false);
+
+  // ── Upload error state shown in the template ──────────────────────────────
+  readonly uploadError = signal<string | null>(null);
 
   readonly selectedCount = computed(
     () => this.services().filter((s) => s.selected).length
@@ -136,30 +144,20 @@ export class Submission {
 
   readonly canRun = computed(() => {
     if (this.selectedCount() === 0 || this.isRunning()) return false;
-    if (this.translationSelected() && !this.targetLanguage().trim()) {
-      return false;
-    }
+    if (this.translationSelected() && !this.targetLanguage().trim()) return false;
     return true;
   });
 
   readonly languageOptions = [
-    'English',
-    'French',
-    'German',
-    'Spanish',
-    'Italian',
-    'Portuguese',
-    'Japanese',
-    'Chinese (Simplified)',
-    'Korean',
-    'Arabic',
+    'English', 'French', 'German', 'Spanish', 'Italian',
+    'Portuguese', 'Japanese', 'Chinese (Simplified)', 'Korean', 'Arabic',
   ];
+
+  // ── Actions ────────────────────────────────────────────────────────────────
 
   toggleService(service: Service): void {
     this.services.update((list) =>
-      list.map((s) =>
-        s.id === service.id ? { ...s, selected: !s.selected } : s
-      )
+      list.map((s) => (s.id === service.id ? { ...s, selected: !s.selected } : s))
     );
   }
 
@@ -176,9 +174,7 @@ export class Submission {
     event.preventDefault();
     this.setModuleDragOver(tag, false);
     const files = event.dataTransfer?.files;
-    if (files?.length) {
-      this.addFilesToModule(tag, Array.from(files));
-    }
+    if (files?.length) this.addFilesToModule(tag, Array.from(files));
   }
 
   onFileSelect(event: Event, tag: string): void {
@@ -191,9 +187,7 @@ export class Submission {
 
   triggerFileInput(index: number, event?: Event): void {
     event?.stopPropagation();
-    const input = document.getElementById(
-      'file-input-' + index
-    ) as HTMLInputElement | null;
+    const input = document.getElementById('file-input-' + index) as HTMLInputElement | null;
     input?.click();
   }
 
@@ -209,27 +203,65 @@ export class Submission {
   }
 
   formatFileSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024)            return `${bytes} B`;
+    if (bytes < 1024 * 1024)     return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  runPipeline(): void {
+  // ── Run pipeline ───────────────────────────────────────────────────────────
+
+  async runPipeline(): Promise<void> {
     if (!this.canRun()) return;
 
     this.isRunning.set(true);
-    const language = this.translationSelected()
+    this.uploadError.set(null);
+
+    // 1. Collect all file names from every module that has files
+    const uploadedFiles: string[] = this.modules()
+      .flatMap((mod) => mod.files.map((f) => f.file.name));
+
+    // 2. Build selected service list
+    const selectedServices = this.selectedServiceIds();
+
+    // 3. Target language (only relevant when translation is selected)
+    const targetLanguage = this.translationSelected()
       ? this.targetLanguage().trim()
-      : undefined;
+      : 'en';
 
-    this.jobService.createJob(this.selectedServiceIds(), { targetLanguage: language });
-    this.toast.show('Pipeline started successfully');
+    try {
+      // 4. Reset any previous pipeline state so the results page starts fresh
+      this.pipeline.reset();
 
-    setTimeout(() => {
+      // 5. Register a local job record (keeps existing JobService / results page plumbing intact)
+      this.jobService.createJob(selectedServices, {
+        targetLanguage: this.translationSelected() ? targetLanguage : undefined,
+      });
+
+      // 6. POST /pipeline/start → opens SSE stream internally
+      //    Returns the task_id from the server
+      const taskId = await this.pipeline.startPipeline({
+        uploaded_files:  uploadedFiles,
+        services:        selectedServices,
+        target_language: targetLanguage,
+      });
+
+      this.toast.show(`Pipeline started — task ${taskId}`);
+
+      // 7. Navigate to results; the SSE stream is already open and will
+      //    start delivering events as soon as the results page subscribes
       this.isRunning.set(false);
       this.router.navigate(['/results']);
-    }, 600);
+
+    } catch (err: any) {
+      this.isRunning.set(false);
+      const message = err?.message ?? 'Failed to start pipeline. Please try again.';
+      this.uploadError.set(message);
+      this.toast.show(message);
+      console.error('[Submission] runPipeline error:', err);
+    }
   }
+
+  // ── Private helpers ────────────────────────────────────────────────────────
 
   private setModuleDragOver(tag: string, dragOver: boolean): void {
     this.modules.update((list) =>

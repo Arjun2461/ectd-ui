@@ -41,6 +41,7 @@ export interface HitlData {
   suggestions: HitlSuggestion[];
   selectedIndex: number;
   confirmed?: boolean;
+  llm_advisor_judgment?: string;
 }
 
 export interface ResolvedRefSuggestion {

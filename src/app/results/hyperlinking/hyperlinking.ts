@@ -12,13 +12,7 @@ import {
   PLATFORM_ID,
   inject,
 } from '@angular/core';
-import {
-  Chart,
-  DoughnutController,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js';
 import { CommonModule, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { JobStats, ModuleDistribution } from '../../core/models/job.types';
 
@@ -45,6 +39,7 @@ export interface LinkBreakdownItem {
 })
 export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
+  @Input() selectedHitlIndex: number = 0;
   @Input() hitlEvent: any;
   @Input() hitlSuggestions: any[] = [];
   @Input() resolvedRefs: any[] = [];
@@ -148,12 +143,12 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (
-      (changes['stats'] || changes['chartReveal']) &&
-      isPlatformBrowser(this.platformId)
-    ) {
+    if ((changes['stats'] || changes['chartReveal']) && isPlatformBrowser(this.platformId)) {
       this.updateChart();
     }
+    console.log('📥 CHILD hitlEvent:', this.hitlEvent);
+    console.log('📥 CHILD hitlSuggestions:', this.hitlSuggestions);
+    console.log('📥 CHILD selectedIndex:', this.selectedHitlIndex);
   }
 
   ngOnDestroy(): void {
@@ -214,11 +209,7 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     const broken = this.scaled(this.stats?.broken ?? 0);
     const missing = this.scaled(this.stats?.missing ?? 0);
 
-    this.chart.data.datasets[0].data = [
-      linked || (this.isProcessing ? 1 : 0),
-      broken,
-      missing,
-    ];
+    this.chart.data.datasets[0].data = [linked || (this.isProcessing ? 1 : 0), broken, missing];
     this.chart.update('active');
   }
 
@@ -231,13 +222,11 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   selectOption(i: number): void {
-    this.hitlEvent.selected = i;
-    if (this.hitlEvent.selectedIndex !== undefined) {
-      this.hitlEvent.selectedIndex = i;
-    }
-  }
-
+  this.selectedHitlIndex = i;
+  console.log('👆 USER SELECTED:', i);
+}
   onConfirm(): void {
-    this.confirmSelection.emit();
-  }
+  console.log('✅ CONFIRM CLICKED with index:', this.selectedHitlIndex);
+  this.confirmSelection.emit();
+}
 }
