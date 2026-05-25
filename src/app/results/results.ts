@@ -1,4 +1,12 @@
-import { Component, DestroyRef, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+  inject,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
@@ -22,7 +30,7 @@ import { buildServiceProgress } from '../core/data/job-data';
 import {
   PipelineSseService,
   PipelineState,
-  HitlRequiredEvent,
+  TerminalEntry,
 } from '../core/services/Pipeline-sse.service';
 
 type ViewMode = 'empty' | 'processing' | 'completed';
@@ -39,7 +47,7 @@ export class Results implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
-  // ── NEW ──
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly pipeline = inject(PipelineSseService);
 
   viewMode: ViewMode = 'empty';
@@ -47,8 +55,11 @@ export class Results implements OnInit, OnDestroy {
 
   activeTab: 'Hyperlinking' | 'Translation' | 'Consistency' = 'Hyperlinking';
   showServiceProgress = true;
-  chartReveal = 0;
-  selectedHitlIndex: number = 0;
+  selectedHitlIndex = 0;
+  private lastHitlSeqNo: number | null = null;
+  /** Animated placeholder progress while pipeline runs (UI only). */
+  private dummyProgress = 0;
+  private dummyProgressInterval: ReturnType<typeof setInterval> | null = null;
   // ── Live SSE state (replaces simulation) ───────────────────────────────────
   pipelineState: PipelineState | null = null;
 
@@ -95,25 +106,29 @@ export class Results implements OnInit, OnDestroy {
     // Subscribe to live SSE state — updates happen whenever the stream pushes
     this.pipeline.state$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => {
       this.pipelineState = state;
-      console.log('🔥 FULL PIPELINE STATE:', state);
-      console.log('🔥 ACTIVE HITL:', state.activeHitl);
-      console.log('🔥 STATUS:', state.status);
-      // ✅ HANDLE HITL FIRST
-      if (state.status === 'awaiting_hitl') {
-        this.selectedHitlIndex = 0; // reset selection
-        this.chartReveal = Math.min(state.overallProgress, 98);
+
+      if (state.status === 'awaiting_hitl' && state.activeHitl) {
+        const seq = state.activeHitl.hitl_seq_no;
+        if (this.lastHitlSeqNo !== seq) {
+          this.selectedHitlIndex = 0;
+          this.lastHitlSeqNo = seq;
+        }
+        this.activeTab = 'Hyperlinking';
         this.viewMode = 'processing';
-        return; // 🚨 IMPORTANT
+        this.startDummyProgress();
+        return;
       }
 
       if (state.status === 'running') {
-        this.chartReveal = Math.min(state.overallProgress, 98);
         this.viewMode = 'processing';
+        this.startDummyProgress();
       } else if (state.status === 'completed') {
-        this.chartReveal = 100;
+        this.stopDummyProgress();
+        this.dummyProgress = 100;
         this.viewMode = 'completed';
         this.toast.show('Analysis completed successfully');
       } else if (state.status === 'error') {
+        this.stopDummyProgress();
         this.toast.show(`Pipeline error: ${state.logs.at(-1) ?? 'Unknown error'}`);
       }
     });
@@ -133,6 +148,7 @@ export class Results implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopSimulation();
+    this.stopDummyProgress();
     // Do NOT call pipeline.reset() here — the stream should survive navigation
   }
 
@@ -142,17 +158,40 @@ export class Results implements OnInit, OnDestroy {
     return this.pipelineState?.taskId ?? this.job?.id ?? '';
   }
 
-  get progress(): number {
-    // Prefer live SSE progress; fall back to simulated job progress
-    if (this.pipelineState && this.pipelineState.status !== 'idle') {
-      return this.pipelineState.overallProgress;
-    }
-    return this.job?.overallProgress ?? 0;
+  /** Overall % — max of SSE, job simulation, and UI placeholder. */
+  get displayProgress(): number {
+    if (this.viewMode === 'completed') return 100;
+    if (this.viewMode !== 'processing') return 0;
+
+    const sse =
+      this.pipelineState && this.pipelineState.status !== 'idle'
+        ? this.pipelineState.overallProgress
+        : 0;
+    const job = this.job?.overallProgress ?? 0;
+    return Math.round(Math.max(sse, job, this.dummyProgress));
+  }
+
+  /** Scales hyperlink chart / stats reveal (0–100). */
+  get chartReveal(): number {
+    if (this.viewMode === 'completed') return 100;
+    return Math.min(this.displayProgress, 98);
   }
 
   get pipelineServices(): ServiceProgress[] {
-    if (!this.job) return [];
-    if (this.job.serviceProgress?.length) return this.job.serviceProgress;
+    const services = this.job?.selectedServices ?? ['hyperlinking'];
+    const base =
+      this.job?.serviceProgress?.length ?
+        this.job.serviceProgress
+      : buildServiceProgress(services);
+
+    if (!this.job) {
+      return this.advanceServices(buildServiceProgress(services), this.displayProgress);
+    }
+
+    if (this.viewMode === 'processing') {
+      return this.advanceServices(base, this.displayProgress);
+    }
+
     if (this.job.status === 'completed') {
       return buildServiceProgress(
         this.job.selectedServices,
@@ -162,7 +201,8 @@ export class Results implements OnInit, OnDestroy {
         })),
       );
     }
-    return buildServiceProgress(this.job.selectedServices);
+
+    return base;
   }
 
   get pipelineStatusLabel(): string {
@@ -201,50 +241,31 @@ export class Results implements OnInit, OnDestroy {
     file: string;
     section: string;
     anchor: string;
-    selected: number;
-    confirmed: boolean;
     advice: string;
-  } {
-    // ── Real SSE HITL prompt ──────────────────────────────────────────────────
+  } | null {
     const live = this.pipelineState?.activeHitl;
     if (live) {
-      console.log('🎯 hitlEvent getter LIVE:', live);
-      console.log('🎯 selected index:', this.selectedHitlIndex);
       return {
         id: live.hitl_seq_no,
         file: live.source_document,
         section: live.unmapped_keyword_anchor,
         anchor: live.source_statement,
-        selected: this.selectedHitlIndex,
-        confirmed: false,
         advice: live.llm_advisor_judgment,
       };
     }
 
-    // ── Fallback: job.hitl or preview ─────────────────────────────────────────
     const h =
       this.job?.hitl ??
-      (this.viewMode === 'processing' && this.progress > 55 ? this.previewHitl : null);
+      (this.viewMode === 'processing' && this.displayProgress > 55 ? this.previewHitl : null);
 
-    if (!h) {
-      return {
-        id: 0,
-        file: '',
-        section: '',
-        anchor: '',
-        selected: 0,
-        confirmed: false,
-        advice: '',
-      };
-    }
+    if (!h) return null;
+
     return {
       id: h.id,
       file: h.file,
       section: h.section,
       anchor: h.statement,
-      selected: h.selectedIndex,
-      confirmed: h.confirmed ?? false,
-      advice: h.llm_advisor_judgment ?? ''
+      advice: h.llm_advisor_judgment ?? '',
     };
   }
 
@@ -254,18 +275,39 @@ export class Results implements OnInit, OnDestroy {
    */
   get hitlSuggestions() {
     const live = this.pipelineState?.activeHitl;
-    console.log('📦 hitlSuggestions LIVE:', live?.llm_recommendations);
     if (live) {
-      // Map to the same shape as HitlData.suggestions
       return live.llm_recommendations.map((r, i) => ({
         file: r.suggested_target_file,
         section: r.semantic_title_context,
-        score: Math.round(100 - i * 15), // descending proxy score
+        score: Math.round(100 - i * 12),
         recommended: i === 0,
         page: r.suggested_target_page,
       }));
     }
-    return this.job?.hitl?.suggestions ?? (this.progress > 55 ? this.previewHitl.suggestions : []);
+    return this.job?.hitl?.suggestions ?? (this.displayProgress > 55 ? this.previewHitl.suggestions : []);
+  }
+
+  get terminalEntries(): TerminalEntry[] {
+    return this.pipelineState?.terminalEntries ?? [];
+  }
+
+  get pipelineStatus(): PipelineState['status'] {
+    return this.pipelineState?.status ?? 'idle';
+  }
+
+  get pipelineCurrentFile(): string | null {
+    return this.pipelineState?.currentFile ?? null;
+  }
+
+  get pipelineFileProgress(): { index: number; total: number } | null {
+    const state = this.pipelineState;
+    if (!state?.totalFiles) return null;
+    const index = state.currentFileIndex || state.completedFiles || 1;
+    return { index: Math.min(index, state.totalFiles), total: state.totalFiles };
+  }
+
+  get autoResolvedCount(): number {
+    return this.pipelineState?.autoResolvedCount ?? 0;
   }
 
   get resolvedRefs() {
@@ -274,23 +316,18 @@ export class Results implements OnInit, OnDestroy {
   }
 
   get stats() {
-    return this.job?.stats ?? (this.viewMode === 'processing' ? this.previewStats : undefined);
+    if (this.viewMode === 'processing') return this.previewStats;
+    return this.job?.stats;
   }
 
   get moduleDistribution(): ModuleDistribution | undefined {
-    return (
-      this.job?.moduleDistribution ??
-      (this.viewMode === 'processing' ? this.previewModules : undefined)
-    );
+    if (this.viewMode === 'processing') return this.previewModules;
+    return this.job?.moduleDistribution;
   }
 
   // ── Active HITL indicator (used in template to show/hide the terminal) ──────
   get hasLiveHitl(): boolean {
     return this.pipelineState?.status === 'awaiting_hitl' && !!this.pipelineState.activeHitl;
-  }
-
-  get liveHitl(): any {
-    return this.pipelineState?.activeHitl ?? null;
   }
 
   // ── Actions ────────────────────────────────────────────────────────────────
@@ -321,16 +358,16 @@ export class Results implements OnInit, OnDestroy {
     const live = this.pipelineState?.activeHitl;
 
     if (live) {
-      const selected = this.selectedHitlIndex; // ✅ FIXED
-      const rec = live.llm_recommendations[selected];
-
+      if (this.selectedHitlIndex < 0) {
+        this.pipeline.skipHitl();
+        return;
+      }
+      const rec = live.llm_recommendations[this.selectedHitlIndex];
       if (rec) {
         this.pipeline.submitHitl(rec.suggested_target_file, rec.suggested_target_page);
       } else {
         this.pipeline.skipHitl();
       }
-      console.log('🚀 FINAL SELECTED INDEX:', this.selectedHitlIndex);
-      console.log('🚀 RECOMMENDATION:', rec);
       return;
     }
 
@@ -379,12 +416,11 @@ export class Results implements OnInit, OnDestroy {
 
     if (job.status === 'completed') {
       this.viewMode = 'completed';
-      this.chartReveal = 100;
       return;
     }
 
     this.viewMode = 'processing';
-    this.chartReveal = Math.min(job.overallProgress, 98);
+    this.startDummyProgress();
     this.startSimulation(job);
   }
 
@@ -412,7 +448,6 @@ export class Results implements OnInit, OnDestroy {
       };
 
       this.job = patch;
-      this.chartReveal = Math.min(nextProgress, 98);
       this.jobService.updateJob(patch);
 
       if (nextProgress >= 100) this.finishSimulation(job.id);
@@ -440,7 +475,8 @@ export class Results implements OnInit, OnDestroy {
     if (completed) {
       this.job = completed;
       this.viewMode = 'completed';
-      this.chartReveal = 100;
+      this.stopDummyProgress();
+      this.dummyProgress = 100;
       this.toast.show('Analysis completed successfully');
     }
   }
@@ -451,6 +487,41 @@ export class Results implements OnInit, OnDestroy {
       this.progressInterval = null;
     }
     this.simulatingJobId = null;
+  }
+
+  private startDummyProgress(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (this.dummyProgressInterval) return;
+
+    this.dummyProgressInterval = setInterval(() => {
+      if (this.viewMode !== 'processing') {
+        this.stopDummyProgress();
+        return;
+      }
+
+      const cap = 92;
+      if (this.dummyProgress >= cap) return;
+
+      const bump =
+        this.dummyProgress < 35 ? 0.85
+        : this.dummyProgress < 65 ? 0.5
+        : 0.22;
+      this.dummyProgress = Math.min(
+        this.dummyProgress + bump + Math.random() * 0.35,
+        cap,
+      );
+      this.cdr.markForCheck();
+    }, 130);
+  }
+
+  private stopDummyProgress(): void {
+    if (this.dummyProgressInterval) {
+      clearInterval(this.dummyProgressInterval);
+      this.dummyProgressInterval = null;
+    }
+    if (this.viewMode !== 'processing') {
+      this.dummyProgress = 0;
+    }
   }
 
   formatServices(ids: string[]): string {

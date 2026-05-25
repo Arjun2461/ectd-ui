@@ -86,6 +86,23 @@ export type PipelineEvent =
   | CompletedEvent
   | ErrorEvent;
 
+// ── Terminal feed (hyperlink panel) ───────────────────────────────────────────
+
+export type TerminalEntryKind = 'progress' | 'file_started' | 'auto_resolved' | 'hitl' | 'error';
+
+export interface TerminalEntry {
+  id: string;
+  kind: TerminalEntryKind;
+  message: string;
+  timestamp: number;
+  file?: string;
+  keyword?: string;
+  targetFile?: string;
+  targetPage?: number;
+  fileIndex?: number;
+  totalFiles?: number;
+}
+
 // ── Service state ─────────────────────────────────────────────────────────────
 
 export interface PipelineState {
@@ -93,11 +110,14 @@ export interface PipelineState {
   status: 'idle' | 'running' | 'awaiting_hitl' | 'completed' | 'error';
   overallProgress: number;       // 0–100, derived from file index
   currentFile: string | null;
+  currentFileIndex: number;
   totalFiles: number;
   completedFiles: number;
   autoResolvedCount: number;
   hitlResolvedCount: number;
   logs: string[];
+  terminalEntries: TerminalEntry[];
+  autoResolved: AutoResolvedEvent[];
   outputs: string[];
   // Active HITL prompt — non-null when status === 'awaiting_hitl'
   activeHitl: HitlRequiredEvent | null;
@@ -108,11 +128,14 @@ const INITIAL_STATE: PipelineState = {
   status:            'idle',
   overallProgress:   0,
   currentFile:       null,
+  currentFileIndex:  0,
   totalFiles:        0,
   completedFiles:    0,
   autoResolvedCount: 0,
   hitlResolvedCount: 0,
   logs:              [],
+  terminalEntries:   [],
+  autoResolved:      [],
   outputs:           [],
   activeHitl:        null,
 };
@@ -149,10 +172,12 @@ export class PipelineSseService {
     if (!res?.task_id) throw new Error('No task_id returned from server');
 
     this.patch({
-      taskId:     res.task_id,
-      status:     'running',
-      totalFiles: payload.uploaded_files.length,
-      logs:       [],
+      taskId:          res.task_id,
+      status:          'running',
+      totalFiles:      payload.uploaded_files.length,
+      logs:            [],
+      terminalEntries: [],
+      autoResolved:    [],
     });
 
     this.openStream(res.task_id);
@@ -241,28 +266,57 @@ export class PipelineSseService {
     switch (event.type) {
 
       case 'progress':
-        this.patch({
-          logs: [...this.state$.value.logs, event.message],
+        this.appendLog(event.message);
+        this.appendTerminal({
+          kind: 'progress',
+          message: event.message,
+          file: event.file,
         });
         break;
 
       case 'file_started':
         this.patch({
-          currentFile:     event.file,
-          totalFiles:      event.total_files,
+          currentFile:      event.file,
+          currentFileIndex: event.file_index,
+          totalFiles:       event.total_files,
           overallProgress: Math.round(((event.file_index - 1) / event.total_files) * 100),
+        });
+        this.appendTerminal({
+          kind: 'file_started',
+          message: `File ${event.file_index} of ${event.total_files}: ${event.file}`,
+          file: event.file,
+          fileIndex: event.file_index,
+          totalFiles: event.total_files,
         });
         break;
 
-      case 'auto_resolved':
-        this.patch({ autoResolvedCount: event.auto_seq_no });
+      case 'auto_resolved': {
+        const autoResolved = [...this.state$.value.autoResolved, event];
+        this.patch({
+          autoResolvedCount: event.auto_seq_no,
+          autoResolved,
+        });
+        this.appendTerminal({
+          kind: 'auto_resolved',
+          message: `Auto-linked "${event.keyword}" → ${event.target_file} (page ${event.target_page})`,
+          keyword: event.keyword,
+          targetFile: event.target_file,
+          targetPage: event.target_page,
+        });
         break;
+      }
 
       // ── HITL: pause UI and surface the prompt ───────────────────────────
       case 'hitl_required':
         this.patch({
           status:     'awaiting_hitl',
           activeHitl: event,
+        });
+        this.appendTerminal({
+          kind: 'hitl',
+          message: `Review required: "${event.unmapped_keyword_anchor}" in ${event.source_document}`,
+          file: event.source_document,
+          keyword: event.unmapped_keyword_anchor,
         });
         break;
 
@@ -302,14 +356,36 @@ export class PipelineSseService {
         break;
 
       case 'error':
+        this.appendLog(`ERROR: ${event.message}`);
+        this.appendTerminal({ kind: 'error', message: event.message });
         this.patch({
           status:     'error',
           activeHitl: null,
-          logs:       [...this.state$.value.logs, `ERROR: ${event.message}`],
         });
         this.closeStream();
         break;
     }
+  }
+
+  private appendLog(message: string): void {
+    this.patch({ logs: [...this.state$.value.logs, message] });
+  }
+
+  private appendTerminal(
+    entry: Omit<TerminalEntry, 'id' | 'timestamp'>,
+  ): void {
+    const terminalEntries = [
+      ...this.state$.value.terminalEntries,
+      {
+        ...entry,
+        id: `${Date.now()}-${this.state$.value.terminalEntries.length}`,
+        timestamp: Date.now(),
+      },
+    ];
+    // Keep the feed bounded for long runs
+    const trimmed =
+      terminalEntries.length > 200 ? terminalEntries.slice(-200) : terminalEntries;
+    this.patch({ terminalEntries: trimmed });
   }
 
   private patch(partial: Partial<PipelineState>): void {

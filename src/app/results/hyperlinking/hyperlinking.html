@@ -67,10 +67,18 @@
     </div>
 
     <div class="hyper-top-right">
-      <article class="terminal-card">
+      <article class="terminal-card" [class.terminal-card--hitl]="showHitlPanel">
         <header class="terminal-header">
           <span class="terminal-arrow" aria-hidden="true">›</span>
-          <span class="terminal-title">Human-in-the-loop</span>
+          <span class="terminal-title">{{ terminalTitle }}</span>
+          <span
+            class="terminal-status-badge"
+            [class.terminal-status-badge--warn]="showHitlPanel"
+            [class.terminal-status-badge--run]="showProcessingTerminal"
+            [class.terminal-status-badge--err]="pipelineStatus === 'error'"
+          >
+            {{ statusBadge }}
+          </span>
           <div class="terminal-dots" aria-hidden="true">
             <span class="dot red"></span>
             <span class="dot yellow"></span>
@@ -78,62 +86,127 @@
           </div>
         </header>
 
-        <div class="terminal-scroll">
-          <p class="t-id">#HITL-{{ hitlEvent?.id }}</p>
-          <p class="t-warn">Incorrect reference detected</p>
-
-          <div class="t-block">
-            <div class="t-row">
-              <span class="t-label">Source</span>
-              <span class="t-value">{{ hitlEvent?.file }}</span>
+        @if (showProcessingTerminal) {
+          <div class="terminal-live-bar" role="status" aria-live="polite">
+            <span class="terminal-spinner" aria-hidden="true"></span>
+            <div class="terminal-live-copy">
+              @if (currentFile && fileProgress) {
+                <strong
+                  >Processing {{ fileProgress.index }} of {{ fileProgress.total }}:
+                  {{ currentFile }}</strong
+                >
+                <span>Analyzing references and building hyperlinks…</span>
+              } @else {
+                <strong>Hyperlinking in progress</strong>
+                <span>Waiting for pipeline updates from the server…</span>
+              }
             </div>
-            <div class="t-row">
-              <span class="t-label">Statement</span>
-              <span class="t-value t-value--mono"> {{ hitlEvent?.anchor }}</span>
-            </div>
+            @if (autoResolvedCount > 0) {
+              <span class="terminal-auto-pill">{{ autoResolvedCount }} auto-linked</span>
+            }
           </div>
+        }
 
-          <p class="suggested-label">Suggested matches</p>
+        <div class="terminal-scroll" #terminalScroll>
+          @if (showHitlPanel) {
+            <p class="t-id">#HITL-{{ hitlEvent?.id }}</p>
+            <p class="t-warn">Manual review required — choose the best target match</p>
 
-          @for (s of hitlSuggestions; track s.suggested_target_file; let i = $index) {
+            <div class="t-block">
+              <div class="t-row">
+                <span class="t-label">Source</span>
+                <span class="t-value">{{ hitlEvent?.file }}</span>
+              </div>
+              <div class="t-row">
+                <span class="t-label">Anchor</span>
+                <span class="t-value t-value--accent">{{ hitlEvent?.section }}</span>
+              </div>
+              <div class="t-row">
+                <span class="t-label">Statement</span>
+                <span class="t-value t-value--mono">{{ hitlEvent?.anchor }}</span>
+              </div>
+            </div>
+
+            <p class="suggested-label">Suggested matches</p>
+
+            @for (s of hitlSuggestions; track s.file; let i = $index) {
+              <button
+                type="button"
+                class="suggestion"
+                [class.selected]="selectedHitlIndex === i"
+                [attr.aria-pressed]="selectedHitlIndex === i"
+                (click)="selectOption(i)"
+              >
+                <span class="sug-left">
+                  <span class="radio" [class.active]="selectedHitlIndex === i"></span>
+                  <span class="sug-text">
+                    <span class="sug-file">{{ s.file }}</span>
+                    <span class="sug-section">{{ s.section }}</span>
+                    @if (s.page) {
+                      <span class="sug-page">Page {{ s.page }}</span>
+                    }
+                  </span>
+                </span>
+                @if (s.recommended) {
+                  <span class="badge">Recommended</span>
+                }
+              </button>
+            }
+
             <button
               type="button"
-              class="suggestion"
-              [class.selected]="selectedHitlIndex === i"
-              (click)="selectOption(i)"
+              class="suggestion none-option"
+              [class.selected]="selectedHitlIndex === -1"
+              [attr.aria-pressed]="selectedHitlIndex === -1"
+              (click)="selectOption(-1)"
             >
               <span class="sug-left">
-                <span class="radio" [class.active]="selectedHitlIndex === i"></span>
-                <span class="sug-text">
-                  <span class="sug-file">{{ s.file }}</span>
-                  <span class="sug-section">{{ s.section }}</span>
-                </span>
+                <span class="radio" [class.active]="selectedHitlIndex === -1"></span>
+                <span class="sug-file muted">Skip — no suitable match</span>
               </span>
             </button>
-          }
-          <button
-            type="button"
-            class="suggestion none-option"
-            [class.selected]="selectedHitlIndex === -1"
-            (click)="selectOption(-1)"
-          >
-            <span class="sug-left">
-              <span class="radio" [class.active]="selectedHitlIndex === -1"></span>
-              <span class="sug-file muted">None (No match)</span>
-            </span>
-          </button>
 
-          <div class="ai-reason">
-            <span class="ai-head">LLM recommendation</span>
-            <p>
-              {{ hitlEvent?.advice }}
-            </p>
-          </div>
+            @if (hitlEvent?.advice) {
+              <div class="ai-reason">
+                <span class="ai-head">LLM recommendation</span>
+                <p>{{ hitlEvent?.advice }}</p>
+              </div>
+            }
+          } @else if (showProcessingTerminal) {
+            @if (!terminalEntries.length) {
+              <div class="terminal-empty">
+                <span class="terminal-spinner terminal-spinner--lg" aria-hidden="true"></span>
+                <p>Connecting to pipeline stream…</p>
+              </div>
+            } @else {
+              <ul class="terminal-feed" aria-label="Pipeline activity log">
+                @for (entry of terminalEntries; track entry.id) {
+                  <li class="feed-line" [class]="'feed-line--' + entry.kind">
+                    <i class="ti feed-icon" [ngClass]="entryIcon(entry.kind)" aria-hidden="true"></i>
+                    <span class="feed-msg">{{ entry.message }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          } @else {
+            <div class="terminal-empty terminal-empty--idle">
+              <i class="ti ti-terminal-2" aria-hidden="true"></i>
+              <p>Start hyperlinking to see live progress and review prompts here.</p>
+            </div>
+          }
         </div>
 
-        <footer class="terminal-actions">
-          <button type="button" class="confirm-btn" (click)="onConfirm()">Confirm selection</button>
-        </footer>
+        @if (showHitlPanel) {
+          <footer class="terminal-actions">
+            <button type="button" class="confirm-btn" (click)="onConfirm()">
+              @if (selectedHitlIndex === -1) {
+                Skip this reference
+              } @else {
+                Confirm selection
+              }
+            </button>
+          </footer>
+        }
       </article>
     </div>
   </section>
@@ -166,27 +239,27 @@
             </tr>
           </thead>
           <tbody>
-            @for (r of resolvedRefs; track r.sourceDoc; let i = $index) {
+            @for (r of resolvedRefs; track $index; let i = $index) {
               <tr class="main-row" (click)="toggleRow(i)">
                 <td class="rr-source">
-                  <span class="rr-doc">{{ r.sourceDoc }}</span>
+                  <span class="rr-doc">{{ $any(r).sourceDoc }}</span>
                 </td>
                 <td class="rr-suggestions">
                   <div class="rr-pills">
-                    @for (s of r.suggestions; track $index; let j = $index) {
+                    @for (s of $any(r).suggestions; track $index; let j = $index) {
                       <span
                         class="doc-pill"
-                        [class.selected]="r.selectedIndex === j"
-                        [title]="s.file"
+                        [class.selected]="$any(r).selectedIndex === j"
+                        [title]="$any(s).file"
                       >
-                        {{ s.file }}
+                        {{ $any(s).file }}
                       </span>
                     }
                   </div>
                 </td>
                 <td class="rr-action">
-                  <span class="rr-badge" [class.auto]="r.badge === 'Auto-resolved'">
-                    {{ r.userAction }}
+                  <span class="rr-badge" [class.auto]="$any(r).badge === 'Auto-resolved'">
+                    {{ $any(r).userAction }}
                   </span>
                 </td>
                 <td class="rr-chevron">
@@ -204,11 +277,11 @@
                       <div class="exp-grid">
                         <div class="exp-cell">
                           <span class="exp-label">Source document</span>
-                          <p>{{ r.sourceDoc }}</p>
+                          <p>{{ $any(r).sourceDoc }}</p>
                         </div>
                         <div class="exp-cell">
                           <span class="exp-label">Statement</span>
-                          <p class="exp-mono">{{ r.statement }}</p>
+                          <p class="exp-mono">{{ $any(r).statement }}</p>
                         </div>
                       </div>
 
@@ -220,25 +293,25 @@
                           <span class="exp-col-h exp-col-h--score">Score</span>
                         </div>
 
-                        @for (s of r.suggestions; track $index; let j = $index) {
-                          <div class="exp-line" [class.selected]="r.selectedIndex === j">
+                        @for (s of $any(r).suggestions; track $index; let j = $index) {
+                          <div class="exp-line" [class.selected]="$any(r).selectedIndex === j">
                             <span class="exp-dot" aria-hidden="true"></span>
-                            <span class="col-file">{{ s.file }}</span>
-                            <span class="col-section">{{ s.section }}</span>
-                            <span class="col-page">Page {{ s.page }}</span>
-                            <span class="col-score">{{ s.score }}%</span>
+                            <span class="col-file">{{ $any(s).file }}</span>
+                            <span class="col-section">{{ $any(s).section }}</span>
+                            <span class="col-page">Page {{ $any(s).page }}</span>
+                            <span class="col-score">{{ $any(s).score }}%</span>
                           </div>
                         }
                       </div>
 
                       <div class="exp-llm">
                         <span class="exp-llm-label">LLM recommendation</span>
-                        <p>{{ r.llmReason }}</p>
+                        <p>{{ $any(r).llmReason }}</p>
                       </div>
 
                       <p class="exp-action">
                         User selected:
-                        <strong>{{ r.suggestions[r.selectedIndex]?.file ?? '—' }}</strong>
+                        <strong>{{ $any(r).suggestions[$any(r).selectedIndex]?.file ?? '—' }}</strong>
                       </p>
                     </div>
                   </td>

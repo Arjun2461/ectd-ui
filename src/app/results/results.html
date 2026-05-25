@@ -34,7 +34,7 @@
           {{ pipelineStatusLabel }}
         </div>
         <div class="pc-progress">
-          <span class="pc-progress-num">{{ progress | number: '1.0-0' }}%</span>
+          <span class="pc-progress-num">{{ displayProgress | number: '1.0-0' }}%</span>
           <span class="pc-progress-label">Overall</span>
         </div>
       </div>
@@ -115,12 +115,20 @@
         [hitlEvent]="hitlEvent"
         [hitlSuggestions]="hitlSuggestions"
         [selectedHitlIndex]="selectedHitlIndex"
+        (selectedHitlIndexChange)="selectedHitlIndex = $event"
+        [awaitingHitl]="hasLiveHitl"
+        [terminalEntries]="terminalEntries"
+        [pipelineStatus]="pipelineStatus"
+        [currentFile]="pipelineCurrentFile"
+        [fileProgress]="pipelineFileProgress"
+        [autoResolvedCount]="autoResolvedCount"
         [resolvedRefs]="resolvedRefs"
         [stats]="stats"
         [moduleDistribution]="moduleDistribution"
         [chartReveal]="chartReveal"
         [isProcessing]="viewMode === 'processing'"
         (confirmSelection)="confirmHITL()"
+        (skipSelection)="skipHITL()"
       />
     }
     @if (activeTab === 'Consistency') {
