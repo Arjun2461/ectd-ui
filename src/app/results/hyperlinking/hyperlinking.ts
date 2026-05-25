@@ -11,7 +11,6 @@ import {
   ElementRef,
   PLATFORM_ID,
   inject,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
 } from '@angular/core';
 import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -59,7 +58,6 @@ export interface HitlTerminalSuggestion {
   imports: [CommonModule, DecimalPipe],
   templateUrl: './hyperlinking.html',
   styleUrl: './hyperlinking.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
@@ -232,14 +230,9 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     ) {
       this.scrollTerminalToBottom();
     }
-    if (
-      changes['awaitingHitl'] ||
-      changes['hitlEvent'] ||
-      changes['hitlSuggestions'] ||
-      changes['selectedHitlIndex'] ||
-      changes['hitlHistory']
-    ) {
-      this.cdr.markForCheck();
+    if (changes['hitlHistory']?.currentValue?.length > (changes['hitlHistory']?.previousValue?.length ?? 0)) {
+      this.expandedHitlIndex = this.hitlHistory.length - 1;
+      setTimeout(() => this.scrollHitlHistoryIntoView(), 0);
     }
   }
 
@@ -347,5 +340,11 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
       const el = this.terminalScrollRef?.nativeElement;
       if (el) el.scrollTop = el.scrollHeight;
     }, 0);
+  }
+
+  private scrollHitlHistoryIntoView(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const el = document.querySelector('.hitl-history-card');
+    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 }

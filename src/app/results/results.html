@@ -113,7 +113,10 @@
   </div>
 
   <div class="tab-content fade-in" [class.tab-content--processing]="viewMode === 'processing'">
-    <div class="tab-panel" [class.tab-panel--active]="activeTab === 'Hyperlinking'">
+    <div
+      class="tab-panel tab-panel--hyperlinking"
+      [class.tab-panel--active]="activeTab === 'Hyperlinking'"
+    >
       <app-hyperlinking
         [hitlEvent]="hitlEvent"
         [hitlSuggestions]="hitlSuggestions"
@@ -125,7 +128,7 @@
         [currentFile]="pipelineCurrentFile"
         [fileProgress]="pipelineFileProgress"
         [autoResolvedCount]="autoResolvedCount"
-        [hitlHistory]="hitlHistory"
+        [hitlHistory]="completedHitlHistory"
         [taskId]="jobId"
         [resolvedRefs]="resolvedRefs"
         [stats]="stats"

@@ -213,10 +213,10 @@ export class PipelineSseService {
     hitlSeqNo: number,
     selectedIndex: number,
   ): void {
-    const { taskId } = this.state$.value;
-    if (!taskId) return;
+    const { taskId, activeHitl } = this.state$.value;
+    if (!taskId || !activeHitl) return;
 
-    this.recordHitlUserAction(hitlSeqNo, 'confirmed', selectedIndex, targetFile, targetPage);
+    this.appendCompletedHitl(activeHitl, 'confirmed', selectedIndex, targetFile, targetPage);
 
     this.http
       .post(`${this.baseUrl}/pipeline/respond-hitl/${taskId}`, {
@@ -231,10 +231,10 @@ export class PipelineSseService {
   }
 
   skipHitl(hitlSeqNo: number): void {
-    const { taskId } = this.state$.value;
-    if (!taskId) return;
+    const { taskId, activeHitl } = this.state$.value;
+    if (!taskId || !activeHitl) return;
 
-    this.recordHitlUserAction(hitlSeqNo, 'skipped', -1);
+    this.appendCompletedHitl(activeHitl, 'skipped', -1);
 
     this.http
       .post(`${this.baseUrl}/pipeline/skip-hitl/${taskId}`, {})
@@ -349,7 +349,6 @@ export class PipelineSseService {
 
       // ── HITL: pause UI and surface the prompt ───────────────────────────
       case 'hitl_required':
-        this.upsertHitlRecord(event);
         this.patch({
           status:     'awaiting_hitl',
           activeHitl: event,
@@ -437,46 +436,37 @@ export class PipelineSseService {
     this.patch({ terminalEntries: trimmed });
   }
 
-  private upsertHitlRecord(event: HitlRequiredEvent): void {
-    const history = [...this.state$.value.hitlHistory];
-    const idx = history.findIndex((r) => r.hitlSeqNo === event.hitl_seq_no);
-    const record = this.buildHitlRecord(event);
-    if (idx >= 0) {
-      history[idx] = { ...history[idx], ...record, status: 'pending' };
-    } else {
-      history.push(record);
-    }
-    history.sort((a, b) => a.hitlSeqNo - b.hitlSeqNo);
-    this.persistHitlHistory(history);
-    this.patch({ hitlHistory: history });
-  }
-
-  private recordHitlUserAction(
-    hitlSeqNo: number,
+  /** Append a finished HITL row — shown in the table immediately. */
+  private appendCompletedHitl(
+    event: HitlRequiredEvent,
     status: HitlHistoryStatus,
     selectedIndex: number,
     targetFile?: string,
     targetPage?: number,
   ): void {
-    const history = this.state$.value.hitlHistory.map((r) => {
-      if (r.hitlSeqNo !== hitlSeqNo) return r;
-      const selected =
-        status === 'confirmed' && selectedIndex >= 0 ?
-          r.suggestions[selectedIndex] ?? r.suggestions[0]
-        : undefined;
-      return {
-        ...r,
-        status,
-        selectedIndex,
-        selectedTargetFile: targetFile ?? selected?.file,
-        selectedTargetPage: targetPage ?? selected?.page,
-        userAction:
-          status === 'skipped' ? 'Skipped by user'
-          : targetFile ? `Confirmed → ${targetFile} (p.${targetPage ?? '?'})`
-          : 'Confirmed by user',
-        resolvedAt: Date.now(),
-      };
+    if (status === 'pending') return;
+
+    const history = [...this.state$.value.hitlHistory];
+    if (history.some((r) => r.hitlSeqNo === event.hitl_seq_no)) return;
+
+    const record = this.buildHitlRecord(event);
+    const selected =
+      status === 'confirmed' && selectedIndex >= 0 ?
+        record.suggestions[selectedIndex]
+      : undefined;
+
+    history.push({
+      ...record,
+      status,
+      selectedIndex: status === 'skipped' ? -1 : selectedIndex,
+      selectedTargetFile: targetFile ?? selected?.file,
+      selectedTargetPage: targetPage ?? selected?.page,
+      userAction:
+        status === 'skipped' ? 'Skipped by user'
+        : `Confirmed → ${targetFile ?? selected?.file} (p.${targetPage ?? selected?.page ?? '?'})`,
+      resolvedAt: Date.now(),
     });
+    history.sort((a, b) => a.hitlSeqNo - b.hitlSeqNo);
     this.persistHitlHistory(history);
     this.patch({ hitlHistory: history });
   }
@@ -487,27 +477,27 @@ export class PipelineSseService {
     targetFile?: string,
     targetPage?: number,
   ): void {
-    const history = this.state$.value.hitlHistory.map((r) => {
-      if (r.hitlSeqNo !== hitlSeqNo) return r;
-      if (r.status !== 'pending') return r;
-      const idx = r.suggestions.findIndex((s) => s.file === targetFile);
-      return {
-        ...r,
+    if (this.state$.value.hitlHistory.some((r) => r.hitlSeqNo === hitlSeqNo)) return;
+
+    const active = this.state$.value.activeHitl;
+    if (active?.hitl_seq_no === hitlSeqNo) {
+      const idx = active.llm_recommendations.findIndex(
+        (r) => r.suggested_target_file === targetFile,
+      );
+      this.appendCompletedHitl(
+        active,
         status,
-        selectedIndex: idx >= 0 ? idx : r.selectedIndex,
-        selectedTargetFile: targetFile ?? r.selectedTargetFile,
-        selectedTargetPage: targetPage ?? r.selectedTargetPage,
-        userAction:
-          status === 'skipped' ? 'Skipped'
-          : `Resolved → ${targetFile ?? '—'} (p.${targetPage ?? '?'})`,
-        resolvedAt: Date.now(),
-      };
-    });
-    this.persistHitlHistory(history);
-    this.patch({ hitlHistory: history });
+        idx >= 0 ? idx : 0,
+        targetFile,
+        targetPage,
+      );
+    }
   }
 
-  private buildHitlRecord(event: HitlRequiredEvent): HitlHistoryRecord {
+  private buildHitlRecord(
+    event: HitlRequiredEvent,
+    status: HitlHistoryStatus = 'confirmed',
+  ): HitlHistoryRecord {
     const suggestions = event.llm_recommendations.map((rec, i) => ({
       file: rec.suggested_target_file,
       section: rec.semantic_title_context,
@@ -517,7 +507,7 @@ export class PipelineSseService {
     }));
     return {
       hitlSeqNo: event.hitl_seq_no,
-      status: 'pending',
+      status,
       sourceDocument: event.source_document,
       unmappedKeywordAnchor: event.unmapped_keyword_anchor,
       sourceStatement: event.source_statement,
@@ -525,7 +515,7 @@ export class PipelineSseService {
       recommendations: event.llm_recommendations,
       suggestions,
       selectedIndex: 0,
-      userAction: 'Awaiting review',
+      userAction: '',
       promptedAt: Date.now(),
     };
   }

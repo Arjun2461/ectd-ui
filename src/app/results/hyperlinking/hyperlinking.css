@@ -44,6 +44,32 @@
   min-height: 520px;
 }
 
+.hyper-top-right--stack {
+  flex-direction: column;
+  gap: 14px;
+  min-height: 520px;
+}
+
+.hyper-top-right--stack .terminal-card {
+  flex: 1;
+  min-height: 280px;
+  max-height: none;
+}
+
+.hyper-top-right--stack .hitl-history-card {
+  flex-shrink: 0;
+  margin-top: 0;
+  max-height: 240px;
+  display: flex;
+  flex-direction: column;
+}
+
+.hyper-top-right--stack .hitl-history-card .resolved-table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .hyper-card--analytics,
 .terminal-card {
   flex: 1;

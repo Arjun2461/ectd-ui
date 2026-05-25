@@ -66,7 +66,7 @@
       </article>
     </div>
 
-    <div class="hyper-top-right">
+    <div class="hyper-top-right hyper-top-right--stack">
       <article class="terminal-card" [class.terminal-card--hitl]="showHitlPanel">
         <header class="terminal-header">
           <span class="terminal-arrow" aria-hidden="true">›</span>
@@ -208,16 +208,16 @@
           </footer>
         }
       </article>
-    </div>
-  </section>
 
-  @if (hitlHistory.length) {
-    <section class="resolved-card hitl-history-card">
-      <header class="resolved-header">
-        <div>
-          <strong>HITL review history</strong>
-          <p>{{ hitlHistory.length }} manual review{{ hitlHistory.length !== 1 ? 's' : '' }} stored</p>
-        </div>
+      @if (hitlHistory.length) {
+        <section class="resolved-card hitl-history-card">
+          <header class="resolved-header">
+            <div>
+              <strong>Completed reviews</strong>
+              <p>
+                {{ hitlHistory.length }} resolved — new rows appear here after each confirm or skip
+              </p>
+            </div>
         <button
           type="button"
           class="svc-download-btn svc-download-btn--ghost"
@@ -332,8 +332,10 @@
           </tbody>
         </table>
       </div>
-    </section>
-  }
+        </section>
+      }
+    </div>
+  </section>
 
   @if (!isProcessing && resolvedRefs.length) {
     <section class="resolved-card">

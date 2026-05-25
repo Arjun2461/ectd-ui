@@ -107,6 +107,7 @@ export class Results implements OnInit, OnDestroy {
     this.pipeline.state$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => {
       const prevStatus = this.pipelineState?.status;
       const prevHitlSeq = this.pipelineState?.activeHitl?.hitl_seq_no;
+      const prevHistoryLen = this.pipelineState?.hitlHistory.length ?? 0;
       this.pipelineState = state;
 
       if (state.status === 'awaiting_hitl' && state.activeHitl) {
@@ -144,7 +145,9 @@ export class Results implements OnInit, OnDestroy {
         state.activeHitl &&
         (prevStatus !== 'awaiting_hitl' || prevHitlSeq !== state.activeHitl.hitl_seq_no);
 
-      if (hitlArrived) {
+      const historyGrew = state.hitlHistory.length > prevHistoryLen;
+
+      if (hitlArrived || historyGrew) {
         this.cdr.detectChanges();
       } else {
         this.cdr.markForCheck();
@@ -352,6 +355,11 @@ export class Results implements OnInit, OnDestroy {
 
   get hitlHistory() {
     return this.pipelineState?.hitlHistory ?? [];
+  }
+
+  /** Finished reviews only — each appears in the table right after submit/skip. */
+  get completedHitlHistory() {
+    return this.hitlHistory.filter((r) => r.status !== 'pending');
   }
 
   get resolvedRefs() {
