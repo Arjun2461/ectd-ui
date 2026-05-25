@@ -92,6 +92,9 @@
       (click)="setTab('Hyperlinking')"
     >
       <i class="ti ti-link"></i> Hyperlinking
+      @if (hasLiveHitl) {
+        <span class="tab-hitl-badge" aria-label="Review required">Review</span>
+      }
     </button>
     <button
       class="tab-btn"
@@ -110,18 +113,20 @@
   </div>
 
   <div class="tab-content fade-in" [class.tab-content--processing]="viewMode === 'processing'">
-    @if (activeTab === 'Hyperlinking') {
+    <div class="tab-panel" [class.tab-panel--active]="activeTab === 'Hyperlinking'">
       <app-hyperlinking
         [hitlEvent]="hitlEvent"
         [hitlSuggestions]="hitlSuggestions"
         [selectedHitlIndex]="selectedHitlIndex"
-        (selectedHitlIndexChange)="selectedHitlIndex = $event"
+        (selectedHitlIndexChange)="onHitlIndexChange($event)"
         [awaitingHitl]="hasLiveHitl"
         [terminalEntries]="terminalEntries"
         [pipelineStatus]="pipelineStatus"
         [currentFile]="pipelineCurrentFile"
         [fileProgress]="pipelineFileProgress"
         [autoResolvedCount]="autoResolvedCount"
+        [hitlHistory]="hitlHistory"
+        [taskId]="jobId"
         [resolvedRefs]="resolvedRefs"
         [stats]="stats"
         [moduleDistribution]="moduleDistribution"
@@ -130,12 +135,12 @@
         (confirmSelection)="confirmHITL()"
         (skipSelection)="skipHITL()"
       />
-    }
-    @if (activeTab === 'Consistency') {
+    </div>
+    <div class="tab-panel" [class.tab-panel--active]="activeTab === 'Consistency'">
       <app-consistency />
-    }
-    @if (activeTab === 'Translation') {
+    </div>
+    <div class="tab-panel" [class.tab-panel--active]="activeTab === 'Translation'">
       <app-translation />
-    }
+    </div>
   </div>
 }

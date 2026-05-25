@@ -448,6 +448,37 @@
   color: #7c3aed;
 }
 
+.tab-hitl-badge {
+  margin-left: 6px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border-radius: 999px;
+  animation: hitlBadgePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes hitlBadgePulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel--active {
+  display: block;
+}
+
 .tab-btn.active::after {
   content: '';
   position: absolute;

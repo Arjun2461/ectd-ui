@@ -12,6 +12,7 @@ import {
   PLATFORM_ID,
   inject,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js';
 import { CommonModule, DecimalPipe, isPlatformBrowser } from '@angular/common';
@@ -20,6 +21,8 @@ import {
   TerminalEntry,
   PipelineState,
 } from '../../core/services/Pipeline-sse.service';
+import { HitlHistoryRecord } from '../../core/models/hitl-history.types';
+import { HitlHistoryStorage } from '../../core/services/hitl-history.storage';
 
 Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
 
@@ -60,6 +63,8 @@ export interface HitlTerminalSuggestion {
 })
 export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly hitlStorage = inject(HitlHistoryStorage);
 
   @Input() selectedHitlIndex = 0;
   @Output() selectedHitlIndexChange = new EventEmitter<number>();
@@ -72,6 +77,8 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   @Input() currentFile: string | null = null;
   @Input() fileProgress: { index: number; total: number } | null = null;
   @Input() autoResolvedCount = 0;
+  @Input() hitlHistory: HitlHistoryRecord[] = [];
+  @Input() taskId = '';
 
   @Input() resolvedRefs: unknown[] = [];
   @Input() stats?: JobStats;
@@ -87,6 +94,7 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
 
   chart: Chart | null = null;
   expandedIndex: number | null = null;
+  expandedHitlIndex: number | null = null;
 
   get totalLinks(): number {
     return this.stats?.totalLinks ?? 0;
@@ -216,8 +224,22 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     if ((changes['stats'] || changes['chartReveal']) && isPlatformBrowser(this.platformId)) {
       this.updateChart();
     }
-    if (changes['terminalEntries'] || changes['awaitingHitl']) {
+    if (
+      changes['terminalEntries'] ||
+      changes['awaitingHitl'] ||
+      changes['hitlEvent'] ||
+      changes['hitlSuggestions']
+    ) {
       this.scrollTerminalToBottom();
+    }
+    if (
+      changes['awaitingHitl'] ||
+      changes['hitlEvent'] ||
+      changes['hitlSuggestions'] ||
+      changes['selectedHitlIndex'] ||
+      changes['hitlHistory']
+    ) {
+      this.cdr.markForCheck();
     }
   }
 
@@ -285,6 +307,26 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
 
   toggleRow(i: number): void {
     this.expandedIndex = this.expandedIndex === i ? null : i;
+  }
+
+  toggleHitlRow(i: number): void {
+    this.expandedHitlIndex = this.expandedHitlIndex === i ? null : i;
+  }
+
+  hitlStatusClass(status: HitlHistoryRecord['status']): string {
+    if (status === 'confirmed') return 'done';
+    if (status === 'skipped') return 'wait';
+    return 'run';
+  }
+
+  hitlStatusLabel(status: HitlHistoryRecord['status']): string {
+    if (status === 'confirmed') return 'Confirmed';
+    if (status === 'skipped') return 'Skipped';
+    return 'Pending';
+  }
+
+  exportHitlJson(): void {
+    this.hitlStorage.downloadJson(this.taskId, this.hitlHistory);
   }
 
   selectOption(i: number): void {

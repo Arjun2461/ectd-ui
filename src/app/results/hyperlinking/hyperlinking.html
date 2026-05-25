@@ -211,6 +211,130 @@
     </div>
   </section>
 
+  @if (hitlHistory.length) {
+    <section class="resolved-card hitl-history-card">
+      <header class="resolved-header">
+        <div>
+          <strong>HITL review history</strong>
+          <p>{{ hitlHistory.length }} manual review{{ hitlHistory.length !== 1 ? 's' : '' }} stored</p>
+        </div>
+        <button
+          type="button"
+          class="svc-download-btn svc-download-btn--ghost"
+          aria-label="Download HITL history as JSON"
+          (click)="exportHitlJson()"
+        >
+          <i class="ti ti-download" aria-hidden="true"></i>
+          Export JSON
+        </button>
+      </header>
+
+      <div class="resolved-table-wrap">
+        <table class="resolved-table hitl-history-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Source document</th>
+              <th>Anchor</th>
+              <th>User action</th>
+              <th>Status</th>
+              <th class="th-chevron" aria-label="Expand row"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (h of hitlHistory; track h.hitlSeqNo; let i = $index) {
+              <tr class="main-row" (click)="toggleHitlRow(i)">
+                <td class="rr-id">#{{ h.hitlSeqNo }}</td>
+                <td class="rr-source">
+                  <span class="rr-doc">{{ h.sourceDocument }}</span>
+                </td>
+                <td class="rr-anchor">
+                  <span class="rr-anchor-text">{{ h.unmappedKeywordAnchor }}</span>
+                </td>
+                <td class="rr-action">
+                  <span class="rr-user-action">{{ h.userAction }}</span>
+                </td>
+                <td class="rr-action">
+                  <span class="rr-badge" [ngClass]="hitlStatusClass(h.status)">
+                    {{ hitlStatusLabel(h.status) }}
+                  </span>
+                </td>
+                <td class="rr-chevron">
+                  <i
+                    class="ti"
+                    [ngClass]="expandedHitlIndex === i ? 'ti-chevron-up' : 'ti-chevron-down'"
+                  ></i>
+                </td>
+              </tr>
+
+              @if (expandedHitlIndex === i) {
+                <tr class="expand-row">
+                  <td colspan="6">
+                    <div class="expand-box">
+                      <div class="exp-grid">
+                        <div class="exp-cell">
+                          <span class="exp-label">Source document</span>
+                          <p>{{ h.sourceDocument }}</p>
+                        </div>
+                        <div class="exp-cell">
+                          <span class="exp-label">Unmapped anchor</span>
+                          <p>{{ h.unmappedKeywordAnchor }}</p>
+                        </div>
+                        <div class="exp-cell exp-cell--wide">
+                          <span class="exp-label">Source statement</span>
+                          <p class="exp-mono">{{ h.sourceStatement }}</p>
+                        </div>
+                      </div>
+
+                      <div class="exp-suggested">
+                        <div class="exp-suggested-head">
+                          <span class="exp-suggested-title">Suggested mappings</span>
+                          <span class="exp-col-h">Context</span>
+                          <span class="exp-col-h">Page</span>
+                          <span class="exp-col-h exp-col-h--score">Score</span>
+                        </div>
+
+                        @for (s of h.suggestions; track s.file; let j = $index) {
+                          <div class="exp-line" [class.selected]="h.selectedIndex === j">
+                            <span class="exp-dot" aria-hidden="true"></span>
+                            <span class="col-file">{{ s.file }}</span>
+                            <span class="col-section">{{ s.section }}</span>
+                            <span class="col-page">Page {{ s.page }}</span>
+                            <span class="col-score">{{ s.score }}%</span>
+                          </div>
+                        }
+                      </div>
+
+                      @if (h.llmAdvisorJudgment) {
+                        <div class="exp-llm">
+                          <span class="exp-llm-label">LLM recommendation</span>
+                          <p>{{ h.llmAdvisorJudgment }}</p>
+                        </div>
+                      }
+
+                      <p class="exp-action">
+                        User selected:
+                        <strong>
+                          @if (h.status === 'skipped') {
+                            None (skipped)
+                          } @else if (h.selectedTargetFile) {
+                            {{ h.selectedTargetFile }} (page {{ h.selectedTargetPage ?? '—' }})
+                          } @else {
+                            Pending
+                          }
+                        </strong>
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
   @if (!isProcessing && resolvedRefs.length) {
     <section class="resolved-card">
       <header class="resolved-header">

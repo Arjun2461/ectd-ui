@@ -2,6 +2,15 @@ import { Injectable, NgZone, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Subject } from 'rxjs';
+import {
+  HitlHistoryRecord,
+  HitlHistoryStatus,
+} from '../models/hitl-history.types';
+import { HitlHistoryStorage } from './hitl-history.storage';
+import {
+  isProgressMilestoneMessage,
+  servicesCompletedByMilestone,
+} from '../utils/pipeline-progress.util';
 
 // ── Event shapes coming from FastAPI SSE stream ───────────────────────────────
 
@@ -121,6 +130,10 @@ export interface PipelineState {
   outputs: string[];
   // Active HITL prompt — non-null when status === 'awaiting_hitl'
   activeHitl: HitlRequiredEvent | null;
+  hitlHistory: HitlHistoryRecord[];
+  /** Set to 100 when phase/translation milestone logs appear. */
+  progressMilestone: number;
+  completedServiceIds: string[];
 }
 
 const INITIAL_STATE: PipelineState = {
@@ -137,7 +150,10 @@ const INITIAL_STATE: PipelineState = {
   terminalEntries:   [],
   autoResolved:      [],
   outputs:           [],
-  activeHitl:        null,
+  activeHitl:          null,
+  hitlHistory:         [],
+  progressMilestone:   0,
+  completedServiceIds: [],
 };
 
 @Injectable({ providedIn: 'root' })
@@ -145,6 +161,7 @@ export class PipelineSseService {
   private readonly http        = inject(HttpClient);
   private readonly ngZone      = inject(NgZone);
   private readonly platformId  = inject(PLATFORM_ID);
+  private readonly hitlStorage = inject(HitlHistoryStorage);
   private readonly baseUrl     = "http://localhost:8000";
 
   // Public reactive state
@@ -171,13 +188,17 @@ export class PipelineSseService {
 
     if (!res?.task_id) throw new Error('No task_id returned from server');
 
+    const hitlHistory = this.hitlStorage.load(res.task_id);
     this.patch({
-      taskId:          res.task_id,
-      status:          'running',
-      totalFiles:      payload.uploaded_files.length,
-      logs:            [],
-      terminalEntries: [],
-      autoResolved:    [],
+      taskId:              res.task_id,
+      status:              'running',
+      totalFiles:          payload.uploaded_files.length,
+      logs:                [],
+      terminalEntries:     [],
+      autoResolved:        [],
+      hitlHistory,
+      progressMilestone:   0,
+      completedServiceIds: [],
     });
 
     this.openStream(res.task_id);
@@ -186,9 +207,16 @@ export class PipelineSseService {
 
   // ── HITL responses ─────────────────────────────────────────────────────────
 
-  submitHitl(targetFile: string, targetPage: number): void {
+  submitHitl(
+    targetFile: string,
+    targetPage: number,
+    hitlSeqNo: number,
+    selectedIndex: number,
+  ): void {
     const { taskId } = this.state$.value;
     if (!taskId) return;
+
+    this.recordHitlUserAction(hitlSeqNo, 'confirmed', selectedIndex, targetFile, targetPage);
 
     this.http
       .post(`${this.baseUrl}/pipeline/respond-hitl/${taskId}`, {
@@ -199,13 +227,14 @@ export class PipelineSseService {
         error: (e) => console.error('[PipelineSseService] HITL submit error:', e),
       });
 
-    // Optimistically clear the HITL prompt — the stream will confirm with hitl_resolved
     this.patch({ activeHitl: null, status: 'running' });
   }
 
-  skipHitl(): void {
+  skipHitl(hitlSeqNo: number): void {
     const { taskId } = this.state$.value;
     if (!taskId) return;
+
+    this.recordHitlUserAction(hitlSeqNo, 'skipped', -1);
 
     this.http
       .post(`${this.baseUrl}/pipeline/skip-hitl/${taskId}`, {})
@@ -265,14 +294,26 @@ export class PipelineSseService {
 
     switch (event.type) {
 
-      case 'progress':
+      case 'progress': {
         this.appendLog(event.message);
         this.appendTerminal({
           kind: 'progress',
           message: event.message,
           file: event.file,
         });
+        if (isProgressMilestoneMessage(event.message)) {
+          const completed = new Set([
+            ...this.state$.value.completedServiceIds,
+            ...servicesCompletedByMilestone(event.message),
+          ]);
+          this.patch({
+            progressMilestone: 100,
+            overallProgress: 100,
+            completedServiceIds: [...completed],
+          });
+        }
         break;
+      }
 
       case 'file_started':
         this.patch({
@@ -308,6 +349,7 @@ export class PipelineSseService {
 
       // ── HITL: pause UI and surface the prompt ───────────────────────────
       case 'hitl_required':
+        this.upsertHitlRecord(event);
         this.patch({
           status:     'awaiting_hitl',
           activeHitl: event,
@@ -321,14 +363,21 @@ export class PipelineSseService {
         break;
 
       case 'hitl_resolved':
+        this.applyServerHitlResolution(
+          event.hitl_seq_no,
+          'confirmed',
+          event.target_file,
+          event.target_page,
+        );
         this.patch({
-          status:           'running',
-          activeHitl:       null,
+          status:            'running',
+          activeHitl:        null,
           hitlResolvedCount: this.state$.value.hitlResolvedCount + 1,
         });
         break;
 
       case 'hitl_skipped':
+        this.applyServerHitlResolution(event.hitl_seq_no, 'skipped');
         this.patch({
           status:     'running',
           activeHitl: null,
@@ -386,6 +435,104 @@ export class PipelineSseService {
     const trimmed =
       terminalEntries.length > 200 ? terminalEntries.slice(-200) : terminalEntries;
     this.patch({ terminalEntries: trimmed });
+  }
+
+  private upsertHitlRecord(event: HitlRequiredEvent): void {
+    const history = [...this.state$.value.hitlHistory];
+    const idx = history.findIndex((r) => r.hitlSeqNo === event.hitl_seq_no);
+    const record = this.buildHitlRecord(event);
+    if (idx >= 0) {
+      history[idx] = { ...history[idx], ...record, status: 'pending' };
+    } else {
+      history.push(record);
+    }
+    history.sort((a, b) => a.hitlSeqNo - b.hitlSeqNo);
+    this.persistHitlHistory(history);
+    this.patch({ hitlHistory: history });
+  }
+
+  private recordHitlUserAction(
+    hitlSeqNo: number,
+    status: HitlHistoryStatus,
+    selectedIndex: number,
+    targetFile?: string,
+    targetPage?: number,
+  ): void {
+    const history = this.state$.value.hitlHistory.map((r) => {
+      if (r.hitlSeqNo !== hitlSeqNo) return r;
+      const selected =
+        status === 'confirmed' && selectedIndex >= 0 ?
+          r.suggestions[selectedIndex] ?? r.suggestions[0]
+        : undefined;
+      return {
+        ...r,
+        status,
+        selectedIndex,
+        selectedTargetFile: targetFile ?? selected?.file,
+        selectedTargetPage: targetPage ?? selected?.page,
+        userAction:
+          status === 'skipped' ? 'Skipped by user'
+          : targetFile ? `Confirmed → ${targetFile} (p.${targetPage ?? '?'})`
+          : 'Confirmed by user',
+        resolvedAt: Date.now(),
+      };
+    });
+    this.persistHitlHistory(history);
+    this.patch({ hitlHistory: history });
+  }
+
+  private applyServerHitlResolution(
+    hitlSeqNo: number,
+    status: HitlHistoryStatus,
+    targetFile?: string,
+    targetPage?: number,
+  ): void {
+    const history = this.state$.value.hitlHistory.map((r) => {
+      if (r.hitlSeqNo !== hitlSeqNo) return r;
+      if (r.status !== 'pending') return r;
+      const idx = r.suggestions.findIndex((s) => s.file === targetFile);
+      return {
+        ...r,
+        status,
+        selectedIndex: idx >= 0 ? idx : r.selectedIndex,
+        selectedTargetFile: targetFile ?? r.selectedTargetFile,
+        selectedTargetPage: targetPage ?? r.selectedTargetPage,
+        userAction:
+          status === 'skipped' ? 'Skipped'
+          : `Resolved → ${targetFile ?? '—'} (p.${targetPage ?? '?'})`,
+        resolvedAt: Date.now(),
+      };
+    });
+    this.persistHitlHistory(history);
+    this.patch({ hitlHistory: history });
+  }
+
+  private buildHitlRecord(event: HitlRequiredEvent): HitlHistoryRecord {
+    const suggestions = event.llm_recommendations.map((rec, i) => ({
+      file: rec.suggested_target_file,
+      section: rec.semantic_title_context,
+      page: rec.suggested_target_page,
+      score: Math.round(100 - i * 12),
+      recommended: i === 0,
+    }));
+    return {
+      hitlSeqNo: event.hitl_seq_no,
+      status: 'pending',
+      sourceDocument: event.source_document,
+      unmappedKeywordAnchor: event.unmapped_keyword_anchor,
+      sourceStatement: event.source_statement,
+      llmAdvisorJudgment: event.llm_advisor_judgment,
+      recommendations: event.llm_recommendations,
+      suggestions,
+      selectedIndex: 0,
+      userAction: 'Awaiting review',
+      promptedAt: Date.now(),
+    };
+  }
+
+  private persistHitlHistory(history: HitlHistoryRecord[]): void {
+    const taskId = this.state$.value.taskId;
+    if (taskId) this.hitlStorage.save(taskId, history);
   }
 
   private patch(partial: Partial<PipelineState>): void {

@@ -105,6 +105,8 @@ export class Results implements OnInit, OnDestroy {
 
     // Subscribe to live SSE state — updates happen whenever the stream pushes
     this.pipeline.state$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => {
+      const prevStatus = this.pipelineState?.status;
+      const prevHitlSeq = this.pipelineState?.activeHitl?.hitl_seq_no;
       this.pipelineState = state;
 
       if (state.status === 'awaiting_hitl' && state.activeHitl) {
@@ -112,24 +114,40 @@ export class Results implements OnInit, OnDestroy {
         if (this.lastHitlSeqNo !== seq) {
           this.selectedHitlIndex = 0;
           this.lastHitlSeqNo = seq;
+          this.toast.show(
+            `Review required: ${state.activeHitl.unmapped_keyword_anchor}`,
+          );
         }
         this.activeTab = 'Hyperlinking';
         this.viewMode = 'processing';
         this.startDummyProgress();
-        return;
-      }
-
-      if (state.status === 'running') {
+      } else if (state.status === 'running') {
         this.viewMode = 'processing';
         this.startDummyProgress();
+        if (state.progressMilestone >= 100) {
+          this.dummyProgress = 100;
+          this.stopDummyProgress();
+        }
       } else if (state.status === 'completed') {
         this.stopDummyProgress();
         this.dummyProgress = 100;
         this.viewMode = 'completed';
+        this.lastHitlSeqNo = null;
         this.toast.show('Analysis completed successfully');
       } else if (state.status === 'error') {
         this.stopDummyProgress();
         this.toast.show(`Pipeline error: ${state.logs.at(-1) ?? 'Unknown error'}`);
+      }
+
+      const hitlArrived =
+        state.status === 'awaiting_hitl' &&
+        state.activeHitl &&
+        (prevStatus !== 'awaiting_hitl' || prevHitlSeq !== state.activeHitl.hitl_seq_no);
+
+      if (hitlArrived) {
+        this.cdr.detectChanges();
+      } else {
+        this.cdr.markForCheck();
       }
     });
 
@@ -168,12 +186,14 @@ export class Results implements OnInit, OnDestroy {
         ? this.pipelineState.overallProgress
         : 0;
     const job = this.job?.overallProgress ?? 0;
-    return Math.round(Math.max(sse, job, this.dummyProgress));
+    const milestone = this.pipelineState?.progressMilestone ?? 0;
+    return Math.round(Math.max(sse, job, this.dummyProgress, milestone));
   }
 
   /** Scales hyperlink chart / stats reveal (0–100). */
   get chartReveal(): number {
     if (this.viewMode === 'completed') return 100;
+    if ((this.pipelineState?.progressMilestone ?? 0) >= 100) return 100;
     return Math.min(this.displayProgress, 98);
   }
 
@@ -189,7 +209,21 @@ export class Results implements OnInit, OnDestroy {
     }
 
     if (this.viewMode === 'processing') {
-      return this.advanceServices(base, this.displayProgress);
+      let services = this.advanceServices(base, this.displayProgress);
+      const completedIds = new Set(this.pipelineState?.completedServiceIds ?? []);
+      const milestone = this.pipelineState?.progressMilestone ?? 0;
+      if (milestone >= 100) {
+        return services.map((s) => ({
+          ...s,
+          progress: 100,
+          status: 'completed' as const,
+        }));
+      }
+      return services.map((s) =>
+        completedIds.has(s.id) ?
+          { ...s, progress: 100, status: 'completed' as const }
+        : s,
+      );
     }
 
     if (this.job.status === 'completed') {
@@ -211,8 +245,9 @@ export class Results implements OnInit, OnDestroy {
   }
 
   get pipelineSubtitle(): string {
-    if (this.pipelineState?.status === 'awaiting_hitl') {
-      return `Manual review required for: ${this.pipelineState.activeHitl?.unmapped_keyword_anchor ?? ''}`;
+    const hitl = this.pipelineState?.activeHitl;
+    if (this.pipelineState?.status === 'awaiting_hitl' && hitl) {
+      return `Manual review required for: ${hitl.unmapped_keyword_anchor}`;
     }
     if (this.pipelineState?.currentFile) {
       return `Processing: ${this.pipelineState.currentFile}`;
@@ -236,6 +271,10 @@ export class Results implements OnInit, OnDestroy {
    * When a real SSE HITL prompt is active it takes priority;
    * otherwise falls back to the preview / job data.
    */
+  get isLivePipeline(): boolean {
+    return !!this.pipelineState?.taskId && this.pipelineState.status !== 'idle';
+  }
+
   get hitlEvent(): {
     id: number;
     file: string;
@@ -254,10 +293,10 @@ export class Results implements OnInit, OnDestroy {
       };
     }
 
-    const h =
-      this.job?.hitl ??
-      (this.viewMode === 'processing' && this.displayProgress > 55 ? this.previewHitl : null);
+    // Never show demo HITL while a real SSE pipeline is active
+    if (this.isLivePipeline) return null;
 
+    const h = this.job?.hitl;
     if (!h) return null;
 
     return {
@@ -284,7 +323,8 @@ export class Results implements OnInit, OnDestroy {
         page: r.suggested_target_page,
       }));
     }
-    return this.job?.hitl?.suggestions ?? (this.displayProgress > 55 ? this.previewHitl.suggestions : []);
+    if (this.isLivePipeline) return [];
+    return this.job?.hitl?.suggestions ?? [];
   }
 
   get terminalEntries(): TerminalEntry[] {
@@ -308,6 +348,10 @@ export class Results implements OnInit, OnDestroy {
 
   get autoResolvedCount(): number {
     return this.pipelineState?.autoResolvedCount ?? 0;
+  }
+
+  get hitlHistory() {
+    return this.pipelineState?.hitlHistory ?? [];
   }
 
   get resolvedRefs() {
@@ -334,6 +378,12 @@ export class Results implements OnInit, OnDestroy {
 
   setTab(t: 'Hyperlinking' | 'Translation' | 'Consistency'): void {
     this.activeTab = t;
+    this.cdr.markForCheck();
+  }
+
+  onHitlIndexChange(index: number): void {
+    this.selectedHitlIndex = index;
+    this.cdr.markForCheck();
   }
 
   statusLabel(status: string): string {
@@ -358,16 +408,24 @@ export class Results implements OnInit, OnDestroy {
     const live = this.pipelineState?.activeHitl;
 
     if (live) {
+      const seq = live.hitl_seq_no;
       if (this.selectedHitlIndex < 0) {
-        this.pipeline.skipHitl();
+        this.pipeline.skipHitl(seq);
+        this.cdr.markForCheck();
         return;
       }
       const rec = live.llm_recommendations[this.selectedHitlIndex];
       if (rec) {
-        this.pipeline.submitHitl(rec.suggested_target_file, rec.suggested_target_page);
+        this.pipeline.submitHitl(
+          rec.suggested_target_file,
+          rec.suggested_target_page,
+          seq,
+          this.selectedHitlIndex,
+        );
       } else {
-        this.pipeline.skipHitl();
+        this.pipeline.skipHitl(seq);
       }
+      this.cdr.markForCheck();
       return;
     }
 
@@ -381,7 +439,9 @@ export class Results implements OnInit, OnDestroy {
     this.jobService.updateJob({ ...job, hitl: { ...hitl } });
   }
   skipHITL(): void {
-    this.pipeline.skipHitl();
+    const seq = this.pipelineState?.activeHitl?.hitl_seq_no;
+    if (seq != null) this.pipeline.skipHitl(seq);
+    this.cdr.markForCheck();
   }
 
   // ── Private ────────────────────────────────────────────────────────────────
