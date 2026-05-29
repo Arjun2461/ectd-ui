@@ -103,7 +103,7 @@ export class Submission {
       icon: 'ti ti-file-description',
       title: 'Consistency',
       description: 'Find terminology, numerical, and cross-reference issues.',
-      selected: true,
+      selected: false,
     },
     {
       id: 'translation',

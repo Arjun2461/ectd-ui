@@ -429,4 +429,13 @@ export class Consistency implements AfterViewInit, OnDestroy {
     });
     this.charts.push(chart);
   }
+
+   downloadCSV() {
+    const fileUrl = 'assets/mismatch_report.xlsx';
+
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = 'mismatch_report.xlsx';
+    link.click();
+  }
 }

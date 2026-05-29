@@ -147,9 +147,7 @@
                     }
                   </span>
                 </span>
-                @if (s.recommended) {
-                  <span class="badge">Recommended</span>
-                }
+               
               </button>
             }
 
@@ -208,8 +206,10 @@
           </footer>
         }
       </article>
+    </div>
+  </section>
 
-      @if (hitlHistory.length) {
+       @if (hitlHistory.length) {
         <section class="resolved-card hitl-history-card">
           <header class="resolved-header">
             <div>
@@ -219,6 +219,24 @@
               </p>
             </div>
         <button
+          type="button"
+          class="svc-download-btn svc-download-btn--ghost"
+          aria-label="Download HITL history as JSON"
+          (click)="exportHitlJson()"
+        >
+          <i class="ti ti-download" aria-hidden="true"></i>
+          Export JSON
+        </button>
+         <button
+          type="button"
+          class="svc-download-btn svc-download-btn--ghost"
+          aria-label="Download HITL history as JSON"
+          (click)="exportHitlJson()"
+        >
+          <i class="ti ti-download" aria-hidden="true"></i>
+          Export JSON
+        </button>
+         <button
           type="button"
           class="svc-download-btn svc-download-btn--ghost"
           aria-label="Download HITL history as JSON"
@@ -334,8 +352,6 @@
       </div>
         </section>
       }
-    </div>
-  </section>
 
   @if (!isProcessing && resolvedRefs.length) {
     <section class="resolved-card">
@@ -344,14 +360,32 @@
           <strong>Resolved references</strong>
           <p>{{ resolvedRefs.length }} references resolved</p>
         </div>
-        <button
+        <div>
+          <button
           type="button"
-          class="svc-download-btn svc-download-btn--ghost"
+          class="svc-download-btn svc-download-btn--ghost btn"
           aria-label="Download resolved references"
         >
           <i class="ti ti-download" aria-hidden="true"></i>
           Export
         </button>
+          <button
+          type="button"
+          class="svc-download-btn svc-download-btn--ghost btn"
+          aria-label="Download resolved references"
+        >
+          <i class="ti ti-download" aria-hidden="true"></i>
+          Export
+        </button>
+          <button
+          type="button"
+          class="svc-download-btn svc-download-btn--ghost btn"
+          aria-label="Download resolved references"
+        >
+          <i class="ti ti-download" aria-hidden="true"></i>
+          Export
+        </button>
+        </div>
       </header>
 
       <div class="resolved-table-wrap">

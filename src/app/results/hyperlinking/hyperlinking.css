@@ -50,11 +50,7 @@
   min-height: 520px;
 }
 
-.hyper-top-right--stack .terminal-card {
-  flex: 1;
-  min-height: 280px;
-  max-height: none;
-}
+
 
 .hyper-top-right--stack .hitl-history-card {
   flex-shrink: 0;
@@ -389,7 +385,7 @@
   border: 1px solid #1f2937;
   border-radius: 18px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
-  overflow: hidden;
+  overflow: clip; /* clips for border-radius but doesn't block scroll */
 }
 
 .terminal-header {
@@ -1320,4 +1316,8 @@
     grid-column: 2;
     grid-row: 1;
   }
+}
+
+.btn{
+  margin-right: 10px;
 }
