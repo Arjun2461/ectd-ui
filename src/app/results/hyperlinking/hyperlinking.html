@@ -107,7 +107,18 @@
           </div>
         }
 
-        <div class="terminal-scroll" #terminalScroll>
+        <div class="terminal-scroll-wrap">
+          @if (showJumpToLatest) {
+            <button
+              type="button"
+              class="terminal-jump-btn"
+              (click)="jumpTerminalToLatest()"
+            >
+              <i class="ti ti-arrow-down" aria-hidden="true"></i>
+              Jump to latest
+            </button>
+          }
+          <div class="terminal-scroll" #terminalScroll (scroll)="onTerminalScroll($event)">
           @if (showHitlPanel) {
             <p class="t-id">HITL-{{ hitlEvent?.id }}</p>
             <p class="t-warn">Manual review required — choose the best target match</p>
@@ -195,6 +206,7 @@
               <p>Start hyperlinking to see live progress and review prompts here.</p>
             </div>
           }
+          </div>
         </div>
 
         @if (showHitlPanel) {

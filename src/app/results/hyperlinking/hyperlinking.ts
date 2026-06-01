@@ -109,6 +109,10 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   private revealTickId: ReturnType<typeof setInterval> | null = null;
   private lastChartRevealUpdate = 0;
 
+  /** When true, new log lines auto-scroll; false if user scrolled up to read history. */
+  private stickToBottom = true;
+  private static readonly SCROLL_STICK_THRESHOLD_PX = 56;
+
   private static readonly REVEAL_TICK_MS = 45;
   private static readonly REVEAL_EASE = 0.16;
   private static readonly CHART_ANIM_MS = 650;
@@ -317,13 +321,26 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     if (changes['stats'] && isPlatformBrowser(this.platformId)) {
       this.updateChart();
     }
-    if (
-      changes['terminalEntries'] ||
-      changes['awaitingHitl'] ||
-      changes['hitlEvent'] ||
-      changes['hitlSuggestions']
-    ) {
-      this.scrollTerminalToBottom();
+    if (changes['terminalEntries'] && isPlatformBrowser(this.platformId)) {
+      const prev = changes['terminalEntries'].previousValue as TerminalEntry[] | undefined;
+      const curr = changes['terminalEntries'].currentValue as TerminalEntry[] | undefined;
+      if ((curr?.length ?? 0) > (prev?.length ?? 0)) {
+        this.scrollTerminalToBottom();
+      }
+    }
+
+    if (changes['awaitingHitl']?.currentValue === true && !changes['awaitingHitl']?.previousValue) {
+      this.stickToBottom = true;
+      this.scrollTerminalToBottom(true);
+    }
+
+    if (changes['hitlEvent'] && isPlatformBrowser(this.platformId)) {
+      const prevId = changes['hitlEvent'].previousValue?.id;
+      const currId = changes['hitlEvent'].currentValue?.id;
+      if (currId != null && currId !== prevId) {
+        this.stickToBottom = true;
+        this.scrollTerminalToBottom(true);
+      }
     }
     if (
       changes['hitlHistory']?.currentValue?.length >
@@ -493,8 +510,33 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     this.confirmSelection.emit();
   }
 
-  private scrollTerminalToBottom(): void {
+  onTerminalScroll(event: Event): void {
+    const el = event.target as HTMLElement;
+    const wasPinned = this.stickToBottom;
+    this.stickToBottom = this.isNearBottom(el);
+    if (wasPinned !== this.stickToBottom) {
+      this.cdr.markForCheck();
+    }
+  }
+
+  jumpTerminalToLatest(): void {
+    this.stickToBottom = true;
+    this.scrollTerminalToBottom(true);
+  }
+
+  get showJumpToLatest(): boolean {
+    return !this.stickToBottom && this.terminalEntries.length > 0 && this.showProcessingTerminal;
+  }
+
+  private isNearBottom(el: HTMLElement): boolean {
+    const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+    return distance <= Hyperlinking.SCROLL_STICK_THRESHOLD_PX;
+  }
+
+  private scrollTerminalToBottom(force = false): void {
     if (!isPlatformBrowser(this.platformId)) return;
+    if (!force && !this.stickToBottom) return;
+
     const scroll = (): void => {
       const el = this.terminalScrollRef?.nativeElement;
       if (!el) return;

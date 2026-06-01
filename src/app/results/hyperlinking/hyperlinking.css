@@ -687,9 +687,52 @@
   background: #22c55e;
 }
 
+.terminal-scroll-wrap {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.terminal-jump-btn {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #4b5563;
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.92);
+  color: #e5e7eb;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  transform: translateX(-50%);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.terminal-jump-btn:hover {
+  background: rgba(31, 41, 55, 0.95);
+  border-color: #6b7280;
+}
+
+.terminal-jump-btn:focus-visible {
+  outline: 2px solid #a78bfa;
+  outline-offset: 2px;
+}
+
 .terminal-scroll {
   flex: 1 1 0;
   min-height: 0;
+  height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
