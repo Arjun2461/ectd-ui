@@ -334,8 +334,10 @@
 
                       @if (h.llmAdvisorJudgment) {
                         <div class="exp-llm">
-                          <span class="exp-llm-label">LLM recommendation</span>
-                          <p>{{ h.llmAdvisorJudgment }}</p>
+                          <div class="exp-llm-body">
+                            <span class="exp-llm-label">LLM recommendation</span>
+                            <p>{{ h.llmAdvisorJudgment }}</p>
+                          </div>
                         </div>
                       }
 
@@ -526,8 +528,10 @@
                       </div>
 
                       <div class="exp-llm">
-                        <span class="exp-llm-label">LLM recommendation</span>
-                        <p>{{ $any(r).llmReason }}</p>
+                        <div class="exp-llm-body">
+                          <span class="exp-llm-label">LLM recommendation</span>
+                          <p>{{ $any(r).llmReason }}</p>
+                        </div>
                       </div>
 
                       <p class="exp-action">

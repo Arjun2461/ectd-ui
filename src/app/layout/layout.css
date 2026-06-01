@@ -199,6 +199,8 @@
   overflow-y: auto; /* 🔥 ONLY THIS SCROLLS */
   background: white;
   padding: 10px 12px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 .menu-section {

@@ -104,6 +104,15 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   expandedIndex: number | null = null;
   expandedHitlIndex: number | null = null;
 
+  /** Eased display value for stats / bars (lags behind chartReveal). */
+  private smoothReveal = 0;
+  private revealTickId: ReturnType<typeof setInterval> | null = null;
+  private lastChartRevealUpdate = 0;
+
+  private static readonly REVEAL_TICK_MS = 90;
+  private static readonly REVEAL_EASE = 0.055;
+  private static readonly CHART_ANIM_MS = 1400;
+
   // ─── Pagination ───────────────────────────────────────────────────────────
 
   readonly PAGE_SIZE = 5;
@@ -264,7 +273,7 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   private get revealFactor(): number {
-    return Math.min(Math.max(this.chartReveal / 100, 0), 1);
+    return Math.min(Math.max(this.smoothReveal / 100, 0), 1);
   }
 
   private scaled(value: number): number {
@@ -293,11 +302,19 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
+    this.smoothReveal = this.chartReveal;
+    this.startRevealAnimation();
     setTimeout(() => this.initChart(), 80);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if ((changes['stats'] || changes['chartReveal']) && isPlatformBrowser(this.platformId)) {
+    if (changes['chartReveal'] && isPlatformBrowser(this.platformId)) {
+      this.startRevealAnimation();
+    }
+    if (changes['isProcessing']?.currentValue === true && isPlatformBrowser(this.platformId)) {
+      this.startRevealAnimation();
+    }
+    if (changes['stats'] && isPlatformBrowser(this.platformId)) {
       this.updateChart();
     }
     if (
@@ -326,9 +343,41 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopRevealAnimation();
     if (!isPlatformBrowser(this.platformId)) return;
     this.chart?.destroy();
     this.chart = null;
+  }
+
+  private startRevealAnimation(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (this.revealTickId) return;
+
+    this.revealTickId = setInterval(() => {
+      const target = this.chartReveal;
+      const delta = target - this.smoothReveal;
+
+      if (Math.abs(delta) < 0.35) {
+        this.smoothReveal = target;
+      } else {
+        this.smoothReveal += delta * Hyperlinking.REVEAL_EASE;
+      }
+
+      const now = Date.now();
+      if (now - this.lastChartRevealUpdate > 120) {
+        this.lastChartRevealUpdate = now;
+        this.updateChart();
+      }
+
+      this.cdr.markForCheck();
+    }, Hyperlinking.REVEAL_TICK_MS);
+  }
+
+  private stopRevealAnimation(): void {
+    if (this.revealTickId) {
+      clearInterval(this.revealTickId);
+      this.revealTickId = null;
+    }
   }
 
   initChart(): void {
@@ -369,7 +418,7 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
         animation: {
           animateRotate: true,
           animateScale: true,
-          duration: 600,
+          duration: Hyperlinking.CHART_ANIM_MS,
           easing: 'easeOutQuart',
         },
         plugins: {

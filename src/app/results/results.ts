@@ -32,7 +32,6 @@ import {
   PipelineState,
   TerminalEntry,
 } from '../core/services/Pipeline-sse.service';
-import { PipelineSessionStorage } from '../core/services/pipeline-session.storage';
 
 type ViewMode = 'empty' | 'processing' | 'completed';
 
@@ -50,7 +49,6 @@ export class Results implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly pipeline = inject(PipelineSseService);
-  private readonly pipelineSession = inject(PipelineSessionStorage);
 
   viewMode: ViewMode = 'empty';
   job: Job | null = null;
@@ -103,7 +101,6 @@ export class Results implements OnInit, OnDestroy {
   // ────────────────────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
-    this.tryRestorePipeline();
     this.refreshJobView();
 
     // Subscribe to live SSE state — updates happen whenever the stream pushes
@@ -471,27 +468,6 @@ export class Results implements OnInit, OnDestroy {
 
   // ── Private ────────────────────────────────────────────────────────────────
 
-  private tryRestorePipeline(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-
-    const live = this.pipeline.state$.value;
-    if (live.status !== 'idle' && live.taskId) return;
-
-    const saved = this.pipelineSession.load();
-    if (!saved) return;
-
-    const job =
-      this.jobService.getJobById(saved.jobId) ??
-      this.jobService.getJobByTaskId(saved.taskId);
-    if (!job?.taskId || job.status === 'completed') {
-      this.pipelineSession.clear();
-      return;
-    }
-
-    this.jobService.setCurrentJob(job);
-    this.pipeline.restoreSession(job.taskId, job.id);
-  }
-
   private refreshJobView(): void {
     const job = this.jobService.activeJob() ?? this.jobService.getLastJob() ?? null;
     if (job) this.jobService.setCurrentJob(job);
@@ -545,7 +521,10 @@ export class Results implements OnInit, OnDestroy {
         return;
       }
 
-      const nextProgress = Math.min(this.job.overallProgress + 0.55 + Math.random() * 0.9, 100);
+      const nextProgress = Math.min(
+        this.job.overallProgress + 0.28 + Math.random() * 0.45,
+        100,
+      );
       const updatedServices = this.advanceServices(this.job.serviceProgress ?? [], nextProgress);
       const patch: Job = {
         ...this.job,
@@ -557,7 +536,7 @@ export class Results implements OnInit, OnDestroy {
       this.jobService.updateJob(patch);
 
       if (nextProgress >= 100) this.finishSimulation(job.id);
-    }, 140);
+    }, 280);
   }
 
   private advanceServices(services: ServiceProgress[], overall: number): ServiceProgress[] {
@@ -620,15 +599,15 @@ export class Results implements OnInit, OnDestroy {
       if (this.dummyProgress >= cap) return;
 
       const bump =
-        this.dummyProgress < 35 ? 0.85
-        : this.dummyProgress < 65 ? 0.5
-        : 0.22;
+        this.dummyProgress < 35 ? 0.42
+        : this.dummyProgress < 65 ? 0.24
+        : 0.1;
       this.dummyProgress = Math.min(
-        this.dummyProgress + bump + Math.random() * 0.35,
+        this.dummyProgress + bump + Math.random() * 0.18,
         cap,
       );
       this.cdr.markForCheck();
-    }, 130);
+    }, 280);
   }
 
   private stopDummyProgress(): void {
