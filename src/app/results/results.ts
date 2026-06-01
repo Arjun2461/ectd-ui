@@ -522,7 +522,7 @@ export class Results implements OnInit, OnDestroy {
       }
 
       const nextProgress = Math.min(
-        this.job.overallProgress + 0.28 + Math.random() * 0.45,
+        this.job.overallProgress + 0.55 + Math.random() * 0.85,
         100,
       );
       const updatedServices = this.advanceServices(this.job.serviceProgress ?? [], nextProgress);
@@ -536,7 +536,7 @@ export class Results implements OnInit, OnDestroy {
       this.jobService.updateJob(patch);
 
       if (nextProgress >= 100) this.finishSimulation(job.id);
-    }, 280);
+    }, 160);
   }
 
   private advanceServices(services: ServiceProgress[], overall: number): ServiceProgress[] {
@@ -599,15 +599,15 @@ export class Results implements OnInit, OnDestroy {
       if (this.dummyProgress >= cap) return;
 
       const bump =
-        this.dummyProgress < 35 ? 0.42
-        : this.dummyProgress < 65 ? 0.24
-        : 0.1;
+        this.dummyProgress < 35 ? 0.75
+        : this.dummyProgress < 65 ? 0.45
+        : 0.2;
       this.dummyProgress = Math.min(
-        this.dummyProgress + bump + Math.random() * 0.18,
+        this.dummyProgress + bump + Math.random() * 0.3,
         cap,
       );
       this.cdr.markForCheck();
-    }, 280);
+    }, 140);
   }
 
   private stopDummyProgress(): void {

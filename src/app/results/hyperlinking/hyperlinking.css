@@ -55,12 +55,15 @@
 .hyper-top-right {
   display: flex;
   min-height: var(--hyper-panel-min);
+  min-width: 0;
 }
 
 .hyper-top-right--stack {
   flex-direction: column;
   gap: 10px;
   min-height: var(--hyper-panel-min);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .hyper-top-right--stack .hitl-history-card {
@@ -77,12 +80,18 @@
   overflow-y: auto;
 }
 
-.hyper-card--analytics,
-.terminal-card {
+.hyper-card--analytics {
   flex: 1 1 auto;
   width: 100%;
   min-height: var(--hyper-panel-min);
   height: 100%;
+}
+
+.hyper-top-right--stack > .terminal-card {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  max-height: 100%;
 }
 
 /* ─── Analytics card ─── */
@@ -378,7 +387,7 @@
   background: linear-gradient(90deg, var(--hyper-linked), #60a5fa);
   transform-origin: left center;
   box-shadow: 0 1px 4px rgba(55, 138, 221, 0.28);
-  transition: width 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: width 0.85s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Module bars: same violet–blue family, stepped to match donut palette */
@@ -419,20 +428,16 @@
 .terminal-card {
   display: flex;
   flex-direction: column;
+  height: var(--hyper-panel-min);
   min-height: var(--hyper-panel-min);
-  max-height: none;
+  max-height: var(--hyper-panel-min);
   background: linear-gradient(165deg, #0b0f1a 0%, #111827 48%, #0f172a 100%);
   border: 1px solid #1f2937;
   border-radius: 14px;
   box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  overflow: clip;
-}
-
-.hyper-top-right--stack > .terminal-card {
-  flex: 1 1 var(--hyper-panel-min);
-  min-height: var(--hyper-panel-min);
+  overflow: hidden;
 }
 
 .terminal-header {
@@ -491,8 +496,6 @@
 }
 
 .terminal-card--hitl {
-  min-height: var(--hyper-panel-min);
-  max-height: none;
   box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.22),
     0 0 0 1px rgba(251, 191, 36, 0.25);
@@ -685,9 +688,12 @@
 }
 
 .terminal-scroll {
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 12px 14px;
   font-family: ui-monospace, 'Cascadia Code', 'SF Mono', Consolas, monospace;
   font-size: 11px;

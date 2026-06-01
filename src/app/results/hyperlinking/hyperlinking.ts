@@ -109,9 +109,9 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   private revealTickId: ReturnType<typeof setInterval> | null = null;
   private lastChartRevealUpdate = 0;
 
-  private static readonly REVEAL_TICK_MS = 90;
-  private static readonly REVEAL_EASE = 0.055;
-  private static readonly CHART_ANIM_MS = 1400;
+  private static readonly REVEAL_TICK_MS = 45;
+  private static readonly REVEAL_EASE = 0.16;
+  private static readonly CHART_ANIM_MS = 650;
 
   // ─── Pagination ───────────────────────────────────────────────────────────
 
@@ -364,7 +364,7 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
       }
 
       const now = Date.now();
-      if (now - this.lastChartRevealUpdate > 120) {
+      if (now - this.lastChartRevealUpdate > 60) {
         this.lastChartRevealUpdate = now;
         this.updateChart();
       }
@@ -495,10 +495,16 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
 
   private scrollTerminalToBottom(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    setTimeout(() => {
+    const scroll = (): void => {
       const el = this.terminalScrollRef?.nativeElement;
-      if (el) el.scrollTop = el.scrollHeight;
-    }, 0);
+      if (!el) return;
+      el.scrollTop = el.scrollHeight;
+    };
+    setTimeout(scroll, 0);
+    requestAnimationFrame(() => {
+      scroll();
+      requestAnimationFrame(scroll);
+    });
   }
 
   private scrollHitlHistoryIntoView(): void {

@@ -323,7 +323,7 @@
   height: 100%;
   border-radius: 999px;
   width: 0;
-  transition: width 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: width 0.85s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
   overflow: hidden;
 }
@@ -638,20 +638,4 @@
     margin-left: 12px;
     margin-right: 12px;
   }
-}
-/* 1. Fix overflow clipping on the card */
-.terminal-card {
-  overflow: clip; /* was: hidden */
-}
-
-/* 2. Allow HITL mode to be taller */
-.terminal-card--hitl {
-  max-height: none;
-}
-
-/* 3. Ensure scroll child is constrained */
-.terminal-scroll {
-  flex: 1;
-  min-height: 0; /* critical — must be present */
-  overflow-y: auto;
 }
