@@ -221,7 +221,7 @@ export const INITIAL_JOBS: Job[] = [
       [{ progress: 100, status: 'completed' }, { progress: 100, status: 'completed' }]
     ),
     ...COMPLETED_RESULTS_TEMPLATE,
-    stats: { totalLinks: 987, linked: 901, broken: 32, missing: 54 },
+    stats: { totalLinks: 987, linked: 749, broken: 104, missing: 78 },
     moduleDistribution: { M1:280,M2: 312, M3: 245, M4: 198, M5: 232 },
   },
   {

@@ -147,7 +147,6 @@
                     }
                   </span>
                 </span>
-               
               </button>
             }
 
@@ -180,7 +179,11 @@
               <ul class="terminal-feed" aria-label="Pipeline activity log">
                 @for (entry of terminalEntries; track entry.id) {
                   <li class="feed-line" [class]="'feed-line--' + entry.kind">
-                    <i class="ti feed-icon" [ngClass]="entryIcon(entry.kind)" aria-hidden="true"></i>
+                    <i
+                      class="ti feed-icon"
+                      [ngClass]="entryIcon(entry.kind)"
+                      aria-hidden="true"
+                    ></i>
                     <span class="feed-msg">{{ entry.message }}</span>
                   </li>
                 }
@@ -209,68 +212,77 @@
     </div>
   </section>
 
-       @if (hitlHistory.length) {
-        <section class="resolved-card hitl-history-card">
-          <header class="resolved-header">
-            <div>
-              <strong>Completed reviews</strong>
-              <p>
-                {{ hitlHistory.length }} resolved — new rows appear here after each confirm or skip
-              </p>
-            </div>
-        <button
-          type="button"
-          class="svc-download-btn svc-download-btn--ghost"
-          aria-label="Download HITL history as JSON"
-          (click)="exportHitlJson()"
-        >
-          <i class="ti ti-download" aria-hidden="true"></i>
-          Export JSON
-        </button>
-         <button
-          type="button"
-          class="svc-download-btn svc-download-btn--ghost"
-          aria-label="Download HITL history as JSON"
-          (click)="exportHitlJson()"
-        >
-          <i class="ti ti-download" aria-hidden="true"></i>
-          Export JSON
-        </button>
-         <button
-          type="button"
-          class="svc-download-btn svc-download-btn--ghost"
-          aria-label="Download HITL history as JSON"
-          (click)="exportHitlJson()"
-        >
-          <i class="ti ti-download" aria-hidden="true"></i>
-          Export JSON
-        </button>
+  <!-- ── HITL History Table ── -->
+  @if (hitlHistory.length) {
+    <section class="resolved-card hitl-history-card">
+      <header class="resolved-header">
+        <div>
+          <strong>Completed reviews</strong>
+          <p>{{ hitlHistory.length }} resolved — new rows appear here after each confirm or skip</p>
+        </div>
+        <div class="analytics-header-actions">
+          <button
+            type="button"
+            class="svc-download-btn svc-download-btn--ghost"
+            aria-label="Download hyperlinked document"
+            (click)="downloadHyperlinkedDocument()"
+          >
+             <i class="ti ti-download" aria-hidden="true"></i>
+            Hyperlinked eCTD
+          </button>
+
+          <button
+            type="button"
+            class="svc-download-btn svc-download-btn--ghost"
+            aria-label="Download HITL CSV"
+            (click)="downloadHitlCsv()"
+          >
+             <i class="ti ti-download" aria-hidden="true"></i>
+
+            HITL Resolution log
+          </button>
+
+          <button
+            type="button"
+            class="svc-download-btn svc-download-btn--ghost"
+            aria-label="Download auto-linked CSV"
+            (click)="downloadAutoLinkedCsv()"
+          >
+            <i class="ti ti-download" aria-hidden="true"></i>
+            Hyperlink Report
+          </button>
+        </div>
       </header>
 
       <div class="resolved-table-wrap">
         <table class="resolved-table hitl-history-table">
           <thead>
             <tr>
-              <th>#</th>
+              <th style="width: 52px">#</th>
               <th>Source document</th>
-              <th>Anchor</th>
-              <th>User action</th>
+              <th style="text-align:center;">Suggested matches</th>
               <th>Status</th>
               <th class="th-chevron" aria-label="Expand row"></th>
             </tr>
           </thead>
           <tbody>
-            @for (h of hitlHistory; track h.hitlSeqNo; let i = $index) {
-              <tr class="main-row" (click)="toggleHitlRow(i)">
+            @for (h of pagedHitlHistory; track h.hitlSeqNo; let i = $index) {
+              <tr class="main-row" (click)="toggleHitlRow(hitlPageStart + i)">
                 <td class="rr-id">#{{ h.hitlSeqNo }}</td>
                 <td class="rr-source">
                   <span class="rr-doc">{{ h.sourceDocument }}</span>
                 </td>
-                <td class="rr-anchor">
-                  <span class="rr-anchor-text">{{ h.unmappedKeywordAnchor }}</span>
-                </td>
-                <td class="rr-action">
-                  <span class="rr-user-action">{{ h.userAction }}</span>
+                <td>
+                  <div class="rr-pills">
+                    @for (s of h.suggestions; track s.file; let j = $index) {
+                      <span
+                        class="doc-pill"
+                        [class.selected]="h.selectedIndex === j"
+                        [title]="s.file"
+                        >{{ s.file }}</span
+                      >
+                    }
+                  </div>
                 </td>
                 <td class="rr-action">
                   <span class="rr-badge" [ngClass]="hitlStatusClass(h.status)">
@@ -280,12 +292,14 @@
                 <td class="rr-chevron">
                   <i
                     class="ti"
-                    [ngClass]="expandedHitlIndex === i ? 'ti-chevron-up' : 'ti-chevron-down'"
+                    [ngClass]="
+                      expandedHitlIndex === hitlPageStart + i ? 'ti-chevron-up' : 'ti-chevron-down'
+                    "
                   ></i>
                 </td>
               </tr>
 
-              @if (expandedHitlIndex === i) {
+              @if (expandedHitlIndex === hitlPageStart + i) {
                 <tr class="expand-row">
                   <td colspan="6">
                     <div class="expand-box">
@@ -293,10 +307,6 @@
                         <div class="exp-cell">
                           <span class="exp-label">Source document</span>
                           <p>{{ h.sourceDocument }}</p>
-                        </div>
-                        <div class="exp-cell">
-                          <span class="exp-label">Unmapped anchor</span>
-                          <p>{{ h.unmappedKeywordAnchor }}</p>
                         </div>
                         <div class="exp-cell exp-cell--wide">
                           <span class="exp-label">Source statement</span>
@@ -311,7 +321,6 @@
                           <span class="exp-col-h">Page</span>
                           <span class="exp-col-h exp-col-h--score">Score</span>
                         </div>
-
                         @for (s of h.suggestions; track s.file; let j = $index) {
                           <div class="exp-line" [class.selected]="h.selectedIndex === j">
                             <span class="exp-dot" aria-hidden="true"></span>
@@ -350,9 +359,49 @@
           </tbody>
         </table>
       </div>
-        </section>
-      }
 
+      <!-- HITL Pagination -->
+      @if (hitlTotalPages > 1) {
+        <footer class="table-pagination">
+          <span class="page-info">
+            Showing {{ hitlPageStart + 1 }}–{{ hitlPageEnd }} of {{ hitlHistory.length }}
+          </span>
+          <div class="page-controls">
+            <button
+              type="button"
+              class="page-btn"
+              [disabled]="hitlPage === 1"
+              (click)="hitlPage = hitlPage - 1"
+              aria-label="Previous page"
+            >
+              <i class="ti ti-chevron-left" aria-hidden="true"></i>
+            </button>
+            @for (p of hitlPageNumbers; track p) {
+              <button
+                type="button"
+                class="page-btn"
+                [class.active]="hitlPage === p"
+                (click)="hitlPage = p"
+              >
+                {{ p }}
+              </button>
+            }
+            <button
+              type="button"
+              class="page-btn"
+              [disabled]="hitlPage === hitlTotalPages"
+              (click)="hitlPage = hitlPage + 1"
+              aria-label="Next page"
+            >
+              <i class="ti ti-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </footer>
+      }
+    </section>
+  }
+
+  <!-- ── Resolved References Table ── -->
   @if (!isProcessing && resolvedRefs.length) {
     <section class="resolved-card">
       <header class="resolved-header">
@@ -361,30 +410,38 @@
           <p>{{ resolvedRefs.length }} references resolved</p>
         </div>
         <div>
+        <div class="analytics-header-actions">
           <button
-          type="button"
-          class="svc-download-btn svc-download-btn--ghost btn"
-          aria-label="Download resolved references"
-        >
-          <i class="ti ti-download" aria-hidden="true"></i>
-          Export
-        </button>
+            type="button"
+            class="svc-download-btn svc-download-btn--ghost"
+            aria-label="Download hyperlinked document"
+            (click)="downloadHyperlinkedDocument()"
+          >
+             <i class="ti ti-download" aria-hidden="true"></i>
+            Hyperlinked eCTD
+          </button>
+
           <button
-          type="button"
-          class="svc-download-btn svc-download-btn--ghost btn"
-          aria-label="Download resolved references"
-        >
-          <i class="ti ti-download" aria-hidden="true"></i>
-          Export
-        </button>
+            type="button"
+            class="svc-download-btn svc-download-btn--ghost"
+            aria-label="Download HITL CSV"
+            (click)="downloadHitlCsv()"
+          >
+             <i class="ti ti-download" aria-hidden="true"></i>
+
+            HITL Resolution log
+          </button>
+
           <button
-          type="button"
-          class="svc-download-btn svc-download-btn--ghost btn"
-          aria-label="Download resolved references"
-        >
-          <i class="ti ti-download" aria-hidden="true"></i>
-          Export
-        </button>
+            type="button"
+            class="svc-download-btn svc-download-btn--ghost"
+            aria-label="Download auto-linked CSV"
+            (click)="downloadAutoLinkedCsv()"
+          >
+            <i class="ti ti-download" aria-hidden="true"></i>
+            Hyperlink Report
+          </button>
+        </div>
         </div>
       </header>
 
@@ -392,15 +449,17 @@
         <table class="resolved-table">
           <thead>
             <tr>
+              <th style="width: 52px">#</th>
               <th>Source document</th>
-              <th>Suggested matches</th>
-              <th>User action</th>
+              <th style="text-align:center;">Suggested matches</th>
+              <th>Status</th>
               <th class="th-chevron" aria-label="Expand"></th>
             </tr>
           </thead>
           <tbody>
-            @for (r of resolvedRefs; track $index; let i = $index) {
-              <tr class="main-row" (click)="toggleRow(i)">
+            @for (r of pagedResolvedRefs; track $index; let i = $index) {
+              <tr class="main-row" (click)="toggleRow(resolvedPageStart + i)">
+                <td class="rr-id">#{{ resolvedPageStart + i + 1 }}</td>
                 <td class="rr-source">
                   <span class="rr-doc">{{ $any(r).sourceDoc }}</span>
                 </td>
@@ -418,28 +477,30 @@
                   </div>
                 </td>
                 <td class="rr-action">
-                  <span class="rr-badge" [class.auto]="$any(r).badge === 'Auto-resolved'">
-                    {{ $any(r).userAction }}
+                  <span class="rr-badge" [ngClass]="resolvedStatusClass($any(r))">
+                    {{ resolvedStatusLabel($any(r)) }}
                   </span>
                 </td>
                 <td class="rr-chevron">
                   <i
                     class="ti"
-                    [ngClass]="expandedIndex === i ? 'ti-chevron-up' : 'ti-chevron-down'"
+                    [ngClass]="
+                      expandedIndex === resolvedPageStart + i ? 'ti-chevron-up' : 'ti-chevron-down'
+                    "
                   ></i>
                 </td>
               </tr>
 
-              @if (expandedIndex === i) {
+              @if (expandedIndex === resolvedPageStart + i) {
                 <tr class="expand-row">
-                  <td colspan="4">
+                  <td colspan="6">
                     <div class="expand-box">
                       <div class="exp-grid">
                         <div class="exp-cell">
                           <span class="exp-label">Source document</span>
                           <p>{{ $any(r).sourceDoc }}</p>
                         </div>
-                        <div class="exp-cell">
+                        <div class="exp-cell exp-cell--wide">
                           <span class="exp-label">Statement</span>
                           <p class="exp-mono">{{ $any(r).statement }}</p>
                         </div>
@@ -471,7 +532,9 @@
 
                       <p class="exp-action">
                         User selected:
-                        <strong>{{ $any(r).suggestions[$any(r).selectedIndex]?.file ?? '—' }}</strong>
+                        <strong>{{
+                          $any(r).suggestions[$any(r).selectedIndex]?.file ?? '—'
+                        }}</strong>
                       </p>
                     </div>
                   </td>
@@ -481,6 +544,45 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Resolved Pagination -->
+      @if (resolvedTotalPages > 1) {
+        <footer class="table-pagination">
+          <span class="page-info">
+            Showing {{ resolvedPageStart + 1 }}–{{ resolvedPageEnd }} of {{ resolvedRefs.length }}
+          </span>
+          <div class="page-controls">
+            <button
+              type="button"
+              class="page-btn"
+              [disabled]="resolvedPage === 1"
+              (click)="resolvedPage = resolvedPage - 1"
+              aria-label="Previous page"
+            >
+              <i class="ti ti-chevron-left" aria-hidden="true"></i>
+            </button>
+            @for (p of resolvedPageNumbers; track p) {
+              <button
+                type="button"
+                class="page-btn"
+                [class.active]="resolvedPage === p"
+                (click)="resolvedPage = p"
+              >
+                {{ p }}
+              </button>
+            }
+            <button
+              type="button"
+              class="page-btn"
+              [disabled]="resolvedPage === resolvedTotalPages"
+              (click)="resolvedPage = resolvedPage + 1"
+              aria-label="Next page"
+            >
+              <i class="ti ti-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </footer>
+      }
     </section>
   }
 </div>

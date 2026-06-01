@@ -94,6 +94,74 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   expandedIndex: number | null = null;
   expandedHitlIndex: number | null = null;
 
+  // ─── Pagination ───────────────────────────────────────────────────────────
+
+  readonly PAGE_SIZE = 5;
+
+  // HITL pagination
+  private _hitlPage = 1;
+
+  get hitlPage(): number {
+    return this._hitlPage;
+  }
+  set hitlPage(val: number) {
+    this._hitlPage = val;
+    this.expandedHitlIndex = null; // collapse expanded row on page change
+  }
+
+  get hitlTotalPages(): number {
+    return Math.ceil(this.hitlHistory.length / this.PAGE_SIZE) || 1;
+  }
+  get hitlPageStart(): number {
+    return (this._hitlPage - 1) * this.PAGE_SIZE;
+  }
+  get hitlPageEnd(): number {
+    return Math.min(this._hitlPage * this.PAGE_SIZE, this.hitlHistory.length);
+  }
+  get pagedHitlHistory(): HitlHistoryRecord[] {
+    return this.hitlHistory.slice(this.hitlPageStart, this.hitlPageEnd);
+  }
+  get hitlPageNumbers(): number[] {
+    return Array.from({ length: this.hitlTotalPages }, (_, i) => i + 1);
+  }
+
+  // Resolved pagination
+  private _resolvedPage = 1;
+
+  get resolvedPage(): number {
+    return this._resolvedPage;
+  }
+  set resolvedPage(val: number) {
+    this._resolvedPage = val;
+    this.expandedIndex = null; // collapse expanded row on page change
+  }
+
+  get resolvedTotalPages(): number {
+    return Math.ceil(this.resolvedRefs.length / this.PAGE_SIZE) || 1;
+  }
+  get resolvedPageStart(): number {
+    return (this._resolvedPage - 1) * this.PAGE_SIZE;
+  }
+  get resolvedPageEnd(): number {
+    return Math.min(this._resolvedPage * this.PAGE_SIZE, this.resolvedRefs.length);
+  }
+  get pagedResolvedRefs(): unknown[] {
+    return this.resolvedRefs.slice(this.resolvedPageStart, this.resolvedPageEnd);
+  }
+  get resolvedPageNumbers(): number[] {
+    return Array.from({ length: this.resolvedTotalPages }, (_, i) => i + 1);
+  }
+
+  // Reset pages when new data arrives — call these wherever arrays are updated
+  resetHitlPage(): void {
+    this._hitlPage = 1;
+  }
+  resetResolvedPage(): void {
+    this._resolvedPage = 1;
+  }
+
+  // ─── Existing getters ─────────────────────────────────────────────────────
+
   get totalLinks(): number {
     return this.stats?.totalLinks ?? 0;
   }
@@ -230,9 +298,20 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     ) {
       this.scrollTerminalToBottom();
     }
-    if (changes['hitlHistory']?.currentValue?.length > (changes['hitlHistory']?.previousValue?.length ?? 0)) {
+    if (
+      changes['hitlHistory']?.currentValue?.length >
+      (changes['hitlHistory']?.previousValue?.length ?? 0)
+    ) {
+      // Jump to last page so newly added row is visible
+      this._hitlPage = Math.ceil(this.hitlHistory.length / this.PAGE_SIZE) || 1;
       this.expandedHitlIndex = this.hitlHistory.length - 1;
       setTimeout(() => this.scrollHitlHistoryIntoView(), 0);
+    }
+    if (
+      changes['resolvedRefs']?.currentValue?.length !==
+      changes['resolvedRefs']?.previousValue?.length
+    ) {
+      this.resetResolvedPage();
     }
   }
 
@@ -256,7 +335,7 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
         datasets: [
           {
             data: [linked || 1, broken, missing],
-            backgroundColor: ['#0d9488', '#ef4444', '#94a3b8'],
+            backgroundColor: ['#0d9488', '#EF9F27', '#E24B4A'],
             borderWidth: 0,
             hoverOffset: 4,
           },
@@ -308,8 +387,8 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
 
   hitlStatusClass(status: HitlHistoryRecord['status']): string {
     if (status === 'confirmed') return 'done';
-    if (status === 'skipped') return 'wait';
-    return 'run';
+    if (status === 'skipped') return 'skipped';
+    return 'warn';
   }
 
   hitlStatusLabel(status: HitlHistoryRecord['status']): string {
@@ -347,4 +426,41 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     const el = document.querySelector('.hitl-history-card');
     el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+resolvedStatusClass(r: any): string {
+  if (r?.status === 'confirmed') return 'done';
+  if (r?.status === 'skipped') return 'skipped';
+  if (r?.status === 'auto') return 'auto';
+  return 'warn';
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+resolvedStatusLabel(r: any): string {
+  if (r?.status === 'confirmed') return 'Confirmed';
+  if (r?.status === 'skipped') return 'Skipped';
+  if (r?.status === 'auto') return 'Auto-resolved';
+  return 'Pending';
+}
+
+downloadHyperlinkedDocument(): void {
+  this.downloadAsset('/assets/Outputs/Hyperlinking_output.zip', 'hyperlinked-document.zip');
+}
+
+downloadHitlCsv(): void {
+  this.downloadAsset('assets/Outputs/hitl_manual_log.csv', 'hitl-history.csv');
+}
+
+downloadAutoLinkedCsv(): void {
+  this.downloadAsset('assets/Outputs/auto_hyperlinks_log.csv', 'auto-linked.csv');
+}
+
+private downloadAsset(path: string, filename: string): void {
+  const link = document.createElement('a');
+  link.href = path;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 }

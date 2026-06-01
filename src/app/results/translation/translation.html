@@ -8,15 +8,6 @@
       <strong>Translation Output</strong>
       <p>Dossier translated across regulatory languages</p>
     </div>
-
-    <button
-      type="button"
-      class="svc-download-btn"
-      aria-label="Download full translation report"
-    >
-      <i class="ti ti-download" aria-hidden="true"></i>
-      Glossary
-    </button>
   </div>
 
   <div class="translation-body">
@@ -35,17 +26,30 @@
       @for (lang of languagesList; track lang.name) {
         <div class="tl-lang-row">
           <span class="tl-lang-name">{{ lang.name }}</span>
-          <span class="tl-lang-pages">{{ lang.pages }} pages</span>
           <span
             class="tl-lang-status"
             [class.complete]="lang.status === 'Complete'"
           >
             {{ lang.status }}
           </span>
+
+          <!-- Glossary CSV download -->
+          <button
+            type="button"
+            class="svc-download-btn svc-download-btn--compact svc-download-btn--ghost"
+            [attr.aria-label]="'Download ' + lang.name + ' glossary CSV'"
+            (click)="downloadGlossary(lang)"
+          >
+            <i class="ti ti-file-spreadsheet" aria-hidden="true"></i>
+            Glossary
+          </button>
+
+          <!-- Translated PDF ZIP download -->
           <button
             type="button"
             class="svc-download-btn svc-download-btn--compact"
-            [attr.aria-label]="'Download ' + lang.name + ' translation'"
+            [attr.aria-label]="'Download ' + lang.name + ' translated PDF'"
+            (click)="downloadTranslatedPdf(lang)"
           >
             <i class="ti ti-download" aria-hidden="true"></i>
             PDF

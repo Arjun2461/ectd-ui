@@ -166,3 +166,38 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Two-button layout in each row */
+.tl-lang-row {
+  grid-template-columns: 1fr auto auto auto auto; /* name | pages | status | glossary | pdf */
+}
+
+/* Ghost/outline style for the Glossary button */
+.svc-download-btn--ghost {
+  background: transparent;
+  border: 1px solid #e9d5ff;
+  color: #7c3aed;
+}
+
+.svc-download-btn--ghost:hover {
+  background: #f5f3ff;
+  border-color: #c4b5fd;
+}
+
+/* Responsive: stack both action buttons on narrow screens */
+@media (max-width: 900px) {
+  .tl-lang-row {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto auto;
+  }
+
+  .tl-lang-pages   { grid-column: 1; grid-row: 2; }
+  .tl-lang-status  { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+
+  .svc-download-btn--ghost,
+  .svc-download-btn--compact {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    justify-self: start;
+  }
+}
