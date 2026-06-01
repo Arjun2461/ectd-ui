@@ -9,91 +9,123 @@
       <div class="search-box">
         <i class="ti ti-search" aria-hidden="true"></i>
         <input
-          type="text"
-          placeholder="Search by job ID, module, or service..."
+          type="search"
+          placeholder="Search by job ID, name, module, or service..."
           [value]="searchQuery()"
           (input)="onSearch($event)"
         />
       </div>
 
-      <button class="filter-btn" type="button">
-        <i class="ti ti-filter" aria-hidden="true"></i>
-        <span>All statuses</span>
-        <i class="ti ti-chevron-down filter-chevron" aria-hidden="true"></i>
-      </button>
-    </div>
-
-    <div class="table-panel">
-      <div class="table-wrap">
-        <table class="history-table">
-          <thead>
-            <tr>
-              <th scope="col" class="col-job-id">Job ID</th>
-              <th scope="col" class="col-date">Date</th>
-              <th scope="col" class="col-modules">Modules</th>
-              <th scope="col" class="col-services">Services</th>
-              <th scope="col" class="col-status">Status</th>
-              <th scope="col" class="col-actions">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (job of jobs(); track job.id) {
-              <tr class="history-row" (click)="viewJob(job)">
-                <td class="col-job-id">
-                  <span class="job-id">{{ job.id }}</span>
-                </td>
-                <td class="col-date">
-                  <span class="date-text">{{ formatDate(job.createdAt) }}</span>
-                </td>
-                <td class="col-modules">
-                  <div class="modules">
-                    @for (mod of getJobModules(job); track mod) {
-                      <span class="chip">{{ mod }}</span>
-                    } @empty {
-                      <span class="chip chip--muted">—</span>
-                    }
-                  </div>
-                </td>
-                <td class="col-services">
-                  <span class="services-text">{{
-                    formatServices(job.selectedServices)
-                  }}</span>
-                </td>
-                <td class="col-status">
-                  <span
-                    class="status"
-                    [class.completed]="job.status === 'completed'"
-                    [class.processing]="job.status === 'processing'"
-                  >
-                    <span class="status-dot" aria-hidden="true"></span>
-                    {{ getStatusLabel(job.status) }}
-                  </span>
-                </td>
-                <td class="col-actions" (click)="$event.stopPropagation()">
-                  <div class="actions">
-                    <button
-                      type="button"
-                      class="action-btn action-btn--icon"
-                      [attr.aria-label]="'Download reports for ' + job.id"
-                      title="Download"
-                    >
-                      <i class="ti ti-download" aria-hidden="true"></i>
-                    </button>
-                    <button
-                      class="action-btn action-btn--view"
-                      type="button"
-                      (click)="viewJob(job, $event)"
-                    >
-                      <i class="ti ti-eye" aria-hidden="true"></i>
-                      <span>View</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+      <div class="status-filters" role="tablist" aria-label="Filter by status">
+        @for (opt of statusOptions; track opt.id) {
+          <button
+            type="button"
+            class="status-filter"
+            role="tab"
+            [attr.aria-selected]="statusFilter() === opt.id"
+            [class.active]="statusFilter() === opt.id"
+            (click)="setStatusFilter(opt.id)"
+          >
+            {{ opt.label }}
+          </button>
+        }
       </div>
     </div>
+
+    @if (jobs().length === 0) {
+      <div class="history-empty">
+        <p>No submissions found.</p>
+        @if (searchQuery() || statusFilter() !== 'all') {
+          <button type="button" class="empty-reset" (click)="resetFilters()">
+            Clear filters
+          </button>
+        } @else {
+          <a routerLink="/upload" class="empty-reset">New submission</a>
+        }
+      </div>
+    } @else {
+      <div class="table-panel">
+        <div class="table-wrap">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th scope="col" class="col-job-id">Job ID</th>
+                <th scope="col" class="col-name">Name</th>
+                <th scope="col" class="col-date">Date</th>
+                <th scope="col" class="col-modules">Modules</th>
+                <th scope="col" class="col-services">Services</th>
+                <th scope="col" class="col-status">Status</th>
+                <th scope="col" class="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (job of jobs(); track job.id) {
+                <tr
+                  class="history-row"
+                  tabindex="0"
+                  (click)="viewJob(job)"
+                  (keydown.enter)="viewJob(job)"
+                  (keydown.space)="viewJob(job); $event.preventDefault()"
+                >
+                  <td class="col-job-id">
+                    <span class="job-id">{{ job.id }}</span>
+                  </td>
+                  <td class="col-name">
+                    <span class="job-name">{{ getJobName(job) }}</span>
+                  </td>
+                  <td class="col-date">
+                    <span class="date-text">{{ formatDate(job.createdAt) }}</span>
+                  </td>
+                  <td class="col-modules">
+                    <div class="modules">
+                      @for (mod of getJobModules(job); track mod) {
+                        <span class="chip">{{ mod }}</span>
+                      } @empty {
+                        <span class="chip chip--muted">—</span>
+                      }
+                    </div>
+                  </td>
+                  <td class="col-services">
+                    <span class="services-text">{{
+                      formatServices(job.selectedServices)
+                    }}</span>
+                  </td>
+                  <td class="col-status">
+                    <span
+                      class="status"
+                      [class.completed]="job.status === 'completed'"
+                      [class.processing]="job.status === 'processing'"
+                    >
+                      <span class="status-dot" aria-hidden="true"></span>
+                      {{ getStatusLabel(job.status) }}
+                    </span>
+                  </td>
+                  <td class="col-actions" (click)="$event.stopPropagation()">
+                    <div class="actions">
+                      <button
+                        type="button"
+                        class="action-btn action-btn--icon"
+                        [attr.aria-label]="'Download reports for ' + job.id"
+                        title="Download"
+                      >
+                        <i class="ti ti-download" aria-hidden="true"></i>
+                      </button>
+                      <button
+                        class="action-btn action-btn--view"
+                        type="button"
+                        (click)="viewJob(job, $event)"
+                      >
+                        <i class="ti ti-eye" aria-hidden="true"></i>
+                        <span>View</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
   </div>
 </div>

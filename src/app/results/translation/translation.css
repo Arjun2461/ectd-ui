@@ -1,48 +1,48 @@
 .translation-card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 14px;
   border: 1px solid #e5e7eb;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.06);
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.05);
 }
 
 .translation-top {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 20px;
+  gap: 10px;
+  padding: 14px 16px;
   border-bottom: 1px solid #f3f4f6;
   flex-wrap: wrap;
 }
 
 .translation-icon {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   background: linear-gradient(135deg, #ede9fe, #ddd6fe);
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #7c3aed;
-  font-size: 22px;
+  font-size: 18px;
   flex-shrink: 0;
 }
 
 .translation-titles {
   flex: 1;
-  min-width: 160px;
+  min-width: 140px;
 }
 
 .translation-titles strong {
-  font-size: 15px;
+  font-size: 14px;
   display: block;
   color: #111827;
 }
 
 .translation-titles p {
-  font-size: 12px;
+  font-size: 11px;
   color: #6b7280;
-  margin: 4px 0 0;
+  margin: 2px 0 0;
 }
 
 .translation-top .svc-download-btn {
@@ -50,51 +50,51 @@
 }
 
 .translation-body {
-  padding: 20px;
+  padding: 14px 16px;
 }
 
 .tl-stat-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
 .tl-stat {
   background: #f9fafb;
   border: 1px solid #f3f4f6;
-  border-radius: 12px;
-  padding: 14px;
+  border-radius: 10px;
+  padding: 10px 12px;
   text-align: center;
 }
 
 .tl-num {
   display: block;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   color: #111827;
 }
 
 .tl-lbl {
   display: block;
-  font-size: 11px;
+  font-size: 10px;
   color: #6b7280;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .tl-lang-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .tl-lang-row {
   display: grid;
-  grid-template-columns: 1fr auto auto auto;
+  grid-template-columns: 1fr auto auto auto auto;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
   border: 1px solid #f3f4f6;
   background: #fafafa;
   transition: background 0.2s ease, border-color 0.2s ease;
@@ -106,20 +106,20 @@
 }
 
 .tl-lang-name {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: #111827;
 }
 
 .tl-lang-pages {
-  font-size: 12px;
+  font-size: 11px;
   color: #6b7280;
 }
 
 .tl-lang-status {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 999px;
   background: #fef3c7;
   color: #92400e;
@@ -128,6 +128,27 @@
 .tl-lang-status.complete {
   background: #dcfce7;
   color: #15803d;
+}
+
+:host .svc-download-btn {
+  padding: 7px 14px;
+  font-size: 12px;
+  gap: 6px;
+}
+
+:host .svc-download-btn i {
+  font-size: 14px;
+}
+
+:host .svc-download-btn--ghost {
+  padding: 6px 12px;
+  font-size: 11px;
+}
+
+:host .svc-download-btn--compact {
+  padding: 5px 10px;
+  font-size: 10px;
+  gap: 4px;
 }
 
 @media (max-width: 900px) {
@@ -143,7 +164,7 @@
 
   .tl-lang-row {
     grid-template-columns: 1fr auto;
-    grid-template-rows: auto auto;
+    grid-template-rows: auto auto auto;
   }
 
   .tl-lang-pages {
@@ -167,11 +188,6 @@
   }
 }
 
-/* Two-button layout in each row */
-.tl-lang-row {
-  grid-template-columns: 1fr auto auto auto auto; /* name | pages | status | glossary | pdf */
-}
-
 /* Ghost/outline style for the Glossary button */
 .svc-download-btn--ghost {
   background: transparent;
@@ -191,8 +207,16 @@
     grid-template-rows: auto auto auto;
   }
 
-  .tl-lang-pages   { grid-column: 1; grid-row: 2; }
-  .tl-lang-status  { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+  .tl-lang-pages {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .tl-lang-status {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
 
   .svc-download-btn--ghost,
   .svc-download-btn--compact {

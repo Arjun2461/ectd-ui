@@ -34,8 +34,18 @@ export interface ModuleStat {
 export interface LinkBreakdownItem {
   label: string;
   count: number;
-  tone: 'teal' | 'red' | 'gray';
+  tone: 'linked' | 'changed' | 'missing';
 }
+
+/** Shared palette — donut segments, legend dots, and module bars stay in sync */
+const HYPER_CHART_COLORS = {
+  linked: '#378ADD',
+  changed: '#EF9F27',
+  missing: '#E24B4A',
+  linkedHover: '#2B6CB8',
+  changedHover: '#D97706',
+  missingHover: '#C53030',
+} as const;
 
 export interface HitlTerminalEvent {
   id: number;
@@ -193,15 +203,15 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     const s = this.stats;
     if (!s) {
       return [
-        { label: 'Linked', count: 0, tone: 'teal' },
-        { label: 'Changed', count: 0, tone: 'red' },
-        { label: 'Missing', count: 0, tone: 'gray' },
+        { label: 'Linked', count: 0, tone: 'linked' },
+        { label: 'Changed', count: 0, tone: 'changed' },
+        { label: 'Missing', count: 0, tone: 'missing' },
       ];
     }
     return [
-      { label: 'Linked', count: this.scaled(s.linked), tone: 'teal' },
-      { label: 'Changed', count: this.scaled(s.broken), tone: 'red' },
-      { label: 'Missing', count: this.scaled(s.missing), tone: 'gray' },
+      { label: 'Linked', count: this.scaled(s.linked), tone: 'linked' },
+      { label: 'Changed', count: this.scaled(s.broken), tone: 'changed' },
+      { label: 'Missing', count: this.scaled(s.missing), tone: 'missing' },
     ];
   }
 
@@ -335,16 +345,27 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
         datasets: [
           {
             data: [linked || 1, broken, missing],
-            backgroundColor: ['#0d9488', '#EF9F27', '#E24B4A'],
-            borderWidth: 0,
-            hoverOffset: 4,
+            backgroundColor: [
+              HYPER_CHART_COLORS.linked,
+              HYPER_CHART_COLORS.changed,
+              HYPER_CHART_COLORS.missing,
+            ],
+            hoverBackgroundColor: [
+              HYPER_CHART_COLORS.linkedHover,
+              HYPER_CHART_COLORS.changedHover,
+              HYPER_CHART_COLORS.missingHover,
+            ],
+            borderColor: '#ffffff',
+            borderWidth: 2,
+            hoverOffset: 6,
+            spacing: 1,
           },
         ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '72%',
+        cutout: '70%',
         animation: {
           animateRotate: true,
           animateScale: true,
@@ -357,6 +378,16 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
             backgroundColor: '#1e293b',
             padding: 10,
             cornerRadius: 8,
+            titleFont: { size: 12, weight: 'bold' },
+            bodyFont: { size: 12 },
+            callbacks: {
+              label: (ctx) => {
+                const total = (ctx.dataset.data as number[]).reduce((a, b) => a + b, 0);
+                const value = ctx.parsed as number;
+                const pct = total ? ((value / total) * 100).toFixed(1) : '0.0';
+                return ` ${ctx.label}: ${value.toLocaleString()} (${pct}%)`;
+              },
+            },
           },
         },
       },

@@ -63,6 +63,8 @@ export interface ResolvedReference {
 
 export interface Job {
   id: string;
+  /** Backend pipeline task id (SSE); used to resume after refresh. */
+  taskId?: string;
   status: JobStatus;
   createdAt: string;
   selectedServices: string[];

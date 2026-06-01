@@ -5,21 +5,21 @@
 }
 
 .history-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .history-page h1 {
   margin: 0;
-  font-size: clamp(1.625rem, 3vw, 1.875rem);
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
   font-weight: 700;
   letter-spacing: -0.03em;
   color: #0f172a;
 }
 
 .subtitle {
-  margin: 0.5rem 0 0;
-  font-size: 0.875rem;
-  line-height: 1.5;
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
   color: #64748b;
 }
 
@@ -27,7 +27,7 @@
 .history-card {
   margin-top: 0;
   background: #ffffff;
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   border: 1px solid rgba(15, 23, 42, 0.06);
   box-shadow:
     0 1px 2px rgba(15, 23, 42, 0.04),
@@ -41,8 +41,8 @@
 .toolbar {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.25rem;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
   border-bottom: 1px solid #f1f5f9;
   background: linear-gradient(180deg, #fafbfc 0%, #ffffff 100%);
   flex-wrap: wrap;
@@ -66,12 +66,12 @@
 
 .search-box input {
   width: 100%;
-  height: 2.5rem;
-  padding: 0 1rem 0 2.5rem;
-  border-radius: 0.625rem;
+  height: 2rem;
+  padding: 0 0.75rem 0 2.125rem;
+  border-radius: 0.5rem;
   border: 1px solid #e2e8f0;
   background: #ffffff;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   color: #0f172a;
   outline: none;
   transition:
@@ -94,51 +94,78 @@
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
 }
 
-.filter-btn {
+.status-filters {
   display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  height: 2.5rem;
-  padding: 0 0.875rem;
-  border-radius: 0.625rem;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-  font-size: 0.8125rem;
+  gap: 4px;
+  padding: 2px;
+  border-radius: 0.5rem;
+  background: #f1f5f9;
+}
+
+.status-filter {
+  height: 2rem;
+  padding: 0 0.625rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: transparent;
+  font-size: 0.75rem;
   font-weight: 500;
-  color: #475569;
+  color: #64748b;
   cursor: pointer;
   white-space: nowrap;
   transition:
     background 0.2s ease,
-    border-color 0.2s ease,
+    color 0.2s ease,
     box-shadow 0.2s ease;
 }
 
-.filter-btn i:first-child {
-  font-size: 0.9375rem;
-  color: #64748b;
+.status-filter:hover {
+  color: #475569;
 }
 
-.filter-chevron {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  margin-left: 0.125rem;
+.status-filter.active {
+  background: #fff;
+  color: #6d28d9;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
-.filter-btn:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-}
-
-.filter-btn:focus-visible {
+.status-filter:focus-visible {
   outline: 2px solid #7c3aed;
   outline-offset: 2px;
 }
 
+/* ─── Empty ─── */
+.history-empty {
+  padding: 2.5rem 1rem;
+  text-align: center;
+}
+
+.history-empty p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.empty-reset {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #7c3aed;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.empty-reset:hover {
+  text-decoration: underline;
+}
+
 /* ─── Table panel ─── */
 .table-panel {
-  padding: 0.5rem 0.75rem 0.75rem;
+  padding: 0.375rem 0.5rem 0.5rem;
   background: #ffffff;
 }
 
@@ -159,8 +186,8 @@
 
 /* ─── Header ─── */
 .history-table thead th {
-  padding: 0.75rem 1rem;
-  font-size: 0.6875rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -183,8 +210,8 @@
 
 /* ─── Rows ─── */
 .history-table tbody td {
-  padding: 1rem;
-  font-size: 0.8125rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.75rem;
   vertical-align: middle;
   border-bottom: 1px solid #f1f5f9;
   transition: background-color 0.18s ease;
@@ -203,51 +230,75 @@
   background: #f5f3ff;
 }
 
+.history-row:focus-visible {
+  outline: none;
+}
+
+.history-row:focus-visible td {
+  background: #f5f3ff;
+  box-shadow: inset 0 0 0 2px rgba(124, 58, 237, 0.25);
+}
+
 .history-row:last-child td {
   border-bottom: none;
 }
 
 /* ─── Column widths ─── */
 .col-job-id {
-  width: 10%;
+  width: 9%;
+}
+
+.col-name {
+  width: 16%;
 }
 
 .col-date {
-  width: 11%;
+  width: 10%;
 }
 
 .col-modules {
-  width: 15%;
+  width: 13%;
 }
 
 .col-services {
-  width: 27%;
+  width: 22%;
 }
 
 .col-status {
-  width: 13%;
+  width: 12%;
   text-align: center;
 }
 
 .col-actions {
-  width: 24%;
+  width: 18%;
   text-align: right;
-  padding-right: 1.25rem !important;
+  padding-right: 1rem !important;
 }
 
 /* ─── Cell content ─── */
 .job-id {
   display: inline-block;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: #0f172a;
   white-space: nowrap;
 }
 
+.job-name {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #334155;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .date-text {
   color: #64748b;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   white-space: nowrap;
 }
 
@@ -288,8 +339,8 @@
   line-clamp: 2;
   overflow: hidden;
   color: #475569;
-  font-size: 0.8125rem;
-  line-height: 1.5;
+  font-size: 0.75rem;
+  line-height: 1.4;
   word-break: break-word;
 }
 
@@ -298,10 +349,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.375rem;
-  padding: 0.25rem 0.625rem 0.25rem 0.5rem;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem 0.125rem 0.375rem;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   white-space: nowrap;
   border: 1px solid transparent;
@@ -340,7 +391,7 @@
 .actions {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 0.5rem;
   width: 100%;
 }
@@ -349,14 +400,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.375rem;
-  height: 2rem;
-  padding: 0 0.75rem;
-  border-radius: 0.5rem;
+  gap: 0.25rem;
+  height: 1.75rem;
+  padding: 0 0.5rem;
+  border-radius: 0.375rem;
   border: 1px solid #e2e8f0;
   background: #ffffff;
   color: #475569;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
@@ -369,7 +420,7 @@
 }
 
 .action-btn--icon {
-  width: 2rem;
+  width: 1.75rem;
   padding: 0;
   color: #7c3aed;
   border-color: #e9d5ff;
@@ -424,7 +475,7 @@
 /* ─── Tablet ─── */
 @media (max-width: 1024px) {
   .history-table {
-    min-width: 52rem;
+    min-width: 56rem;
   }
 
   .toolbar {
@@ -444,23 +495,27 @@
   }
 
   .col-job-id {
-    width: 14%;
+    width: 12%;
+  }
+
+  .col-name {
+    width: 22%;
   }
 
   .col-modules {
-    width: 17%;
-  }
-
-  .col-services {
-    width: 30%;
-  }
-
-  .col-status {
     width: 15%;
   }
 
+  .col-services {
+    width: 26%;
+  }
+
+  .col-status {
+    width: 14%;
+  }
+
   .col-actions {
-    width: 24%;
+    width: 22%;
   }
 }
 
@@ -475,12 +530,12 @@
     align-items: stretch;
   }
 
-  .filter-btn {
+  .status-filters {
     justify-content: center;
   }
 
   .history-table {
-    min-width: 34rem;
+    min-width: 38rem;
   }
 
   .history-table thead .col-modules,
@@ -491,15 +546,19 @@
   }
 
   .col-job-id {
-    width: 30%;
+    width: 22%;
+  }
+
+  .col-name {
+    width: 38%;
   }
 
   .col-status {
-    width: 34%;
+    width: 22%;
   }
 
   .col-actions {
-    width: 36%;
+    width: 18%;
   }
 
   .action-btn--view span {

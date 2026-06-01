@@ -109,7 +109,7 @@
 
         <div class="terminal-scroll" #terminalScroll>
           @if (showHitlPanel) {
-            <p class="t-id">#HITL-{{ hitlEvent?.id }}</p>
+            <p class="t-id">HITL-{{ hitlEvent?.id }}</p>
             <p class="t-warn">Manual review required — choose the best target match</p>
 
             <div class="t-block">
@@ -258,21 +258,21 @@
         <table class="resolved-table hitl-history-table">
           <thead>
             <tr>
-              <th style="width: 52px">#</th>
-              <th>Source document</th>
-              <th style="text-align:center;">Suggested matches</th>
-              <th>Status</th>
-              <th class="th-chevron" aria-label="Expand row"></th>
+              <th class="th-sr-no" scope="col">Sr. No.</th>
+              <th scope="col" style="text-align: left;">Source document</th>
+              <th class="th-suggestions" scope="col">Suggested matches</th>
+              <th scope="col">Status</th>
+              <th class="th-chevron" scope="col" aria-label="Expand row"></th>
             </tr>
           </thead>
           <tbody>
             @for (h of pagedHitlHistory; track h.hitlSeqNo; let i = $index) {
               <tr class="main-row" (click)="toggleHitlRow(hitlPageStart + i)">
-                <td class="rr-id">#{{ h.hitlSeqNo }}</td>
-                <td class="rr-source">
+                <td class="sr-no">{{ hitlPageStart + i + 1 }}</td>
+                <td class="rr-source" style="text-align: left;">
                   <span class="rr-doc">{{ h.sourceDocument }}</span>
                 </td>
-                <td>
+                <td class="rr-suggestions">
                   <div class="rr-pills">
                     @for (s of h.suggestions; track s.file; let j = $index) {
                       <span
@@ -301,7 +301,7 @@
 
               @if (expandedHitlIndex === hitlPageStart + i) {
                 <tr class="expand-row">
-                  <td colspan="6">
+                  <td colspan="5">
                     <div class="expand-box">
                       <div class="exp-grid">
                         <div class="exp-cell">
@@ -449,18 +449,18 @@
         <table class="resolved-table">
           <thead>
             <tr>
-              <th style="width: 52px">#</th>
-              <th>Source document</th>
-              <th style="text-align:center;">Suggested matches</th>
-              <th>Status</th>
-              <th class="th-chevron" aria-label="Expand"></th>
+              <th class="th-sr-no" scope="col">Sr. No.</th>
+              <th scope="col" style="text-align: left;">Source document</th>
+              <th class="th-suggestions" scope="col">Suggested matches</th>
+              <th scope="col">Status</th>
+              <th class="th-chevron" scope="col" aria-label="Expand"></th>
             </tr>
           </thead>
           <tbody>
             @for (r of pagedResolvedRefs; track $index; let i = $index) {
               <tr class="main-row" (click)="toggleRow(resolvedPageStart + i)">
-                <td class="rr-id">#{{ resolvedPageStart + i + 1 }}</td>
-                <td class="rr-source">
+                <td class="sr-no">{{ resolvedPageStart + i + 1 }}</td>
+                <td class="rr-source" style="text-align: left;">
                   <span class="rr-doc">{{ $any(r).sourceDoc }}</span>
                 </td>
                 <td class="rr-suggestions">
@@ -493,7 +493,7 @@
 
               @if (expandedIndex === resolvedPageStart + i) {
                 <tr class="expand-row">
-                  <td colspan="6">
+                  <td colspan="5">
                     <div class="expand-box">
                       <div class="exp-grid">
                         <div class="exp-cell">

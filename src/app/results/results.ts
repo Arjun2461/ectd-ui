@@ -24,7 +24,7 @@ import {
   SERVICE_META,
   ServiceProgress,
 } from '../core/models/job.types';
-import { buildServiceProgress } from '../core/data/job-data';
+import { applyCompletedResults, buildServiceProgress } from '../core/data/job-data';
 
 // ── NEW: SSE service ──────────────────────────────────────────────────────────
 import {
@@ -32,6 +32,7 @@ import {
   PipelineState,
   TerminalEntry,
 } from '../core/services/Pipeline-sse.service';
+import { PipelineSessionStorage } from '../core/services/pipeline-session.storage';
 
 type ViewMode = 'empty' | 'processing' | 'completed';
 
@@ -49,6 +50,7 @@ export class Results implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly pipeline = inject(PipelineSseService);
+  private readonly pipelineSession = inject(PipelineSessionStorage);
 
   viewMode: ViewMode = 'empty';
   job: Job | null = null;
@@ -101,6 +103,7 @@ export class Results implements OnInit, OnDestroy {
   // ────────────────────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
+    this.tryRestorePipeline();
     this.refreshJobView();
 
     // Subscribe to live SSE state — updates happen whenever the stream pushes
@@ -134,6 +137,7 @@ export class Results implements OnInit, OnDestroy {
         this.dummyProgress = 100;
         this.viewMode = 'completed';
         this.lastHitlSeqNo = null;
+        this.finalizeJobOnComplete();
         this.toast.show('Analysis completed successfully');
       } else if (state.status === 'error') {
         this.stopDummyProgress();
@@ -202,6 +206,15 @@ export class Results implements OnInit, OnDestroy {
 
   get pipelineServices(): ServiceProgress[] {
     const services = this.job?.selectedServices ?? ['hyperlinking'];
+    const completedRows = services.map(() => ({
+      progress: 100,
+      status: 'completed' as const,
+    }));
+
+    if (this.viewMode === 'completed') {
+      return buildServiceProgress(services, completedRows);
+    }
+
     const base =
       this.job?.serviceProgress?.length ?
         this.job.serviceProgress
@@ -368,12 +381,16 @@ export class Results implements OnInit, OnDestroy {
   }
 
   get stats() {
-    if (this.viewMode === 'processing') return this.previewStats;
+    if (this.viewMode === 'processing' || this.viewMode === 'completed') {
+      return this.job?.stats ?? this.previewStats;
+    }
     return this.job?.stats;
   }
 
   get moduleDistribution(): ModuleDistribution | undefined {
-    if (this.viewMode === 'processing') return this.previewModules;
+    if (this.viewMode === 'processing' || this.viewMode === 'completed') {
+      return this.job?.moduleDistribution ?? this.previewModules;
+    }
     return this.job?.moduleDistribution;
   }
 
@@ -453,6 +470,27 @@ export class Results implements OnInit, OnDestroy {
   }
 
   // ── Private ────────────────────────────────────────────────────────────────
+
+  private tryRestorePipeline(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const live = this.pipeline.state$.value;
+    if (live.status !== 'idle' && live.taskId) return;
+
+    const saved = this.pipelineSession.load();
+    if (!saved) return;
+
+    const job =
+      this.jobService.getJobById(saved.jobId) ??
+      this.jobService.getJobByTaskId(saved.taskId);
+    if (!job?.taskId || job.status === 'completed') {
+      this.pipelineSession.clear();
+      return;
+    }
+
+    this.jobService.setCurrentJob(job);
+    this.pipeline.restoreSession(job.taskId, job.id);
+  }
 
   private refreshJobView(): void {
     const job = this.jobService.activeJob() ?? this.jobService.getLastJob() ?? null;
@@ -547,6 +585,17 @@ export class Results implements OnInit, OnDestroy {
       this.dummyProgress = 100;
       this.toast.show('Analysis completed successfully');
     }
+  }
+
+  /** Persist demo/completed outputs when SSE finishes before simulation does. */
+  private finalizeJobOnComplete(): void {
+    const current = this.job ?? this.jobService.activeJob() ?? this.jobService.getLastJob();
+    if (!current) return;
+
+    const completed =
+      current.status === 'completed' ? current : applyCompletedResults(current);
+    this.job = completed;
+    this.jobService.updateJob(completed);
   }
 
   private stopSimulation(): void {

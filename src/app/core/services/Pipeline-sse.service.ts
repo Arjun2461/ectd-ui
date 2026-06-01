@@ -8,6 +8,10 @@ import {
 } from '../models/hitl-history.types';
 import { HitlHistoryStorage } from './hitl-history.storage';
 import {
+  PipelineSessionSnapshot,
+  PipelineSessionStorage,
+} from './pipeline-session.storage';
+import {
   isProgressMilestoneMessage,
   servicesCompletedByMilestone,
 } from '../utils/pipeline-progress.util';
@@ -162,6 +166,7 @@ export class PipelineSseService {
   private readonly ngZone      = inject(NgZone);
   private readonly platformId  = inject(PLATFORM_ID);
   private readonly hitlStorage = inject(HitlHistoryStorage);
+  private readonly sessionStorage = inject(PipelineSessionStorage);
   private readonly baseUrl     = "http://localhost:8000";
 
   // Public reactive state
@@ -174,11 +179,14 @@ export class PipelineSseService {
 
   // ── Start pipeline + open SSE stream ───────────────────────────────────────
 
-  async startPipeline(payload: {
-    uploaded_files: string[];
-    services: string[];
-    target_language: string;
-  }): Promise<string> {
+  async startPipeline(
+    payload: {
+      uploaded_files: string[];
+      services: string[];
+      target_language: string;
+    },
+    options?: { jobId?: string },
+  ): Promise<string> {
     const res = await this.http
       .post<{ task_id: string; stream_url: string }>(
         `${this.baseUrl}/pipeline/start`,
@@ -201,8 +209,52 @@ export class PipelineSseService {
       completedServiceIds: [],
     });
 
+    if (options?.jobId) {
+      this.persistSession(options.jobId);
+    }
+
     this.openStream(res.task_id);
     return res.task_id;
+  }
+
+  /**
+   * Reconnect SSE and restore UI state after a full page refresh.
+   * HITL rows come from localStorage; live events resume from the backend stream.
+   */
+  restoreSession(taskId: string, jobId: string): void {
+    if (!isPlatformBrowser(this.platformId) || !taskId) return;
+
+    const saved = this.sessionStorage.load();
+    const hitlHistory = this.hitlStorage.load(taskId);
+    const base: Partial<PipelineState> = {
+      taskId,
+      hitlHistory,
+      logs: [],
+      terminalEntries: [],
+      autoResolved: [],
+      activeHitl: null,
+    };
+
+    if (saved?.taskId === taskId) {
+      this.patch({
+        ...base,
+        status: saved.status === 'idle' ? 'running' : saved.status,
+        overallProgress: saved.overallProgress,
+        currentFile: saved.currentFile,
+        currentFileIndex: saved.currentFileIndex,
+        totalFiles: saved.totalFiles,
+        completedFiles: saved.completedFiles,
+        autoResolvedCount: saved.autoResolvedCount,
+        hitlResolvedCount: saved.hitlResolvedCount,
+        progressMilestone: saved.progressMilestone,
+        completedServiceIds: saved.completedServiceIds,
+      });
+    } else {
+      this.patch({ ...base, status: 'running' });
+    }
+
+    this.persistSession(jobId);
+    this.openStream(taskId);
   }
 
   // ── HITL responses ─────────────────────────────────────────────────────────
@@ -249,6 +301,7 @@ export class PipelineSseService {
 
   reset(): void {
     this.closeStream();
+    this.sessionStorage.clear();
     this.state$.next({ ...INITIAL_STATE });
   }
 
@@ -400,6 +453,7 @@ export class PipelineSseService {
           outputs:         event.outputs,
           activeHitl:      null,
         });
+        this.sessionStorage.clear();
         this.closeStream();
         break;
 
@@ -523,9 +577,49 @@ export class PipelineSseService {
   private persistHitlHistory(history: HitlHistoryRecord[]): void {
     const taskId = this.state$.value.taskId;
     if (taskId) this.hitlStorage.save(taskId, history);
+    this.persistSessionFromState();
+  }
+
+  private persistSession(jobId: string): void {
+    const state = this.state$.value;
+    if (!state.taskId || state.status === 'idle') return;
+
+    const snapshot: PipelineSessionSnapshot = {
+      taskId: state.taskId,
+      jobId,
+      status: state.status,
+      overallProgress: state.overallProgress,
+      currentFile: state.currentFile,
+      currentFileIndex: state.currentFileIndex,
+      totalFiles: state.totalFiles,
+      completedFiles: state.completedFiles,
+      autoResolvedCount: state.autoResolvedCount,
+      hitlResolvedCount: state.hitlResolvedCount,
+      progressMilestone: state.progressMilestone,
+      completedServiceIds: state.completedServiceIds,
+      updatedAt: Date.now(),
+    };
+    this.sessionStorage.save(snapshot);
+  }
+
+  private persistSessionFromState(): void {
+    const saved = this.sessionStorage.load();
+    if (saved?.jobId) this.persistSession(saved.jobId);
   }
 
   private patch(partial: Partial<PipelineState>): void {
-    this.state$.next({ ...this.state$.value, ...partial });
+    const next = { ...this.state$.value, ...partial };
+    this.state$.next(next);
+
+    const shouldPersist =
+      partial.status !== undefined ||
+      partial.overallProgress !== undefined ||
+      partial.activeHitl !== undefined ||
+      partial.progressMilestone !== undefined ||
+      partial.completedFiles !== undefined;
+
+    if (shouldPersist && next.taskId && next.status !== 'idle') {
+      this.persistSessionFromState();
+    }
   }
 }

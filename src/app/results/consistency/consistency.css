@@ -5,18 +5,18 @@
 }
 
 .consistency-page {
-  padding: 0 20px 32px;
+  padding: 0 16px 24px;
   max-width: 1200px;
 }
 
 /* ─── Section headers ─── */
 .con-section-head {
-  padding: 8px 0 20px;
+  padding: 6px 0 14px;
 }
 
 .con-section-head h2 {
-  margin: 0 0 6px;
-  font-size: 20px;
+  margin: 0 0 4px;
+  font-size: 17px;
   font-weight: 700;
   color: #0f172a;
   letter-spacing: -0.02em;
@@ -24,7 +24,7 @@
 
 .con-section-head p {
   margin: 0;
-  font-size: 13px;
+  font-size: 12px;
   color: #64748b;
 }
 
@@ -61,15 +61,15 @@
 .con-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 18px;
 }
 
 .con-stat-card {
   background: linear-gradient(145deg, #faf8ff 0%, #ffffff 55%, #f8fafc 100%);
   border: 1px solid #ede9fe;
-  border-radius: 18px;
-  padding: 22px 24px;
+  border-radius: 14px;
+  padding: 12px;
   box-shadow:
     0 1px 2px rgba(15, 23, 42, 0.04),
     0 8px 24px rgba(124, 58, 237, 0.06);
@@ -86,14 +86,14 @@
 }
 
 .con-stat-icon {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
-  font-size: 20px;
+  margin-bottom: 10px;
+  font-size: 17px;
 }
 
 .con-stat-icon--amber {
@@ -112,8 +112,8 @@
 }
 
 .con-stat-num {
-  margin: 0 0 4px;
-  font-size: 34px;
+  margin: 0 0 2px;
+  font-size: 28px;
   font-weight: 800;
   color: #0f172a;
   line-height: 1;
@@ -123,7 +123,7 @@
 
 .con-stat-label {
   margin: 0;
-  font-size: 13px;
+  font-size: 12px;
   color: #64748b;
   font-weight: 500;
 }
@@ -131,24 +131,24 @@
 /* ─── Charts grid ─── */
 .con-charts-grid {
   display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 16px;
-  margin-bottom: 16px;
+  grid-template-columns: 1fr 300px;
+  gap: 12px;
+  margin-bottom: 12px;
   align-items: stretch;
 }
 
 .con-chart-card {
   background: #fff;
   border: 1px solid #e8ecf1;
-  border-radius: 18px;
-  padding: 22px 24px;
+  border-radius: 14px;
+  padding: 16px 18px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
   transition:
     transform 0.25s ease,
     box-shadow 0.25s ease;
   display: flex;
   flex-direction: column;
-  min-height: 320px;
+  min-height: 220px;
 }
 
 .con-chart-card:hover {
@@ -157,35 +157,35 @@
 }
 
 .con-chart-card--wide {
-  min-height: 340px;
+  min-height: 220px;
 }
 
 .con-chart-card--donut {
-  min-height: 340px;
+  min-height: 220px;
 }
 
 .con-chart-card--full {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   min-height: auto;
 }
 
 .con-chart-head {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
   flex-shrink: 0;
 }
 
 .con-chart-head strong {
   display: block;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: #0f172a;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   letter-spacing: -0.01em;
 }
 
 .con-chart-head p {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
   color: #64748b;
 }
 
@@ -196,7 +196,7 @@
 }
 
 .con-chart-body--bar {
-  height: 260px;
+  height: 180px;
 }
 
 .con-chart-body--bar canvas {
@@ -209,14 +209,14 @@
   display: flex;
   flex: 1;
   align-items: center;
-  gap: 20px;
+  gap: 14px;
   min-height: 0;
 }
 
 .con-donut-wrap {
   position: relative;
-  width: 160px;
-  height: 160px;
+  width: 132px;
+  height: 132px;
   flex-shrink: 0;
 }
 
@@ -244,7 +244,7 @@
 }
 
 .con-donut-center-num {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 800;
   color: #0f172a;
   line-height: 1.1;
@@ -258,15 +258,15 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .con-legend li {
   display: grid;
   grid-template-columns: 10px 1fr auto;
   align-items: center;
-  gap: 10px;
-  font-size: 13px;
+  gap: 8px;
+  font-size: 12px;
 }
 
 .con-legend-dot {
@@ -298,14 +298,14 @@
 .con-param-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .con-param-row {
   display: grid;
-  grid-template-columns: 72px 1fr 32px;
+  grid-template-columns: 64px 1fr 28px;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   animation: con-param-grow 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -321,14 +321,14 @@
 }
 
 .con-param-name {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: #334155;
   font-family: ui-monospace, 'SF Mono', monospace;
 }
 
 .con-param-track {
-  height: 10px;
+  height: 8px;
   background: #f1f5f9;
   border-radius: 999px;
   overflow: hidden;
@@ -345,7 +345,7 @@
 
 .con-param-value {
   text-align: right;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   color: #6d28d9;
   font-variant-numeric: tabular-nums;
@@ -355,8 +355,8 @@
 .con-table-card {
   background: #fff;
   border: 1px solid #e8ecf1;
-  border-radius: 18px;
-  padding: 24px;
+  border-radius: 14px;
+  padding: 16px 18px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
   transition: box-shadow 0.25s ease;
 }
@@ -369,35 +369,35 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 14px;
   flex-wrap: wrap;
 }
 
 .con-table-top strong {
   display: block;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: #0f172a;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .con-table-top p {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
   color: #64748b;
 }
 
 .con-download-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 18px;
+  gap: 6px;
+  padding: 7px 14px;
   border-radius: 999px;
   border: 1px solid #c4b5fd;
   background: linear-gradient(180deg, #faf5ff 0%, #fff 100%);
   color: #6d28d9;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -414,28 +414,49 @@
 }
 
 .con-download-btn i {
-  font-size: 16px;
+  font-size: 14px;
+}
+
+:host .svc-download-btn {
+  padding: 7px 14px;
+  font-size: 12px;
+  gap: 6px;
+}
+
+:host .svc-download-btn i {
+  font-size: 14px;
+}
+
+:host .svc-download-btn--ghost {
+  padding: 6px 12px;
+  font-size: 11px;
+}
+
+:host .svc-download-btn--compact {
+  padding: 5px 10px;
+  font-size: 10px;
+  gap: 4px;
 }
 
 .con-table-toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
 }
 
 .con-search {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex: 1;
   min-width: 200px;
   max-width: 320px;
-  padding: 10px 14px;
+  padding: 8px 12px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 10px;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -449,7 +470,7 @@
 
 .con-search i {
   color: #94a3b8;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .con-search input {
@@ -457,7 +478,7 @@
   border: none;
   background: transparent;
   outline: none;
-  font-size: 13px;
+  font-size: 12px;
   color: #0f172a;
 }
 
@@ -468,23 +489,23 @@
 .con-filter {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: 6px;
+  padding: 6px 10px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 10px;
 }
 
 .con-filter i {
   color: #94a3b8;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .con-filter select {
   border: none;
   background: transparent;
   outline: none;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: #334155;
   cursor: pointer;
@@ -495,7 +516,7 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   border: 1px solid #f1f5f9;
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 .con-table {
@@ -505,8 +526,8 @@
 }
 
 .con-table thead th {
-  padding: 14px 16px;
-  font-size: 11px;
+  padding: 10px 12px;
+  font-size: 10px;
   font-weight: 600;
   color: #94a3b8;
   text-transform: uppercase;
@@ -539,8 +560,8 @@
 }
 
 .con-table tbody td {
-  padding: 18px 16px;
-  font-size: 13px;
+  padding: 10px 12px;
+  font-size: 12px;
   color: #475569;
   vertical-align: middle;
 }
@@ -566,8 +587,8 @@
 .con-value-chip {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
-  font-size: 11px;
+  padding: 3px 8px;
+  font-size: 10px;
   font-weight: 600;
   color: #475569;
   background: #f1f5f9;
@@ -586,23 +607,23 @@
   gap: 2px;
   color: #7c3aed;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .con-empty-row {
   text-align: center;
   color: #94a3b8 !important;
-  padding: 32px !important;
+  padding: 24px !important;
 }
 
 /* Badges */
 .con-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
+  gap: 5px;
+  padding: 4px 10px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -639,15 +660,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 20px;
-  padding-top: 16px;
+  margin-top: 14px;
+  padding-top: 12px;
   border-top: 1px solid #f1f5f9;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
 }
 
 .con-page-info {
-  font-size: 13px;
+  font-size: 12px;
   color: #64748b;
 }
 
@@ -661,14 +682,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
-  height: 36px;
-  padding: 0 10px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #fff;
   color: #475569;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -861,7 +882,7 @@
 
   .con-chart-card--wide,
   .con-chart-card--donut {
-    min-height: 300px;
+    min-height: 200px;
   }
 
   .con-donut-layout {

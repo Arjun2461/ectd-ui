@@ -233,17 +233,22 @@ export class Submission {
       this.pipeline.reset();
 
       // 5. Register a local job record (keeps existing JobService / results page plumbing intact)
-      this.jobService.createJob(selectedServices, {
+      const job = this.jobService.createJob(selectedServices, {
         targetLanguage: this.translationSelected() ? targetLanguage : undefined,
       });
 
       // 6. POST /pipeline/start → opens SSE stream internally
       //    Returns the task_id from the server
-      const taskId = await this.pipeline.startPipeline({
-        uploaded_files:  uploadedFiles,
-        services:        selectedServices,
-        target_language: targetLanguage,
-      });
+      const taskId = await this.pipeline.startPipeline(
+        {
+          uploaded_files: uploadedFiles,
+          services: selectedServices,
+          target_language: targetLanguage,
+        },
+        { jobId: job.id },
+      );
+
+      this.jobService.updateJob({ ...job, taskId });
 
       this.toast.show(`Pipeline started — task ${taskId}`);
 

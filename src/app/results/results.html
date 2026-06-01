@@ -67,6 +67,7 @@
               <div
                 class="pc-bar-fill"
                 [class.is-active]="s.status === 'processing'"
+                [class.is-complete]="s.status === 'completed'"
                 [style.width.%]="s.progress"
               ></div>
             </div>

@@ -1,13 +1,18 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject, signal, computed } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Job } from '../models/job.types';
 import {
   INITIAL_JOBS,
   applyCompletedResults,
   createProcessingJob,
 } from '../data/job-data';
+import { JobStorage } from './job.storage';
 
 @Injectable({ providedIn: 'root' })
 export class JobService {
+  private readonly storage = inject(JobStorage);
+  private readonly platformId = inject(PLATFORM_ID);
+
   private readonly jobs = signal<Job[]>([...INITIAL_JOBS]);
   private readonly currentJob = signal<Job | null>(null);
   private jobCounter = INITIAL_JOBS.length + 1;
@@ -15,12 +20,20 @@ export class JobService {
   readonly jobsList = computed(() => this.jobs());
   readonly activeJob = computed(() => this.currentJob());
 
+  constructor() {
+    this.hydrateFromStorage();
+  }
+
   getJobs(): Job[] {
     return this.jobs();
   }
 
   getJobById(id: string): Job | undefined {
     return this.jobs().find((j) => j.id === id);
+  }
+
+  getJobByTaskId(taskId: string): Job | undefined {
+    return this.jobs().find((j) => j.taskId === taskId);
   }
 
   getLastJob(): Job | undefined {
@@ -34,6 +47,7 @@ export class JobService {
 
   setCurrentJob(job: Job | null): void {
     this.currentJob.set(job);
+    this.persist();
   }
 
   createJob(
@@ -49,6 +63,7 @@ export class JobService {
     };
     this.jobs.update((list) => [job, ...list]);
     this.currentJob.set(job);
+    this.persist();
     return job;
   }
 
@@ -59,6 +74,7 @@ export class JobService {
     if (this.currentJob()?.id === updated.id) {
       this.currentJob.set({ ...updated });
     }
+    this.persist();
   }
 
   completeJob(jobId: string): Job | undefined {
@@ -67,5 +83,38 @@ export class JobService {
     const completed = applyCompletedResults(job);
     this.updateJob(completed);
     return completed;
+  }
+
+  private hydrateFromStorage(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const snapshot = this.storage.load();
+    if (!snapshot?.jobs.length) return;
+
+    const seededIds = new Set(INITIAL_JOBS.map((j) => j.id));
+    const userJobs = snapshot.jobs.filter((j) => !seededIds.has(j.id));
+    this.jobs.set([...userJobs, ...INITIAL_JOBS]);
+    this.jobCounter = Math.max(
+      snapshot.jobCounter,
+      INITIAL_JOBS.length + 1,
+      ...snapshot.jobs.map((j) => {
+        const n = Number.parseInt(j.id.replace(/\D/g, ''), 10);
+        return Number.isFinite(n) ? n + 1 : 0;
+      }),
+    );
+
+    const current =
+      snapshot.currentJobId ?
+        this.getJobById(snapshot.currentJobId) ?? null
+      : null;
+    this.currentJob.set(current);
+  }
+
+  private persist(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.storage.save({
+      jobs: this.jobs(),
+      jobCounter: this.jobCounter,
+      currentJobId: this.currentJob()?.id ?? null,
+    });
   }
 }
