@@ -23,6 +23,63 @@
   animation: hyperFadeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* ─── eCTD backbone intro ─── */
+.ectd-backbone-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  background: linear-gradient(145deg, #faf8ff 0%, #fff 55%, #f8fafc 100%);
+  border: 1px solid #e9d5ff;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(124, 58, 237, 0.06);
+}
+
+.ectd-backbone-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  color: #6d28d9;
+  font-size: 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.ectd-backbone-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.ectd-backbone-copy h2 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.ectd-backbone-copy p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.ectd-backbone-copy strong {
+  font-weight: 600;
+  color: #5b21b6;
+}
+
+.ectd-backbone-download {
+  flex-shrink: 0;
+  align-self: center;
+}
+
 @keyframes hyperFadeIn {
   from {
     opacity: 0;
@@ -227,7 +284,8 @@
 .legend-count,
 .legend-pct,
 .m-val {
-  transition: opacity 0.35s ease;
+  transition: opacity 0.5s ease;
+  font-variant-numeric: tabular-nums;
 }
 
 .donut-num {
@@ -387,7 +445,7 @@
   background: linear-gradient(90deg, var(--hyper-linked), #60a5fa);
   transform-origin: left center;
   box-shadow: 0 1px 4px rgba(55, 138, 221, 0.28);
-  transition: width 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: width 1.1s steps(8, end);
 }
 
 /* Module bars: same violet–blue family, stepped to match donut palette */
@@ -1519,6 +1577,16 @@
 }
 
 @media (max-width: 720px) {
+  .ectd-backbone-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ectd-backbone-download {
+    align-self: stretch;
+    justify-content: center;
+  }
+
   .analytics-chart-zone {
     grid-template-columns: 1fr;
     justify-items: center;

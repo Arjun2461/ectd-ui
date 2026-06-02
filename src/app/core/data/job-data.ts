@@ -10,9 +10,9 @@ import {
 const COMPLETED_RESULTS_TEMPLATE = {
   stats: {
     totalLinks: 1413,
-    linked: 1284,
-    broken: 47,
-    missing: 82,
+    linked: 989,
+    broken: 396,
+    missing: 170,
   },
   moduleDistribution: {
     M1:389,

@@ -66,9 +66,9 @@ export class Results implements OnInit, OnDestroy {
   // ── Preview / demo data (used when no real job is running) ─────────────────
   private readonly previewStats = {
     totalLinks: 1413,
-    linked: 1284,
-    broken: 47,
-    missing: 82,
+    linked: 989,
+    broken: 396,
+    missing: 170,
   };
 
   private readonly previewModules: ModuleDistribution = {
@@ -194,11 +194,12 @@ export class Results implements OnInit, OnDestroy {
     return Math.round(Math.max(sse, job, this.dummyProgress, milestone));
   }
 
-  /** Scales hyperlink chart / stats reveal (0–100). */
+  /** Scales hyperlink chart / stats reveal (0–100), lagged and stepped behind pipeline %. */
   get chartReveal(): number {
     if (this.viewMode === 'completed') return 100;
     if ((this.pipelineState?.progressMilestone ?? 0) >= 100) return 100;
-    return Math.min(this.displayProgress, 98);
+    const lagged = Math.min(this.displayProgress, 98) * 0.82;
+    return Math.floor(lagged / 2) * 2;
   }
 
   get pipelineServices(): ServiceProgress[] {
@@ -522,7 +523,7 @@ export class Results implements OnInit, OnDestroy {
       }
 
       const nextProgress = Math.min(
-        this.job.overallProgress + 0.55 + Math.random() * 0.85,
+        this.job.overallProgress + 0.38 + Math.random() * 0.5,
         100,
       );
       const updatedServices = this.advanceServices(this.job.serviceProgress ?? [], nextProgress);
@@ -536,7 +537,7 @@ export class Results implements OnInit, OnDestroy {
       this.jobService.updateJob(patch);
 
       if (nextProgress >= 100) this.finishSimulation(job.id);
-    }, 160);
+    }, 260);
   }
 
   private advanceServices(services: ServiceProgress[], overall: number): ServiceProgress[] {
@@ -599,15 +600,16 @@ export class Results implements OnInit, OnDestroy {
       if (this.dummyProgress >= cap) return;
 
       const bump =
-        this.dummyProgress < 35 ? 0.75
-        : this.dummyProgress < 65 ? 0.45
-        : 0.2;
+        this.dummyProgress < 30 ? 0.5
+        : this.dummyProgress < 60 ? 0.32
+        : 0.18;
+      const stepped = Math.floor((this.dummyProgress + bump) / 2) * 2;
       this.dummyProgress = Math.min(
-        this.dummyProgress + bump + Math.random() * 0.3,
+        stepped + (Math.random() < 0.2 ? 2 : 0),
         cap,
       );
       this.cdr.markForCheck();
-    }, 140);
+    }, 220);
   }
 
   private stopDummyProgress(): void {

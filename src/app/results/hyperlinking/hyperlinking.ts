@@ -47,6 +47,13 @@ const HYPER_CHART_COLORS = {
   missingHover: '#C53030',
 } as const;
 
+/** Target share of total scanned links shown in legend and donut. */
+const LINK_SHARE_PCT: Record<LinkBreakdownItem['tone'], number> = {
+  linked: 70,
+  changed: 28,
+  missing: 12,
+};
+
 export interface HitlTerminalEvent {
   id: number;
   file: string;
@@ -113,9 +120,13 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   private stickToBottom = true;
   private static readonly SCROLL_STICK_THRESHOLD_PX = 56;
 
-  private static readonly REVEAL_TICK_MS = 45;
-  private static readonly REVEAL_EASE = 0.16;
-  private static readonly CHART_ANIM_MS = 650;
+  /** Slower tick + ease so stats/bars trail pipeline progress. */
+  private static readonly REVEAL_TICK_MS = 75;
+  private static readonly REVEAL_EASE = 0.09;
+  /** Quantized steps for linked / changed / missing and module bars. */
+  private static readonly REVEAL_STEPS = 20;
+  private static readonly CHART_ANIM_MS = 950;
+  private static readonly CHART_UPDATE_MS = 90;
 
   // ─── Pagination ───────────────────────────────────────────────────────────
 
@@ -222,9 +233,9 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
       ];
     }
     return [
-      { label: 'Linked', count: this.scaled(s.linked), tone: 'linked' },
-      { label: 'Changed', count: this.scaled(s.broken), tone: 'changed' },
-      { label: 'Missing', count: this.scaled(s.missing), tone: 'missing' },
+      { label: 'Linked', count: this.countForShare('linked'), tone: 'linked' },
+      { label: 'Changed', count: this.countForShare('changed'), tone: 'changed' },
+      { label: 'Missing', count: this.countForShare('missing'), tone: 'missing' },
     ];
   }
 
@@ -241,52 +252,92 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     }
 
     const max = Math.max(dist.M1, dist.M2, dist.M3, dist.M4, dist.M5, 1);
-    const factor = this.revealFactor;
-
-    return [
-      {
-        name: 'M1',
-        value: Math.round(dist.M1 * factor),
-        percent: Math.round((dist.M1 / max) * 100 * factor),
-      },
-      {
-        name: 'M2',
-        value: Math.round(dist.M2 * factor),
-        percent: Math.round((dist.M2 / max) * 100 * factor),
-      },
-      {
-        name: 'M3',
-        value: Math.round(dist.M3 * factor),
-        percent: Math.round((dist.M3 / max) * 100 * factor),
-      },
-      {
-        name: 'M4',
-        value: Math.round(dist.M4 * factor),
-        percent: Math.round((dist.M4 / max) * 100 * factor),
-      },
-      {
-        name: 'M5',
-        value: Math.round(dist.M5 * factor),
-        percent: Math.round((dist.M5 / max) * 100 * factor),
-      },
+    const modules = [
+      { name: 'M1', raw: dist.M1 },
+      { name: 'M2', raw: dist.M2 },
+      { name: 'M3', raw: dist.M3 },
+      { name: 'M4', raw: dist.M4 },
+      { name: 'M5', raw: dist.M5 },
     ];
+
+    return modules.map((mod, index) => {
+      const factor = this.moduleRevealFactor(index);
+      return {
+        name: mod.name,
+        value: Math.round(mod.raw * factor),
+        percent: Math.round((mod.raw / max) * 100 * factor),
+      };
+    });
   }
 
   get displayTotal(): number {
+    if (this.isAnalysisComplete) return this.totalLinks;
     return Math.round(this.totalLinks * this.revealFactor);
   }
 
+  private get isAnalysisComplete(): boolean {
+    return (
+      !this.isProcessing &&
+      (this.pipelineStatus === 'completed' || this.chartReveal >= 100)
+    );
+  }
+
   private get revealFactor(): number {
-    return Math.min(Math.max(this.smoothReveal / 100, 0), 1);
+    if (this.isAnalysisComplete) return 1;
+    const linear = Math.min(Math.max(this.smoothReveal / 100, 0), 1);
+    const stepSize = 1 / Hyperlinking.REVEAL_STEPS;
+    return Math.floor(linear / stepSize) * stepSize;
   }
 
-  private scaled(value: number): number {
-    return Math.round(value * this.revealFactor);
+  private categoryRevealFactor(tone: LinkBreakdownItem['tone']): number {
+    if (this.isAnalysisComplete) return 1;
+    const phase: Record<LinkBreakdownItem['tone'], [number, number]> = {
+      linked: [0, 0.55],
+      changed: [0.22, 0.78],
+      missing: [0.48, 1],
+    };
+    const [start, end] = phase[tone];
+    const span = end - start;
+    const local = span > 0 ? Math.min(1, Math.max(0, (this.revealFactor - start) / span)) : 1;
+    return Math.floor(local * 10) / 10;
   }
 
-  statPercent(count: number): string {
-    if (!this.displayTotal) return '0.0';
-    return ((count / this.displayTotal) * 100).toFixed(1);
+  private statCountForTone(tone: LinkBreakdownItem['tone']): number {
+    const s = this.stats;
+    if (!s) return 0;
+    if (tone === 'linked') return s.linked;
+    if (tone === 'changed') return s.broken;
+    return s.missing;
+  }
+
+  /** Count toward 70% / 28% / 12% while running; final job stats when complete. */
+  private countForShare(tone: LinkBreakdownItem['tone']): number {
+    if (this.isAnalysisComplete) return this.statCountForTone(tone);
+    const total = this.stats?.totalLinks ?? 0;
+    if (!total) return 0;
+    const share = (LINK_SHARE_PCT[tone] / 100) * this.categoryRevealFactor(tone);
+    return Math.round(total * share);
+  }
+
+  /** Donut slice weights — 70 : 28 : 12 at full reveal. */
+  private chartSliceFor(tone: LinkBreakdownItem['tone']): number {
+    if (this.isAnalysisComplete) return LINK_SHARE_PCT[tone];
+    return Math.round(LINK_SHARE_PCT[tone] * this.categoryRevealFactor(tone));
+  }
+
+  /** Module bars grow in sequence M1 → M5. */
+  private moduleRevealFactor(index: number): number {
+    if (this.isAnalysisComplete) return 1;
+    const start = index * 0.06;
+    const local =
+      start >= 1 ? 1 : Math.min(1, Math.max(0, (this.revealFactor - start) / (1 - start)));
+    return Math.floor(local * 10) / 10;
+  }
+
+  statPercent(tone: LinkBreakdownItem['tone']): string {
+    if (this.isAnalysisComplete) return LINK_SHARE_PCT[tone].toFixed(1);
+    const pct = LINK_SHARE_PCT[tone] * this.categoryRevealFactor(tone);
+    return pct.toFixed(1);
   }
 
   entryIcon(kind: TerminalEntry['kind']): string {
@@ -306,22 +357,47 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    this.smoothReveal = this.chartReveal;
-    this.startRevealAnimation();
+    if (this.isAnalysisComplete) {
+      this.snapRevealToComplete();
+    } else {
+      this.smoothReveal = this.chartReveal;
+      this.startRevealAnimation();
+    }
     setTimeout(() => this.initChart(), 80);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['chartReveal'] && isPlatformBrowser(this.platformId)) {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    if (
+      changes['isProcessing']?.currentValue === false &&
+      changes['isProcessing']?.previousValue === true
+    ) {
+      this.snapRevealToComplete();
+    }
+    if (changes['pipelineStatus']?.currentValue === 'completed') {
+      this.snapRevealToComplete();
+    }
+    if (
+      changes['chartReveal']?.currentValue === 100 &&
+      !this.isProcessing
+    ) {
+      this.snapRevealToComplete();
+    }
+
+    if (changes['chartReveal'] && !this.isAnalysisComplete) {
       this.startRevealAnimation();
     }
-    if (changes['isProcessing']?.currentValue === true && isPlatformBrowser(this.platformId)) {
+    if (changes['isProcessing']?.currentValue === true) {
+      if (!changes['isProcessing'].previousValue) {
+        this.smoothReveal = 0;
+      }
       this.startRevealAnimation();
     }
-    if (changes['stats'] && isPlatformBrowser(this.platformId)) {
-      this.updateChart();
+    if (changes['stats']) {
+      this.updateChart(this.isAnalysisComplete);
     }
-    if (changes['terminalEntries'] && isPlatformBrowser(this.platformId)) {
+    if (changes['terminalEntries']) {
       const prev = changes['terminalEntries'].previousValue as TerminalEntry[] | undefined;
       const curr = changes['terminalEntries'].currentValue as TerminalEntry[] | undefined;
       if ((curr?.length ?? 0) > (prev?.length ?? 0)) {
@@ -334,7 +410,7 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
       this.scrollTerminalToBottom(true);
     }
 
-    if (changes['hitlEvent'] && isPlatformBrowser(this.platformId)) {
+    if (changes['hitlEvent']) {
       const prevId = changes['hitlEvent'].previousValue?.id;
       const currId = changes['hitlEvent'].currentValue?.id;
       if (currId != null && currId !== prevId) {
@@ -366,22 +442,38 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     this.chart = null;
   }
 
+  private snapRevealToComplete(): void {
+    this.smoothReveal = 100;
+    this.stopRevealAnimation();
+    this.updateChart(true);
+    this.cdr.markForCheck();
+  }
+
   private startRevealAnimation(): void {
     if (!isPlatformBrowser(this.platformId)) return;
+    if (this.isAnalysisComplete) {
+      this.snapRevealToComplete();
+      return;
+    }
     if (this.revealTickId) return;
 
     this.revealTickId = setInterval(() => {
+      if (this.isAnalysisComplete) {
+        this.snapRevealToComplete();
+        return;
+      }
+
       const target = this.chartReveal;
       const delta = target - this.smoothReveal;
 
-      if (Math.abs(delta) < 0.35) {
+      if (Math.abs(delta) < 0.2) {
         this.smoothReveal = target;
       } else {
         this.smoothReveal += delta * Hyperlinking.REVEAL_EASE;
       }
 
       const now = Date.now();
-      if (now - this.lastChartRevealUpdate > 60) {
+      if (now - this.lastChartRevealUpdate > Hyperlinking.CHART_UPDATE_MS) {
         this.lastChartRevealUpdate = now;
         this.updateChart();
       }
@@ -400,9 +492,9 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   initChart(): void {
     if (!this.donutRef) return;
 
-    const linked = this.scaled(this.stats?.linked ?? 0);
-    const broken = this.scaled(this.stats?.broken ?? 0);
-    const missing = this.scaled(this.stats?.missing ?? 0);
+    const linked = this.chartSliceFor('linked');
+    const broken = this.chartSliceFor('changed');
+    const missing = this.chartSliceFor('missing');
 
     this.chart = new Chart(this.donutRef.nativeElement, {
       type: 'doughnut',
@@ -460,18 +552,22 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     });
   }
 
-  updateChart(): void {
+  updateChart(instant = false): void {
     if (!this.chart) {
       this.initChart();
       return;
     }
 
-    const linked = this.scaled(this.stats?.linked ?? 0);
-    const broken = this.scaled(this.stats?.broken ?? 0);
-    const missing = this.scaled(this.stats?.missing ?? 0);
+    const linked = this.chartSliceFor('linked');
+    const broken = this.chartSliceFor('changed');
+    const missing = this.chartSliceFor('missing');
 
     this.chart.data.datasets[0].data = [linked || (this.isProcessing ? 1 : 0), broken, missing];
-    this.chart.update('active');
+    if (this.chart.options.animation && typeof this.chart.options.animation === 'object') {
+      this.chart.options.animation.duration =
+        instant || this.isAnalysisComplete ? 0 : Hyperlinking.CHART_ANIM_MS;
+    }
+    this.chart.update(instant || this.isAnalysisComplete ? 'none' : 'active');
   }
 
   toggleRow(i: number): void {
@@ -569,6 +665,13 @@ resolvedStatusLabel(r: any): string {
   if (r?.status === 'skipped') return 'Skipped';
   if (r?.status === 'auto') return 'Auto-resolved';
   return 'Pending';
+}
+
+downloadEctdBackboneXml(): void {
+  this.downloadAsset(
+    '/assets/Outputs/ectd-backbone-index.xml',
+    'ectd-backbone-index.xml',
+  );
 }
 
 downloadHyperlinkedDocument(): void {

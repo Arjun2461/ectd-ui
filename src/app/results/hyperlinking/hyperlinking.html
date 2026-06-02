@@ -1,4 +1,28 @@
 <div class="hyper-page hyper-fade-in">
+  <section class="ectd-backbone-card" aria-labelledby="ectd-backbone-heading">
+    <div class="ectd-backbone-icon" aria-hidden="true">
+      <i class="ti ti-file-code"></i>
+    </div>
+    <div class="ectd-backbone-copy">
+      <h2 id="ectd-backbone-heading">eCTD XML backbone</h2>
+      <p>
+        The submission backbone is the structured <strong>index.xml</strong> that defines your
+        eCTD folder hierarchy, leaf operations, and cross-references to every document in the
+        sequence. Hyperlinking validates in-document references against this backbone so resolved
+        links align with the official CTD module layout regulators expect.
+      </p>
+    </div>
+    <button
+      type="button"
+      class="svc-download-btn ectd-backbone-download"
+      (click)="downloadEctdBackboneXml()"
+      aria-label="Download eCTD backbone index XML file"
+    >
+      <i class="ti ti-download" aria-hidden="true"></i>
+      Download index.xml
+    </button>
+  </section>
+
   <section class="hyper-top">
     <div class="hyper-top-left">
       <article class="hyper-card hyper-card--analytics">
@@ -36,7 +60,7 @@
                   <span class="legend-label">{{ item.label }}</span>
                   <span class="legend-count">{{ item.count | number }}</span>
                 </div>
-                <span class="legend-pct">{{ statPercent(item.count) }}%</span>
+                <span class="legend-pct">{{ statPercent(item.tone) }}%</span>
               </li>
             }
           </ul>
