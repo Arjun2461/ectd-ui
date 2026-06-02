@@ -1,11 +1,23 @@
 <div class="history-page page-root fade-in">
-  <header class="history-header">
-    <div class="header-badge">
-      <i class="ti ti-history" aria-hidden="true"></i>
-      Submissions
+  <header class="history-hero">
+    <div class="history-hero-bg" aria-hidden="true">
+      <span class="history-orb history-orb--violet"></span>
+      <span class="history-orb history-orb--accent"></span>
     </div>
-    <h1>History</h1>
-    <p class="subtitle">All your past submissions in one place.</p>
+    <div class="history-hero-inner">
+      <div>
+        <span class="history-eyebrow">
+          <i class="ti ti-history" aria-hidden="true"></i>
+          Activity log
+        </span>
+        <h1>History</h1>
+        <p class="subtitle">Pipeline runs and summary generations in one place.</p>
+      </div>
+      <a routerLink="/upload" class="history-new-btn">
+        <i class="ti ti-plus" aria-hidden="true"></i>
+        New submission
+      </a>
+    </div>
   </header>
 
   <div class="history-card">
@@ -14,7 +26,7 @@
         <i class="ti ti-search" aria-hidden="true"></i>
         <input
           type="search"
-          placeholder="Search by job ID, module, or service..."
+          placeholder="Search by ID, module, or type..."
           [value]="searchQuery()"
           (input)="onSearch($event)"
         />
@@ -36,15 +48,16 @@
       </div>
     </div>
 
-    @if (jobs().length === 0) {
+    @if (filteredItems().length === 0) {
       <div class="history-empty">
+        <i class="ti ti-inbox" aria-hidden="true"></i>
         <p>No submissions found.</p>
         @if (searchQuery() || statusFilter() !== 'all') {
           <button type="button" class="empty-reset" (click)="resetFilters()">
             Clear filters
           </button>
         } @else {
-          <a routerLink="/upload" class="empty-reset">New submission</a>
+          <a routerLink="/upload" class="empty-reset">Start a submission</a>
         }
       </div>
     } @else {
@@ -53,8 +66,10 @@
           <table class="history-table">
             <thead>
               <tr>
-                <th scope="col" class="col-job-id">Job ID</th>
+                <th scope="col" class="col-id">ID</th>
+                <th scope="col" class="col-name">Name</th>
                 <th scope="col" class="col-date">Date</th>
+                <th scope="col" class="col-type">Type</th>
                 <th scope="col" class="col-modules">Modules</th>
                 <th scope="col" class="col-services">Services</th>
                 <th scope="col" class="col-status">Status</th>
@@ -62,23 +77,33 @@
               </tr>
             </thead>
             <tbody>
-              @for (job of jobs(); track job.id) {
+              @for (item of pagedItems(); track item.id) {
                 <tr
                   class="history-row"
+                  [class.history-row--draft]="isDraft(item)"
                   tabindex="0"
-                  (click)="viewJob(job)"
-                  (keydown.enter)="viewJob(job)"
-                  (keydown.space)="viewJob(job); $event.preventDefault()"
+                  (click)="viewItem(item)"
+                  (keydown.enter)="viewItem(item)"
+                  (keydown.space)="viewItem(item); $event.preventDefault()"
                 >
-                  <td class="col-job-id">
-                    <span class="job-id">{{ job.id }}</span>
+                  <td class="col-id">
+                    <span class="job-id">{{ item.id }}</span>
+                  </td>
+                  <td class="col-name">
+                    <span class="row-name">{{ getItemName(item) }}</span>
                   </td>
                   <td class="col-date">
-                    <span class="date-text">{{ formatDate(job.createdAt) }}</span>
+                    <span class="date-text">{{ formatDate(item.createdAt) }}</span>
+                  </td>
+                  <td class="col-type">
+                    <span
+                      class="type-pill"
+                      [class.type-pill--draft]="isDraft(item)"
+                    >{{ item.typeLabel }}</span>
                   </td>
                   <td class="col-modules">
                     <div class="modules">
-                      @for (mod of getJobModules(job); track mod) {
+                      @for (mod of getItemModules(item); track mod) {
                         <span class="chip">{{ mod }}</span>
                       } @empty {
                         <span class="chip chip--muted">—</span>
@@ -86,34 +111,53 @@
                     </div>
                   </td>
                   <td class="col-services">
-                    <span class="services-text">{{
-                      formatServices(job.selectedServices)
-                    }}</span>
+                    <span
+                      class="services-text"
+                      [class.services-text--draft]="isDraft(item)"
+                    >{{ item.servicesLabel }}</span>
                   </td>
                   <td class="col-status">
                     <span
                       class="status"
-                      [class.completed]="job.status === 'completed'"
-                      [class.processing]="job.status === 'processing'"
+                      [class.completed]="item.status === 'completed'"
+                      [class.processing]="item.status === 'processing'"
                     >
                       <span class="status-dot" aria-hidden="true"></span>
-                      {{ getStatusLabel(job.status) }}
+                      {{ getStatusLabel(item.status) }}
+                      @if (isDraft(item) && item.status === 'processing') {
+                        <span class="status-progress"
+                          >{{ item.draft!.overallProgress }}%</span
+                        >
+                      }
                     </span>
                   </td>
-                  <td class="col-actions" (click)="$event.stopPropagation()">
+                  <td
+                    class="col-actions"
+                    (click)="$event.stopPropagation()"
+                  >
                     <div class="actions">
                       <button
                         type="button"
                         class="action-btn action-btn--icon"
-                        [attr.aria-label]="'Download reports for ' + job.id"
-                        title="Download"
+                        [disabled]="!canDownload(item)"
+                        [attr.aria-label]="
+                          canDownload(item)
+                            ? 'Download output for ' + item.id
+                            : 'Download unavailable'
+                        "
+                        [title]="
+                          canDownload(item)
+                            ? 'Download output'
+                            : 'Available when complete'
+                        "
+                        (click)="downloadItem(item, $event)"
                       >
                         <i class="ti ti-download" aria-hidden="true"></i>
                       </button>
                       <button
-                        class="action-btn action-btn--view"
                         type="button"
-                        (click)="viewJob(job, $event)"
+                        class="action-btn action-btn--view"
+                        (click)="viewItem(item, $event)"
                       >
                         <i class="ti ti-eye" aria-hidden="true"></i>
                         <span>View</span>
@@ -126,6 +170,43 @@
           </table>
         </div>
       </div>
+
+      <footer class="history-pagination">
+        <p class="pagination-summary">{{ paginationSummary() }}</p>
+        <nav class="pagination-nav" aria-label="History pages">
+          <button
+            type="button"
+            class="page-btn"
+            [disabled]="currentPage() <= 1"
+            (click)="prevPage()"
+            aria-label="Previous page"
+          >
+            <i class="ti ti-chevron-left" aria-hidden="true"></i>
+          </button>
+
+          @for (page of pageNumbers(); track page) {
+            <button
+              type="button"
+              class="page-btn page-btn--num"
+              [class.page-btn--active]="currentPage() === page"
+              [attr.aria-current]="currentPage() === page ? 'page' : null"
+              (click)="goToPage(page)"
+            >
+              {{ page }}
+            </button>
+          }
+
+          <button
+            type="button"
+            class="page-btn"
+            [disabled]="currentPage() >= totalPages()"
+            (click)="nextPage()"
+            aria-label="Next page"
+          >
+            <i class="ti ti-chevron-right" aria-hidden="true"></i>
+          </button>
+        </nav>
+      </footer>
     }
   </div>
 </div>

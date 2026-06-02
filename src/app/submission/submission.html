@@ -1,9 +1,63 @@
-<!-- Page Header -->
-<div class="page-header fade-in">
-  <h1>New submission</h1>
-  <p>Upload modules and pick the AI services you'd like to run.</p>
-</div>
+<!-- Page Header + Tabs -->
+<header
+  class="submission-hero fade-in"
+  [class.submission-hero--draft]="activeTab() === 'generate-draft'"
+>
+  <div class="submission-hero-bg" aria-hidden="true">
+    <span class="submission-hero-orb submission-hero-orb--violet"></span>
+    <span class="submission-hero-orb submission-hero-orb--accent"></span>
+  </div>
 
+  <div class="submission-hero-inner">
+    <div class="submission-hero-text">
+      <span class="submission-eyebrow">
+        <i
+          [class]="
+            activeTab() === 'upload' ? 'ti ti-sparkles' : 'ti ti-file-description'
+          "
+          aria-hidden="true"
+        ></i>
+        {{ pageEyebrow() }}
+      </span>
+      <h1>{{ pageTitle() }}</h1>
+      <p>{{ pageSubtitle() }}</p>
+    </div>
+
+    <nav class="submission-tabs" aria-label="Submission mode" role="tablist">
+      <button
+        type="button"
+        class="submission-tab"
+        [class.submission-tab--active]="activeTab() === 'upload'"
+        (click)="setActiveTab('upload')"
+        [attr.aria-selected]="activeTab() === 'upload'"
+        [attr.tabindex]="activeTab() === 'upload' ? 0 : -1"
+        role="tab"
+        id="tab-upload"
+        aria-controls="panel-upload"
+      >
+        <i class="ti ti-cloud-upload" aria-hidden="true"></i>
+        Upload &amp; run
+      </button>
+      <button
+        type="button"
+        class="submission-tab"
+        [class.submission-tab--active]="activeTab() === 'generate-draft'"
+        (click)="setActiveTab('generate-draft')"
+        [attr.aria-selected]="activeTab() === 'generate-draft'"
+        [attr.tabindex]="activeTab() === 'generate-draft' ? 0 : -1"
+        role="tab"
+        id="tab-generate-draft"
+        aria-controls="panel-generate-draft"
+      >
+        <i class="ti ti-file-description" aria-hidden="true"></i>
+        Generate draft
+      </button>
+    </nav>
+  </div>
+</header>
+
+@if (activeTab() === 'upload') {
+<div id="panel-upload" role="tabpanel" aria-labelledby="tab-upload">
 <!-- Section 1: Upload Modules -->
 <div class="section-card fade-in" style="animation-delay: 0.06s">
   <div class="section-title">
@@ -241,3 +295,9 @@
     </div>
   }
 </div>
+</div>
+} @else {
+  <div id="panel-generate-draft" role="tabpanel" aria-labelledby="tab-generate-draft">
+    <app-generate-draft />
+  </div>
+}

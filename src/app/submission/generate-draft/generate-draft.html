@@ -1,0 +1,264 @@
+<div class="draft-page fade-in">
+  @if (viewingDraftId() && isRunning()) {
+    <div class="draft-history-banner" role="status">
+      <i class="ti ti-clock-hour-4" aria-hidden="true"></i>
+      <div>
+        <strong>{{ viewingDraftId() }}</strong>
+        <span>In progress — opened from history</span>
+      </div>
+    </div>
+  }
+
+  @if (!isRunning() && !isCompleted()) {
+  <div class="draft-info-banner" role="note">
+    <i class="ti ti-info-circle" aria-hidden="true"></i>
+    <p>
+      Module 2 is generated from your M1, M3, M4, and M5 uploads. Do not upload M2
+      documents here.
+    </p>
+  </div>
+  }
+
+  <div class="section-card" [class.section-card--readonly]="isRunning() || isCompleted()">
+    <div class="section-title section-title--row">
+      <div>
+        <strong>1. Upload source modules</strong>
+        <p>PDF, DOCX, or XML files for each module you want included.</p>
+      </div>
+      @if (!isRunning() && !isCompleted()) {
+        <button
+          type="button"
+          class="draft-demo-btn"
+          (click)="loadDemoUploads()"
+        >
+          <i class="ti ti-files" aria-hidden="true"></i>
+          Load sample documents
+        </button>
+      }
+    </div>
+
+    <div class="modules-grid modules-grid--draft">
+      @for (mod of modules(); track mod.tag; let i = $index) {
+        <div
+          class="module-card"
+          [class.has-files]="mod.files.length > 0"
+          [class.module-card--readonly]="isRunning() || isCompleted()"
+          [style.animation-delay.ms]="i * 70"
+        >
+          <div class="module-header">
+            <span class="module-tag">{{ mod.tag }}</span>
+            <div class="module-top-actions">
+              @if (mod.files.length > 0) {
+                <span class="file-count-badge">{{ mod.files.length }}</span>
+              }
+              <i class="ti ti-cloud-upload upload-icon" aria-hidden="true"></i>
+            </div>
+          </div>
+
+          <div class="module-info">
+            <strong>{{ mod.title }}</strong>
+            <p>{{ mod.description }}</p>
+          </div>
+
+          @if (mod.files.length > 0) {
+            <ul
+              class="file-list"
+              tabindex="0"
+              [attr.aria-label]="mod.title + ' uploaded files'"
+            >
+              @for (entry of mod.files; track entry.id; let fi = $index) {
+                <li class="file-item" [style.animation-delay.ms]="fi * 45">
+                  <i class="ti ti-file-text file-item-icon" aria-hidden="true"></i>
+                  <div class="file-item-meta">
+                    <span class="file-item-name" [title]="entry.file.name">{{
+                      entry.file.name
+                    }}</span>
+                    <span class="file-item-size">{{
+                      formatFileSize(entry.file.size)
+                    }}</span>
+                  </div>
+                  @if (!isRunning() && !isCompleted()) {
+                    <button
+                      type="button"
+                      class="file-remove"
+                      (click)="removeFile($event, mod.tag, entry.id)"
+                      [attr.aria-label]="'Remove ' + entry.file.name"
+                    >
+                      <i class="ti ti-x" aria-hidden="true"></i>
+                    </button>
+                  }
+                </li>
+              }
+            </ul>
+          }
+
+          @if (!isRunning() && !isCompleted()) {
+            <div
+              class="module-dropzone"
+              [class.module-dropzone--compact]="mod.files.length > 0"
+              [class.drag-over]="mod.dragOver"
+              (dragover)="onDragOver($event, mod.tag)"
+              (dragleave)="onDragLeave(mod.tag)"
+              (drop)="onDrop($event, mod.tag)"
+              (click)="triggerFileInput(i, $event)"
+              role="button"
+              tabindex="0"
+              (keydown.enter)="triggerFileInput(i, $event)"
+              (keydown.space)="$event.preventDefault(); triggerFileInput(i, $event)"
+              [attr.aria-label]="
+                mod.files.length > 0
+                  ? 'Add more files to ' + mod.title
+                  : 'Upload files for ' + mod.title
+              "
+            >
+              @if (mod.files.length === 0) {
+                <p class="drop-text">Drag &amp; drop or click to upload</p>
+              } @else {
+                <i class="ti ti-plus" aria-hidden="true"></i>
+                <span>Add more files</span>
+              }
+            </div>
+
+            <input
+              [id]="'draft-file-input-' + i"
+              type="file"
+              accept=".pdf,.docx,.xml"
+              multiple
+              hidden
+              (change)="onFileSelect($event, mod.tag)"
+            />
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <div
+    class="draft-actions-card fade-in"
+    [class.draft-actions-card--running]="isRunning()"
+    [class.draft-actions-card--done]="isCompleted()"
+    style="animation-delay: 0.08s"
+  >
+    <div class="draft-actions-inner">
+      <div class="draft-actions-copy">
+        <div
+          class="draft-actions-icon"
+          [class.draft-actions-icon--ready]="canCreate()"
+          [class.draft-actions-icon--running]="isRunning()"
+          [class.draft-actions-icon--done]="isCompleted()"
+        >
+          @if (isCompleted()) {
+            <i class="ti ti-circle-check" aria-hidden="true"></i>
+          } @else if (isRunning()) {
+            <i class="ti ti-loader-2 spin" aria-hidden="true"></i>
+          } @else {
+            <i class="ti ti-file-description" aria-hidden="true"></i>
+          }
+        </div>
+        <div>
+          @if (isCompleted() && viewingDraftId()) {
+            <span class="draft-ref-id">{{ viewingDraftId() }}</span>
+          }
+          <h3>
+            @if (isCompleted()) {
+              M2 summaries ready
+            } @else if (isRunning()) {
+              Generating M2 summaries
+            } @else {
+              Create M2 summaries
+            }
+          </h3>
+          <p>
+            @if (isCompleted()) {
+              Your Module 2 draft package is ready. Download the ZIP below.
+            } @else if (isRunning()) {
+              This demo run takes about 2 minutes. {{ estimatedTimeLabel() }}
+            } @else if (totalFiles() === 0) {
+              Upload at least one document to start generation.
+            } @else {
+              {{ totalFiles() }} file{{ totalFiles() !== 1 ? 's' : '' }} across
+              {{ modulesWithFiles() }} module{{ modulesWithFiles() !== 1 ? 's' : '' }}
+              · ~2 min processing time
+            }
+          </p>
+        </div>
+      </div>
+
+      @if (!isCompleted()) {
+        <button
+          type="button"
+          class="draft-create-btn"
+          [disabled]="!canCreate()"
+          [class.draft-create-btn--loading]="isRunning()"
+          (click)="createM2Summaries()"
+        >
+          @if (isRunning()) {
+            <i class="ti ti-loader-2 spin" aria-hidden="true"></i>
+            <span>Generating…</span>
+          } @else {
+            <i class="ti ti-sparkles" aria-hidden="true"></i>
+            <span>Create M2 summaries</span>
+          }
+        </button>
+      }
+    </div>
+
+    @if (isRunning()) {
+      <div
+        class="draft-progress"
+        role="status"
+        aria-live="polite"
+        [attr.aria-busy]="true"
+      >
+        <div class="draft-progress-header">
+          <span class="draft-progress-label">Processing</span>
+          <span class="draft-progress-pct">{{ progress() }}%</span>
+        </div>
+
+        <div
+          class="draft-progress-track"
+          role="progressbar"
+          [attr.aria-valuenow]="progress()"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-label]="progressMessage() || 'M2 summary progress'"
+        >
+          <div class="draft-progress-fill" [style.width.%]="progress()"></div>
+        </div>
+
+        @if (progressMessage()) {
+          <p class="draft-progress-message">{{ progressMessage() }}</p>
+        }
+      </div>
+    }
+
+    @if (isCompleted()) {
+      <div class="draft-download-row fade-in" role="status">
+        <div class="draft-success-chip">
+          <i class="ti ti-package" aria-hidden="true"></i>
+          <span>ectd-summaries-output.zip</span>
+        </div>
+
+        <button
+          type="button"
+          class="draft-download-btn"
+          (click)="downloadM2Zip()"
+          aria-label="Download output package"
+        >
+          <i class="ti ti-download" aria-hidden="true"></i>
+          <span>Download output</span>
+        </button>
+
+        <button
+          type="button"
+          class="draft-reset-btn"
+          (click)="resetDraft()"
+          aria-label="Start a new M2 summary generation"
+        >
+          <i class="ti ti-refresh" aria-hidden="true"></i>
+          <span>New generation</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

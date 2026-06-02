@@ -3,15 +3,19 @@ import {
   Component,
   computed,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { JobService } from '../core/services/job.service';
 import { ToastService } from '../core/services/toast.service';
 
 // ── NEW: SSE pipeline service ─────────────────────────────────────────────────
 import { PipelineSseService } from '../core/services/Pipeline-sse.service';
+import { GenerateDraft } from './generate-draft/generate-draft';
+
+export type SubmissionTab = 'upload' | 'generate-draft';
 
 interface ModuleFile {
   id: string;
@@ -38,19 +42,45 @@ const ACCEPTED_EXTENSIONS = ['.pdf', '.docx', '.xml'];
 
 @Component({
   selector: 'app-submission',
-  imports: [FormsModule],
+  imports: [FormsModule, GenerateDraft],
   templateUrl: './submission.html',
   styleUrl: './submission.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Submission {
+export class Submission implements OnInit {
   private readonly jobService = inject(JobService);
   private readonly router     = inject(Router);
+  private readonly route      = inject(ActivatedRoute);
   private readonly toast      = inject(ToastService);
   // ── NEW ──
   private readonly pipeline   = inject(PipelineSseService);
 
   private fileIdCounter = 0;
+
+  readonly activeTab = signal<SubmissionTab>('upload');
+
+  ngOnInit(): void {
+    const tab = this.route.snapshot.queryParamMap.get('tab');
+    if (tab === 'generate-draft') {
+      this.activeTab.set('generate-draft');
+    }
+  }
+
+  readonly pageEyebrow = computed(() =>
+    this.activeTab() === 'upload' ? 'AI pipeline' : 'Draft builder',
+  );
+
+  readonly pageTitle = computed(() =>
+    this.activeTab() === 'upload'
+      ? 'Upload & run pipeline'
+      : 'Generate draft',
+  );
+
+  readonly pageSubtitle = computed(() =>
+    this.activeTab() === 'upload'
+      ? 'Upload all eCTD modules and select AI services for a single processing run.'
+      : 'Upload M1, M3, M4, and M5 source documents to auto-generate Module 2 summaries.',
+  );
 
   readonly modules = signal<Module[]>([
     {
@@ -154,6 +184,10 @@ export class Submission {
   ];
 
   // ── Actions ────────────────────────────────────────────────────────────────
+
+  setActiveTab(tab: SubmissionTab): void {
+    this.activeTab.set(tab);
+  }
 
   toggleService(service: Service): void {
     this.services.update((list) =>
