@@ -198,7 +198,7 @@
   flex: 1;
   overflow-y: auto; /* 🔥 ONLY THIS SCROLLS */
   background: white;
-  padding: 10px 12px;
+  padding: 10px 20px;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }

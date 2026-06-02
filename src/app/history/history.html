@@ -1,5 +1,9 @@
 <div class="history-page page-root fade-in">
   <header class="history-header">
+    <div class="header-badge">
+      <i class="ti ti-history" aria-hidden="true"></i>
+      Submissions
+    </div>
     <h1>History</h1>
     <p class="subtitle">All your past submissions in one place.</p>
   </header>
@@ -10,7 +14,7 @@
         <i class="ti ti-search" aria-hidden="true"></i>
         <input
           type="search"
-          placeholder="Search by job ID, name, module, or service..."
+          placeholder="Search by job ID, module, or service..."
           [value]="searchQuery()"
           (input)="onSearch($event)"
         />
@@ -50,7 +54,6 @@
             <thead>
               <tr>
                 <th scope="col" class="col-job-id">Job ID</th>
-                <th scope="col" class="col-name">Name</th>
                 <th scope="col" class="col-date">Date</th>
                 <th scope="col" class="col-modules">Modules</th>
                 <th scope="col" class="col-services">Services</th>
@@ -69,9 +72,6 @@
                 >
                   <td class="col-job-id">
                     <span class="job-id">{{ job.id }}</span>
-                  </td>
-                  <td class="col-name">
-                    <span class="job-name">{{ getJobName(job) }}</span>
                   </td>
                   <td class="col-date">
                     <span class="date-text">{{ formatDate(job.createdAt) }}</span>

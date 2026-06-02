@@ -416,7 +416,7 @@
   }
 
   <!-- ── Resolved References Table ── -->
-  @if (!isProcessing && resolvedRefs.length) {
+  @if (!isProcessing && resolvedRefs.length && hitlHistory.length===0) {
     <section class="resolved-card">
       <header class="resolved-header">
         <div>
