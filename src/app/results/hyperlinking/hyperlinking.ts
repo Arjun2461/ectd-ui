@@ -121,12 +121,12 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   private static readonly SCROLL_STICK_THRESHOLD_PX = 56;
 
   /** Slower tick + ease so stats/bars trail pipeline progress. */
-  private static readonly REVEAL_TICK_MS = 75;
-  private static readonly REVEAL_EASE = 0.09;
+  private static readonly REVEAL_TICK_MS = 50;
+  private static readonly REVEAL_EASE = 0.2;
   /** Quantized steps for linked / changed / missing and module bars. */
-  private static readonly REVEAL_STEPS = 20;
-  private static readonly CHART_ANIM_MS = 950;
-  private static readonly CHART_UPDATE_MS = 90;
+  private static readonly REVEAL_STEPS = 12;
+  private static readonly CHART_ANIM_MS = 500;
+  private static readonly CHART_UPDATE_MS = 45;
 
   // ─── Pagination ───────────────────────────────────────────────────────────
 
@@ -292,14 +292,14 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   private categoryRevealFactor(tone: LinkBreakdownItem['tone']): number {
     if (this.isAnalysisComplete) return 1;
     const phase: Record<LinkBreakdownItem['tone'], [number, number]> = {
-      linked: [0, 0.55],
-      changed: [0.22, 0.78],
-      missing: [0.48, 1],
+      linked: [0, 0.42],
+      changed: [0.12, 0.62],
+      missing: [0.32, 1],
     };
     const [start, end] = phase[tone];
     const span = end - start;
     const local = span > 0 ? Math.min(1, Math.max(0, (this.revealFactor - start) / span)) : 1;
-    return Math.floor(local * 10) / 10;
+    return Math.floor(local * 6) / 6;
   }
 
   private statCountForTone(tone: LinkBreakdownItem['tone']): number {
@@ -328,10 +328,10 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   /** Module bars grow in sequence M1 → M5. */
   private moduleRevealFactor(index: number): number {
     if (this.isAnalysisComplete) return 1;
-    const start = index * 0.06;
+    const start = index * 0.04;
     const local =
       start >= 1 ? 1 : Math.min(1, Math.max(0, (this.revealFactor - start) / (1 - start)));
-    return Math.floor(local * 10) / 10;
+    return Math.floor(local * 6) / 6;
   }
 
   statPercent(tone: LinkBreakdownItem['tone']): string {
@@ -466,7 +466,7 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
       const target = this.chartReveal;
       const delta = target - this.smoothReveal;
 
-      if (Math.abs(delta) < 0.2) {
+      if (Math.abs(delta) < 0.5) {
         this.smoothReveal = target;
       } else {
         this.smoothReveal += delta * Hyperlinking.REVEAL_EASE;

@@ -198,8 +198,8 @@ export class Results implements OnInit, OnDestroy {
   get chartReveal(): number {
     if (this.viewMode === 'completed') return 100;
     if ((this.pipelineState?.progressMilestone ?? 0) >= 100) return 100;
-    const lagged = Math.min(this.displayProgress, 98) * 0.82;
-    return Math.floor(lagged / 2) * 2;
+    const lagged = Math.min(this.displayProgress, 98) * 0.96;
+    return Math.round(lagged);
   }
 
   get pipelineServices(): ServiceProgress[] {
@@ -523,7 +523,7 @@ export class Results implements OnInit, OnDestroy {
       }
 
       const nextProgress = Math.min(
-        this.job.overallProgress + 0.38 + Math.random() * 0.5,
+        this.job.overallProgress + 0.7 + Math.random() * 0.9,
         100,
       );
       const updatedServices = this.advanceServices(this.job.serviceProgress ?? [], nextProgress);
@@ -537,7 +537,7 @@ export class Results implements OnInit, OnDestroy {
       this.jobService.updateJob(patch);
 
       if (nextProgress >= 100) this.finishSimulation(job.id);
-    }, 260);
+    }, 170);
   }
 
   private advanceServices(services: ServiceProgress[], overall: number): ServiceProgress[] {
@@ -596,20 +596,16 @@ export class Results implements OnInit, OnDestroy {
         return;
       }
 
-      const cap = 92;
+      const cap = 96;
       if (this.dummyProgress >= cap) return;
 
       const bump =
-        this.dummyProgress < 30 ? 0.5
-        : this.dummyProgress < 60 ? 0.32
-        : 0.18;
-      const stepped = Math.floor((this.dummyProgress + bump) / 2) * 2;
-      this.dummyProgress = Math.min(
-        stepped + (Math.random() < 0.2 ? 2 : 0),
-        cap,
-      );
+        this.dummyProgress < 30 ? 0.85
+        : this.dummyProgress < 60 ? 0.55
+        : 0.3;
+      this.dummyProgress = Math.min(this.dummyProgress + bump + Math.random() * 0.4, cap);
       this.cdr.markForCheck();
-    }, 220);
+    }, 120);
   }
 
   private stopDummyProgress(): void {
