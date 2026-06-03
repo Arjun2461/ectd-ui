@@ -491,6 +491,11 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
 
   initChart(): void {
     if (!this.donutRef) return;
+    
+      if (this.chart) {
+    this.chart.destroy();
+    this.chart = null;
+  }
 
     const linked = this.chartSliceFor('linked');
     const broken = this.chartSliceFor('changed');

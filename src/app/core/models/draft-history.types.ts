@@ -1,6 +1,6 @@
 export type DraftHistoryStatus = 'processing' | 'completed';
 
-export type DraftSourceModule = 'M1' | 'M3' | 'M4' | 'M5';
+export type DraftSourceModule =  'M3' | 'M4' | 'M5';
 
 export interface DraftHistoryEntry {
   id: string;

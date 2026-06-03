@@ -26,7 +26,7 @@ interface ModuleFile {
 }
 
 interface DraftModule {
-  tag: 'M1' | 'M3' | 'M4' | 'M5';
+  tag:  'M3' | 'M4' | 'M5';
   title: string;
   description: string;
   files: ModuleFile[];
@@ -40,11 +40,6 @@ const SIMULATION_DURATION_MS = 120_000;
 const PROGRESS_TICK_MS = 500;
 
 const DRAFT_MODULES: Omit<DraftModule, 'files' | 'dragOver'>[] = [
-  {
-    tag: 'M1',
-    title: 'Module 1',
-    description: 'Regional Administrative Information',
-  },
   {
     tag: 'M3',
     title: 'Module 3',

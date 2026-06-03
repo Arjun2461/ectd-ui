@@ -13,7 +13,7 @@
   <div class="draft-info-banner" role="note">
     <i class="ti ti-info-circle" aria-hidden="true"></i>
     <p>
-      Module 2 is generated from your M1, M3, M4, and M5 uploads. Do not upload M2
+      Module 2 is generated from your  M3, M4, and M5 uploads. Do not upload M2
       documents here.
     </p>
   </div>
@@ -23,7 +23,7 @@
     <div class="section-title section-title--row">
       <div>
         <strong>1. Upload source modules</strong>
-        <p>PDF, DOCX, or XML files for each module you want included.</p>
+        <p>PDF files for each module you want included.</p>
       </div>
       @if (!isRunning() && !isCompleted()) {
         <button
@@ -161,11 +161,11 @@
           }
           <h3>
             @if (isCompleted()) {
-              M2 summaries ready
+              Module 2 ready
             } @else if (isRunning()) {
-              Generating M2 summaries
+              Generating Module 2 
             } @else {
-              Create M2 summaries
+              Create Module 2 
             }
           </h3>
           <p>
@@ -197,7 +197,7 @@
             <span>Generating…</span>
           } @else {
             <i class="ti ti-sparkles" aria-hidden="true"></i>
-            <span>Create M2 summaries</span>
+            <span>Create Module 2 </span>
           }
         </button>
       }

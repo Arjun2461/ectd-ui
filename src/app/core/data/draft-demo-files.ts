@@ -2,13 +2,6 @@ import { DraftSourceModule } from '../models/draft-history.types';
 
 /** Sample eCTD document base names (without .pdf) per source module. */
 export const DEMO_FILES_BY_MODULE: Record<DraftSourceModule, readonly string[]> = {
-  M1: [
-    '1.2-form1571',
-    '1.3.1-labeling',
-    '1.3.2-patents',
-    '1.7-env-assessment',
-    'cover-letter',
-  ],
   M3: [
     '3.2.P.2-pharm-dev',
     '3.2.P.3-manufacture',

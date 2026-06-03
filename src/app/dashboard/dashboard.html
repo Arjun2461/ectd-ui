@@ -16,13 +16,11 @@
           <span class="eyebrow">Viatris · eCTD AI Platform</span>
         </div>
 
-        <h1>
-          Welcome back
-        </h1>
+        <h1>Welcome back</h1>
 
         <p class="subtitle">
-          Validate, translate, and ensure consistency across eCTD submissions
-          with AI-powered checks built for regulatory teams.
+          Validate, translate, and ensure consistency across eCTD submissions with AI-powered checks
+          built for regulatory teams.
         </p>
 
         <div class="welcome-tags">
@@ -39,13 +37,30 @@
     <h2 class="section-title">Services</h2>
     <div class="services-grid">
       @for (service of services; track service.title) {
-        <a class="service-card">
-          <span class="service-icon">
-            <lucide-icon [img]="service.icon" [size]="20"></lucide-icon>
-          </span>
-          <h3>{{ service.title }}</h3>
-          <p>{{ service.description }}</p>
-        </a>
+        @if (service.comingSoon) {
+          <div class="soon-wrap">
+            <a class="service-card soon-card">
+              <span class="coming-soon-badge">
+                <span class="soon-dot"></span>
+                Coming soon
+              </span>
+              <span class="service-icon">
+                <lucide-icon [img]="service.icon" [size]="20"></lucide-icon>
+              </span>
+              <h3>{{ service.title }}</h3>
+              <p>{{ service.description }}</p>
+            </a>
+          </div>
+        } @else {
+          <a class="service-card">
+            <span class="service-icon">
+              <lucide-icon [img]="service.icon" [size]="20"></lucide-icon>
+            </span>
+            <h3>{{ service.title }}</h3>
+            <p>{{ service.description }}</p>
+            <span class="service-link">Open →</span>
+          </a>
+        }
       }
     </div>
   </section>

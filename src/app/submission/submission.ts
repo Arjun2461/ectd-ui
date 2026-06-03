@@ -57,7 +57,7 @@ export class Submission implements OnInit {
 
   private fileIdCounter = 0;
 
-  readonly activeTab = signal<SubmissionTab>('upload');
+  readonly activeTab = signal<SubmissionTab>('generate-draft');
 
   ngOnInit(): void {
     const tab = this.route.snapshot.queryParamMap.get('tab');
@@ -79,7 +79,7 @@ export class Submission implements OnInit {
   readonly pageSubtitle = computed(() =>
     this.activeTab() === 'upload'
       ? 'Upload all eCTD modules and select AI services for a single processing run.'
-      : 'Upload M1, M3, M4, and M5 source documents to auto-generate Module 2 summaries.',
+      : 'Upload M3, M4, and M5 source documents to auto-generate Module 2 summaries.',
   );
 
   readonly modules = signal<Module[]>([

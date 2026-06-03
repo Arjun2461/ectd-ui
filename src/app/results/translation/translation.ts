@@ -49,7 +49,7 @@ export class Translation {
   /** Download a language-specific glossary CSV from assets/glossaries/ */
   downloadGlossary(lang: LanguageRow): void {
     const fileName = lang.glossaryFile ?? this.toSlug(lang.name) + '_glossary';
-    this.triggerDownload(`assets/glossaries/${fileName}.csv`, `${fileName}.csv`);
+    this.triggerDownload(`assets/Outputs/Translated_output/glossaries/${lang.glossaryFile}.csv`, `${fileName}.csv`);
   }
 
   /** Download the translated PDF ZIP from assets/translations/ */

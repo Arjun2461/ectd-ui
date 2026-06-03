@@ -24,6 +24,20 @@
     </div>
 
     <nav class="submission-tabs" aria-label="Submission mode" role="tablist">
+           <button
+        type="button"
+        class="submission-tab"
+        [class.submission-tab--active]="activeTab() === 'generate-draft'"
+        (click)="setActiveTab('generate-draft')"
+        [attr.aria-selected]="activeTab() === 'generate-draft'"
+        [attr.tabindex]="activeTab() === 'generate-draft' ? 0 : -1"
+        role="tab"
+        id="tab-generate-draft"
+        aria-controls="panel-generate-draft"
+      >
+        <i class="ti ti-file-description" aria-hidden="true"></i>
+        Generate Module 2 
+      </button>
       <button
         type="button"
         class="submission-tab"
@@ -38,20 +52,7 @@
         <i class="ti ti-cloud-upload" aria-hidden="true"></i>
         Upload &amp; run
       </button>
-      <button
-        type="button"
-        class="submission-tab"
-        [class.submission-tab--active]="activeTab() === 'generate-draft'"
-        (click)="setActiveTab('generate-draft')"
-        [attr.aria-selected]="activeTab() === 'generate-draft'"
-        [attr.tabindex]="activeTab() === 'generate-draft' ? 0 : -1"
-        role="tab"
-        id="tab-generate-draft"
-        aria-controls="panel-generate-draft"
-      >
-        <i class="ti ti-file-description" aria-hidden="true"></i>
-        Generate draft
-      </button>
+ 
     </nav>
   </div>
 </header>

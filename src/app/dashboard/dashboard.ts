@@ -19,6 +19,8 @@ import {
   Play,
   FileText,
   Sparkles,
+  ShieldCheck,
+  GitBranch
 } from 'lucide-angular';
 
 Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
@@ -28,6 +30,7 @@ export interface ServiceCard {
   description: string;
   icon: typeof Link2;
   route: string;
+  comingSoon?: boolean;
 }
 
 export interface ActivityJob {
@@ -36,6 +39,7 @@ export interface ActivityJob {
   service: string;
   status: 'Completed' | 'Running' | 'Queued' | 'Failed';
   updated: string;
+
 }
 
 export interface QuickAction {
@@ -64,6 +68,8 @@ export class Dashboard implements AfterViewInit, OnDestroy {
   readonly Play = Play;
   readonly FileText = FileText;
   readonly Sparkles = Sparkles;
+  readonly GitBranch = GitBranch;
+  readonly ShieldCheck = ShieldCheck;
 
   welcomeTags = ['Hyperlinking', 'Translation', 'Consistency'];
 
@@ -89,6 +95,20 @@ export class Dashboard implements AfterViewInit, OnDestroy {
       description:'Translate scientific documents into different languages while preserving technical meaning and context.',
       icon: Languages,
       route: '/results',
+    },
+     {
+      title: 'Lifecycle Impact Analysis',
+      description:'Automatically identify downstream document impacts from CMC changes, track required updates across eCTD sequences, and ensure compliance with intelligent redaction of sensitive data.',
+      icon: GitBranch,
+      route: '/results',
+      comingSoon: true,
+    },
+     {
+      title: 'Predictive Validation',
+      description:'Act as a mock regulatory reviewer by scanning submissions against global guidelines (FDA, EMA, PMDA) to detect missing documents, formatting issues, and predict potential review queries or rejections.',
+      icon: ShieldCheck,
+      route: '/results',
+      comingSoon: true,
     },
   ];
 

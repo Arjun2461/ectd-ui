@@ -67,9 +67,7 @@
             <thead>
               <tr>
                 <th scope="col" class="col-id">ID</th>
-                <th scope="col" class="col-name">Name</th>
                 <th scope="col" class="col-date">Date</th>
-                <th scope="col" class="col-type">Type</th>
                 <th scope="col" class="col-modules">Modules</th>
                 <th scope="col" class="col-services">Services</th>
                 <th scope="col" class="col-status">Status</th>
@@ -89,17 +87,8 @@
                   <td class="col-id">
                     <span class="job-id">{{ item.id }}</span>
                   </td>
-                  <td class="col-name">
-                    <span class="row-name">{{ getItemName(item) }}</span>
-                  </td>
                   <td class="col-date">
                     <span class="date-text">{{ formatDate(item.createdAt) }}</span>
-                  </td>
-                  <td class="col-type">
-                    <span
-                      class="type-pill"
-                      [class.type-pill--draft]="isDraft(item)"
-                    >{{ item.typeLabel }}</span>
                   </td>
                   <td class="col-modules">
                     <div class="modules">

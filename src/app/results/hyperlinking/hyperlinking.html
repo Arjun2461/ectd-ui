@@ -164,7 +164,7 @@
 
             <p class="suggested-label">Suggested matches</p>
 
-            @for (s of hitlSuggestions; track s.file; let i = $index) {
+            @for (s of hitlSuggestions;  track i; let i = $index) {
               <button
                 type="button"
                 class="suggestion"
@@ -310,7 +310,7 @@
                 </td>
                 <td class="rr-suggestions">
                   <div class="rr-pills">
-                    @for (s of h.suggestions; track s.file; let j = $index) {
+                    @for (s of h.suggestions; track j; let j = $index) {
                       <span
                         class="doc-pill"
                         [class.selected]="h.selectedIndex === j"
@@ -357,7 +357,7 @@
                           <span class="exp-col-h">Page</span>
                           <span class="exp-col-h exp-col-h--score">Score</span>
                         </div>
-                        @for (s of h.suggestions; track s.file; let j = $index) {
+                        @for (s of h.suggestions; track j; let j = $index) {
                           <div class="exp-line" [class.selected]="h.selectedIndex === j">
                             <span class="exp-dot" aria-hidden="true"></span>
                             <span class="col-file">{{ s.file }}</span>
