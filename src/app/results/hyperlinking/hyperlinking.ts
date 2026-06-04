@@ -491,7 +491,7 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
 
   initChart(): void {
     if (!this.donutRef) return;
-    
+
       if (this.chart) {
     this.chart.destroy();
     this.chart = null;
@@ -684,11 +684,11 @@ downloadHyperlinkedDocument(): void {
 }
 
 downloadHitlCsv(): void {
-  this.downloadAsset('assets/Outputs/hitl_manual_log.csv', 'hitl-history.csv');
+  this.downloadAsset('assets/Outputs/hitl_manual_log.xlsx', 'hitl-history.xlsx');
 }
 
 downloadAutoLinkedCsv(): void {
-  this.downloadAsset('assets/Outputs/auto_hyperlinks_log.csv', 'auto-linked.csv');
+  this.downloadAsset('assets/Outputs/auto_hyperlinks_log.xlsx', 'auto-linked.xlsx');
 }
 
 private downloadAsset(path: string, filename: string): void {

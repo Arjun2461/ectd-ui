@@ -59,7 +59,7 @@ const DRAFT_MODULES: Omit<DraftModule, 'files' | 'dragOver'>[] = [
 
 const PROGRESS_MESSAGES: { max: number; text: string }[] = [
   { max: 15, text: 'Parsing uploaded module structure…' },
-  { max: 35, text: 'Analyzing M1 administrative content…' },
+  { max: 35, text: 'Analyzing M3 administrative content…' },
   { max: 55, text: 'Processing M3 quality (CMC) sections…' },
   { max: 75, text: 'Extracting nonclinical data from M4…' },
   { max: 90, text: 'Synthesizing clinical insights from M5…' },

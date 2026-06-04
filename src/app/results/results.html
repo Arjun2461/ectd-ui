@@ -25,7 +25,7 @@
 
       <div class="pc-center">
         <span class="pc-job">JOB ID</span>
-        <strong class="pc-job-id">{{ jobId }}</strong>
+        <strong class="pc-job-id">{{ jobId.slice(0, 8) }}</strong>
       </div>
 
       <div class="pc-right">
@@ -92,7 +92,7 @@
       [class.active]="activeTab === 'Hyperlinking'"
       (click)="setTab('Hyperlinking')"
     >
-      <i class="ti ti-link"></i> Hyperlinking
+      <i class="ti ti-link"></i> Hyperlinking & Auto-Tagging
       @if (hasLiveHitl) {
         <span class="tab-hitl-badge" aria-label="Review required">Review</span>
       }

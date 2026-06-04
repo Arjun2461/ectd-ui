@@ -124,7 +124,7 @@ export class Submission implements OnInit {
     {
       id: 'hyperlinking',
       icon: 'ti ti-link',
-      title: 'Hyperlinking',
+      title: 'Hyperlinking & Auto-Tagging',
       description: 'Auto-generate cross-document hyperlinks.',
       selected: false,
     },

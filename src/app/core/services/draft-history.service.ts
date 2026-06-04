@@ -5,8 +5,8 @@ import {
 } from '../models/draft-history.types';
 import { DraftHistoryStorage } from './draft-history.storage';
 
-const M2_ZIP_ASSET = '/assets/Outputs/Hyperlinking_output.zip';
-const OUTPUT_ZIP_FILENAME = 'ectd-summaries-output.zip';
+const M2_ZIP_ASSET = 'assets/Outputs/module_2.zip';
+const OUTPUT_ZIP_FILENAME = 'Module2_Draft.zip';
 
 const INITIAL_DUMMY_DRAFTS: DraftHistoryEntry[] = [
   {

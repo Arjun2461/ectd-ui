@@ -77,7 +77,7 @@ export class Dashboard implements AfterViewInit, OnDestroy {
 
   services: ServiceCard[] = [
     {
-      title: 'Hyperlinking',
+      title: 'Hyperlinking & Auto-Tagging',
       description:
         'Automatically create structured hyperlinks across documents to enable clear navigation and accurate cross-referencing.',
       icon: Link2,
