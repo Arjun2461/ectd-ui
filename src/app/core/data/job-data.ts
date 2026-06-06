@@ -213,11 +213,11 @@ export const INITIAL_JOBS: Job[] = [
     id: 'JOB-10293',
     status: 'completed',
     createdAt: '2026-05-11T09:24:00.000Z',
-    selectedServices: ['consistency', 'hyperlinking'],
+    selectedServices: ['hyperlinking', 'consistency'],
     modules: ['M2', 'M3', 'M4', 'M5'],
     overallProgress: 100,
     serviceProgress: buildServiceProgress(
-      ['consistency', 'hyperlinking'],
+      ['hyperlinking', 'consistency'],
       [{ progress: 100, status: 'completed' }, { progress: 100, status: 'completed' }]
     ),
     ...COMPLETED_RESULTS_TEMPLATE,
