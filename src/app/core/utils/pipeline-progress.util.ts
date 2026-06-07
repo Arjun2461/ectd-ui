@@ -1,3 +1,24 @@
+/** Backend run order — phase 1 = consistency, 2 = hyperlinking, 3 = translation. */
+export const PIPELINE_PHASE_ORDER = ['consistency', 'hyperlinking', 'translation'] as const;
+
+export const PIPELINE_SERVICE_PHASE: Record<string, number> = {
+  consistency: 1,
+  hyperlinking: 2,
+  translation: 3,
+};
+
+/** UI cap while a service is still running — 100% only on pipeline `completed`. */
+export const SERVICE_PROGRESS_CAP = 95;
+
+export function firstSelectedPipelinePhase(selectedServices: string[]): number {
+  for (const id of PIPELINE_PHASE_ORDER) {
+    if (selectedServices.includes(id)) {
+      return PIPELINE_SERVICE_PHASE[id] ?? 1;
+    }
+  }
+  return 1;
+}
+
 /** True for "phase N started" kickoff lines — not a completion handoff. */
 export function isPhaseKickoffMessage(message: string): boolean {
   return /phase\s+\d+\s+started/i.test(message);

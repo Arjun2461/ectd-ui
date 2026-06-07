@@ -25,6 +25,11 @@ import {
   ServiceProgress,
 } from '../core/models/job.types';
 import { applyCompletedResults, buildServiceProgress } from '../core/data/job-data';
+import {
+  firstSelectedPipelinePhase,
+  PIPELINE_SERVICE_PHASE,
+  SERVICE_PROGRESS_CAP,
+} from '../core/utils/pipeline-progress.util';
 
 // ── NEW: SSE service ──────────────────────────────────────────────────────────
 import {
@@ -59,7 +64,10 @@ export class Results implements OnInit, OnDestroy {
   private lastHitlSeqNo: number | null = null;
   /** Animated placeholder progress while pipeline runs (UI only). */
   private dummyProgress = 0;
+  /** Per-service slow progress during live SSE runs (UI only). */
+  private serviceDummyProgress: Record<string, number> = {};
   private dummyProgressInterval: ReturnType<typeof setInterval> | null = null;
+  private static readonly DUMMY_TICK_MS = 200;
   // ── Live SSE state (replaces simulation) ───────────────────────────────────
   pipelineState: PipelineState | null = null;
 
@@ -106,8 +114,15 @@ export class Results implements OnInit, OnDestroy {
     // Subscribe to live SSE state — updates happen whenever the stream pushes
     this.pipeline.state$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => {
       const prevStatus = this.pipelineState?.status;
+      const prevTaskId = this.pipelineState?.taskId;
       const prevHitlSeq = this.pipelineState?.activeHitl?.hitl_seq_no;
       const prevHistoryLen = this.pipelineState?.hitlHistory.length ?? 0;
+
+      if (state.taskId && state.taskId !== prevTaskId) {
+        this.serviceDummyProgress = {};
+        this.dummyProgress = 0;
+      }
+
       this.pipelineState = state;
 
       if (state.status === 'awaiting_hitl' && state.activeHitl) {
@@ -180,24 +195,22 @@ export class Results implements OnInit, OnDestroy {
     return this.pipelineState?.taskId ?? this.job?.id ?? '';
   }
 
-  /** Overall % — max of SSE, job simulation, and UI placeholder. */
+  /** Overall % — slow UI animation during live SSE; simulation fallback otherwise. */
   get displayProgress(): number {
     if (this.viewMode === 'completed') return 100;
     if (this.viewMode !== 'processing') return 0;
 
-    const sse =
-      this.pipelineState && this.pipelineState.status !== 'idle'
-        ? this.pipelineState.overallProgress
-        : 0;
+    if (this.isLivePipeline) {
+      return this.liveOverallProgress;
+    }
+
     const job = this.job?.overallProgress ?? 0;
-    const milestone = this.pipelineState?.progressMilestone ?? 0;
-    return Math.round(Math.max(sse, job, this.dummyProgress, milestone));
+    return Math.round(Math.max(job, this.dummyProgress));
   }
 
   /** Scales hyperlink chart / stats reveal (0–100), lagged and stepped behind pipeline %. */
   get chartReveal(): number {
     if (this.viewMode === 'completed') return 100;
-    if ((this.pipelineState?.progressMilestone ?? 0) >= 100) return 100;
     const lagged = Math.min(this.displayProgress, 98) * 0.96;
     return Math.round(lagged);
   }
@@ -213,6 +226,10 @@ export class Results implements OnInit, OnDestroy {
       return buildServiceProgress(services, completedRows);
     }
 
+    if (this.viewMode === 'processing' && this.isLivePipeline) {
+      return this.buildLiveServiceProgress(services);
+    }
+
     const base =
       this.job?.serviceProgress?.length ?
         this.job.serviceProgress
@@ -223,21 +240,7 @@ export class Results implements OnInit, OnDestroy {
     }
 
     if (this.viewMode === 'processing') {
-      let services = this.advanceServices(base, this.displayProgress);
-      const completedIds = new Set(this.pipelineState?.completedServiceIds ?? []);
-      const milestone = this.pipelineState?.progressMilestone ?? 0;
-      if (milestone >= 100) {
-        return services.map((s) => ({
-          ...s,
-          progress: 100,
-          status: 'completed' as const,
-        }));
-      }
-      return services.map((s) =>
-        completedIds.has(s.id) ?
-          { ...s, progress: 100, status: 'completed' as const }
-        : s,
-      );
+      return this.advanceServices(base, this.displayProgress);
     }
 
     if (this.job.status === 'completed') {
@@ -586,6 +589,75 @@ export class Results implements OnInit, OnDestroy {
     this.simulatingJobId = null;
   }
 
+  /** Average of per-service UI progress — drives the overall bar during live SSE. */
+  private get liveOverallProgress(): number {
+    const selected = this.job?.selectedServices ?? ['hyperlinking'];
+    if (!selected.length) return 0;
+
+    const total = selected.reduce(
+      (sum, id) => sum + (this.serviceDummyProgress[id] ?? 0),
+      0,
+    );
+    return Math.round(total / selected.length);
+  }
+
+  private effectivePipelinePhase(selected: string[]): number {
+    const current = this.pipelineState?.currentPhase ?? 0;
+    return current > 0 ? current : firstSelectedPipelinePhase(selected);
+  }
+
+  private buildLiveServiceProgress(serviceIds: string[]): ServiceProgress[] {
+    const activePhase = this.effectivePipelinePhase(serviceIds);
+
+    return buildServiceProgress(
+      serviceIds,
+      serviceIds.map((id) => {
+        const phase = PIPELINE_SERVICE_PHASE[id];
+        if (phase == null) {
+          return { progress: 0, status: 'waiting' as const };
+        }
+
+        if (phase > activePhase) {
+          return { progress: 0, status: 'waiting' as const };
+        }
+
+        return {
+          progress: Math.round(this.serviceDummyProgress[id] ?? 0),
+          status: 'processing' as const,
+        };
+      }),
+    );
+  }
+
+  private tickLiveServiceProgress(): void {
+    const selected = this.job?.selectedServices ?? ['hyperlinking'];
+    const activePhase = this.effectivePipelinePhase(selected);
+    let changed = false;
+
+    for (const id of selected) {
+      const phase = PIPELINE_SERVICE_PHASE[id];
+      if (phase == null || phase > activePhase) continue;
+
+      const current = this.serviceDummyProgress[id] ?? 0;
+      if (current >= SERVICE_PROGRESS_CAP) continue;
+
+      const bump =
+        current < 25 ? 0.28
+        : current < 50 ? 0.18
+        : current < 75 ? 0.12
+        : 0.06;
+      this.serviceDummyProgress[id] = Math.min(
+        current + bump + Math.random() * 0.08,
+        SERVICE_PROGRESS_CAP,
+      );
+      changed = true;
+    }
+
+    if (changed) {
+      this.cdr.markForCheck();
+    }
+  }
+
   private startDummyProgress(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     if (this.dummyProgressInterval) return;
@@ -593,6 +665,11 @@ export class Results implements OnInit, OnDestroy {
     this.dummyProgressInterval = setInterval(() => {
       if (this.viewMode !== 'processing') {
         this.stopDummyProgress();
+        return;
+      }
+
+      if (this.isLivePipeline) {
+        this.tickLiveServiceProgress();
         return;
       }
 
@@ -605,7 +682,7 @@ export class Results implements OnInit, OnDestroy {
         : 0.3;
       this.dummyProgress = Math.min(this.dummyProgress + bump + Math.random() * 0.4, cap);
       this.cdr.markForCheck();
-    }, 120);
+    }, Results.DUMMY_TICK_MS);
   }
 
   private stopDummyProgress(): void {
@@ -615,6 +692,7 @@ export class Results implements OnInit, OnDestroy {
     }
     if (this.viewMode !== 'processing') {
       this.dummyProgress = 0;
+      this.serviceDummyProgress = {};
     }
   }
 
