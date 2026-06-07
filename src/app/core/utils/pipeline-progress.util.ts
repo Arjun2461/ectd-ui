@@ -1,25 +1,48 @@
-/** Returns true when log indicates a phase handoff — UI should show 100% progress. */
+/** True for "phase N started" kickoff lines — not a completion handoff. */
+export function isPhaseKickoffMessage(message: string): boolean {
+  return /phase\s+\d+\s+started/i.test(message);
+}
+
+/**
+ * Services finished when the pipeline enters `phase` (1-based).
+ * Backend order: phase 1 = consistency, 2 = hyperlinking, 3 = translation.
+ */
+export function servicesCompletedBeforePhase(phase: number): string[] {
+  if (phase >= 3) return ['consistency', 'hyperlinking'];
+  if (phase === 2) return ['consistency'];
+  return [];
+}
+
+/** Returns true when log indicates a later service is starting (prior services done). */
 export function isProgressMilestoneMessage(message: string): boolean {
+  if (isPhaseKickoffMessage(message)) return false;
+
   const m = message.toLowerCase();
-  const phase3Start = m.includes('phase 3') && m.includes('start');
-  const translationStart =
-    m.includes('translation') && (m.includes('start') || m.includes('starting'));
-  const consistencyStart =
-    m.includes('consistency') && (m.includes('start') || m.includes('starting'));
-  return phase3Start || translationStart || consistencyStart;
+  const translationStarting =
+    m.includes('translation') && (m.includes('starting') || /\bstart(?:ed|ing)?\b/.test(m));
+  const hyperlinkingStarting =
+    m.includes('hyperlinking') && (m.includes('starting') || /\bstart(?:ed|ing)?\b/.test(m));
+  const consistencyStarting =
+    m.includes('consistency') &&
+    (m.includes('starting') || /\bstart(?:ed|ing)?\b/.test(m)) &&
+    !m.includes('phase 1');
+
+  return translationStarting || hyperlinkingStarting || consistencyStarting;
 }
 
 /** Service ids to mark completed when a milestone log line appears. */
 export function servicesCompletedByMilestone(message: string): string[] {
+  if (isPhaseKickoffMessage(message)) return [];
+
   const m = message.toLowerCase();
-  if (m.includes('phase 3') && m.includes('start')) {
-    return ['hyperlinking', 'consistency', 'translation'];
+  if (m.includes('translation') && (m.includes('starting') || /\bstart(?:ed|ing)?\b/.test(m))) {
+    return ['consistency', 'hyperlinking'];
   }
-  if (m.includes('translation') && (m.includes('start') || m.includes('starting'))) {
-    return ['hyperlinking', 'translation'];
+  if (m.includes('hyperlinking') && (m.includes('starting') || /\bstart(?:ed|ing)?\b/.test(m))) {
+    return ['consistency'];
   }
-  if (m.includes('consistency') && (m.includes('start') || m.includes('starting'))) {
-    return ['hyperlinking', 'consistency'];
+  if (m.includes('consistency') && (m.includes('starting') || /\bstart(?:ed|ing)?\b/.test(m))) {
+    return ['hyperlinking'];
   }
   return [];
 }

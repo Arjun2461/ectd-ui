@@ -9,6 +9,7 @@ import {
 import { HitlHistoryStorage } from './hitl-history.storage';
 import {
   isProgressMilestoneMessage,
+  servicesCompletedBeforePhase,
   servicesCompletedByMilestone,
 } from '../utils/pipeline-progress.util';
 
@@ -131,9 +132,11 @@ export interface PipelineState {
   // Active HITL prompt — non-null when status === 'awaiting_hitl'
   activeHitl: HitlRequiredEvent | null;
   hitlHistory: HitlHistoryRecord[];
-  /** Set to 100 when phase/translation milestone logs appear. */
+  /** Set to 100 only when the pipeline fully completes. */
   progressMilestone: number;
   completedServiceIds: string[];
+  /** Latest phase number from SSE progress events (1 = consistency, 2 = hyperlinking, …). */
+  currentPhase: number;
 }
 
 const INITIAL_STATE: PipelineState = {
@@ -154,6 +157,7 @@ const INITIAL_STATE: PipelineState = {
   hitlHistory:         [],
   progressMilestone:   0,
   completedServiceIds: [],
+  currentPhase:        0,
 };
 
 @Injectable({ providedIn: 'root' })
@@ -199,6 +203,7 @@ export class PipelineSseService {
       hitlHistory,
       progressMilestone:   0,
       completedServiceIds: [],
+      currentPhase:        0,
     });
 
     this.openStream(res.task_id);
@@ -301,16 +306,27 @@ export class PipelineSseService {
           message: event.message,
           file: event.file,
         });
-        if (isProgressMilestoneMessage(event.message)) {
+
+        const phasePatch: Partial<PipelineState> = {};
+        if (event.phase != null && event.phase > this.state$.value.currentPhase) {
           const completed = new Set([
             ...this.state$.value.completedServiceIds,
+            ...servicesCompletedBeforePhase(event.phase),
+          ]);
+          phasePatch.currentPhase = event.phase;
+          phasePatch.completedServiceIds = [...completed];
+        }
+
+        if (isProgressMilestoneMessage(event.message)) {
+          const completed = new Set([
+            ...(phasePatch.completedServiceIds ?? this.state$.value.completedServiceIds),
             ...servicesCompletedByMilestone(event.message),
           ]);
-          this.patch({
-            progressMilestone: 100,
-            overallProgress: 100,
-            completedServiceIds: [...completed],
-          });
+          phasePatch.completedServiceIds = [...completed];
+        }
+
+        if (Object.keys(phasePatch).length) {
+          this.patch(phasePatch);
         }
         break;
       }
@@ -395,10 +411,11 @@ export class PipelineSseService {
 
       case 'completed':
         this.patch({
-          status:          'completed',
-          overallProgress: 100,
-          outputs:         event.outputs,
-          activeHitl:      null,
+          status:            'completed',
+          overallProgress:   100,
+          progressMilestone: 100,
+          outputs:           event.outputs,
+          activeHitl:        null,
         });
         this.closeStream();
         break;
