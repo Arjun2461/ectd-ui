@@ -28,7 +28,7 @@ import { applyCompletedResults, buildServiceProgress } from '../core/data/job-da
 import {
   firstSelectedPipelinePhase,
   PIPELINE_SERVICE_PHASE,
-  SERVICE_PROGRESS_CAP,
+  serviceProgressCap,
 } from '../core/utils/pipeline-progress.util';
 
 // ── NEW: SSE service ──────────────────────────────────────────────────────────
@@ -73,18 +73,18 @@ export class Results implements OnInit, OnDestroy {
 
   // ── Preview / demo data (used when no real job is running) ─────────────────
   private readonly previewStats = {
-    totalLinks: 1413,
-    linked: 989,
-    broken: 396,
-    missing: 170,
+    totalLinks: 434,
+    linked: 304,
+    broken: 122,
+    missing: 52,
   };
 
   private readonly previewModules: ModuleDistribution = {
-    M1: 380,
-    M2: 420,
-    M3: 310,
-    M4: 268,
-    M5: 415,
+    M1: 92,
+    M2: 102,
+    M3: 75,
+    M4: 65,
+    M5: 100,
   };
 
   private readonly previewHitl: HitlData = {
@@ -608,6 +608,7 @@ export class Results implements OnInit, OnDestroy {
 
   private buildLiveServiceProgress(serviceIds: string[]): ServiceProgress[] {
     const activePhase = this.effectivePipelinePhase(serviceIds);
+    const completedIds = new Set(this.pipelineState?.completedServiceIds ?? []);
 
     return buildServiceProgress(
       serviceIds,
@@ -615,6 +616,10 @@ export class Results implements OnInit, OnDestroy {
         const phase = PIPELINE_SERVICE_PHASE[id];
         if (phase == null) {
           return { progress: 0, status: 'waiting' as const };
+        }
+
+        if (completedIds.has(id)) {
+          return { progress: 100, status: 'completed' as const };
         }
 
         if (phase > activePhase) {
@@ -638,8 +643,9 @@ export class Results implements OnInit, OnDestroy {
       const phase = PIPELINE_SERVICE_PHASE[id];
       if (phase == null || phase > activePhase) continue;
 
+      const cap = serviceProgressCap(id);
       const current = this.serviceDummyProgress[id] ?? 0;
-      if (current >= SERVICE_PROGRESS_CAP) continue;
+      if (current >= cap) continue;
 
       const bump =
         current < 25 ? 0.28
@@ -648,7 +654,7 @@ export class Results implements OnInit, OnDestroy {
         : 0.06;
       this.serviceDummyProgress[id] = Math.min(
         current + bump + Math.random() * 0.08,
-        SERVICE_PROGRESS_CAP,
+        cap,
       );
       changed = true;
     }

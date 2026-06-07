@@ -319,10 +319,9 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     return Math.round(total * share);
   }
 
-  /** Donut slice weights — 70 : 28 : 12 at full reveal. */
+  /** Donut slice weights — counts from total links (70 : 28 : 12 split). */
   private chartSliceFor(tone: LinkBreakdownItem['tone']): number {
-    if (this.isAnalysisComplete) return LINK_SHARE_PCT[tone];
-    return Math.round(LINK_SHARE_PCT[tone] * this.categoryRevealFactor(tone));
+    return this.countForShare(tone);
   }
 
   /** Module bars grow in sequence M1 → M5. */
@@ -422,10 +421,8 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
       changes['hitlHistory']?.currentValue?.length >
       (changes['hitlHistory']?.previousValue?.length ?? 0)
     ) {
-      // Jump to last page so newly added row is visible
       this._hitlPage = Math.ceil(this.hitlHistory.length / this.PAGE_SIZE) || 1;
       this.expandedHitlIndex = this.hitlHistory.length - 1;
-      setTimeout(() => this.scrollHitlHistoryIntoView(), 0);
     }
     if (
       changes['resolvedRefs']?.currentValue?.length !==
@@ -648,12 +645,6 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
       scroll();
       requestAnimationFrame(scroll);
     });
-  }
-
-  private scrollHitlHistoryIntoView(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    const el = document.querySelector('.hitl-history-card');
-    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

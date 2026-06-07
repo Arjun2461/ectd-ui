@@ -9,17 +9,17 @@ import {
 
 const COMPLETED_RESULTS_TEMPLATE = {
   stats: {
-    totalLinks: 1413,
-    linked: 989,
-    broken: 396,
-    missing: 170,
+    totalLinks: 434,
+    linked: 304,
+    broken: 122,
+    missing: 52,
   },
   moduleDistribution: {
-    M1:389,
-    M2: 420,
-    M3: 310,
-    M4: 268,
-    M5: 415,
+    M1: 94,
+    M2: 101,
+    M3: 75,
+    M4: 64,
+    M5: 100,
   } satisfies ModuleDistribution,
   hitl: {
     id: 1,

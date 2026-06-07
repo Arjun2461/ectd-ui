@@ -7,8 +7,16 @@ export const PIPELINE_SERVICE_PHASE: Record<string, number> = {
   translation: 3,
 };
 
-/** UI cap while a service is still running — 100% only on pipeline `completed`. */
-export const SERVICE_PROGRESS_CAP = 95;
+/** Per-service UI cap while still running — 100% only when that service finishes or pipeline completes. */
+export const SERVICE_PROGRESS_CAPS: Record<string, number> = {
+  consistency: 87,
+  hyperlinking: 93,
+  translation: 90,
+};
+
+export function serviceProgressCap(serviceId: string): number {
+  return SERVICE_PROGRESS_CAPS[serviceId] ?? 90;
+}
 
 export function firstSelectedPipelinePhase(selectedServices: string[]): number {
   for (const id of PIPELINE_PHASE_ORDER) {
