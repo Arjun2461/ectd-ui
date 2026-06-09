@@ -20,7 +20,7 @@ import {
   FileText,
   Sparkles,
   ShieldCheck,
-  GitBranch
+  GitBranch,
 } from 'lucide-angular';
 
 Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
@@ -39,7 +39,6 @@ export interface ActivityJob {
   service: string;
   status: 'Completed' | 'Running' | 'Queued' | 'Failed';
   updated: string;
-
 }
 
 export interface QuickAction {
@@ -86,26 +85,29 @@ export class Dashboard implements AfterViewInit, OnDestroy {
     {
       title: 'Consistency',
       description:
-      'Detect inconsistencies in scientific data, values, and terminology across documents to improve accuracy and reliability.',
+        'Detect inconsistencies in scientific data, values, and terminology across documents to improve accuracy and reliability.',
       icon: GitCompare,
       route: '/consistency',
     },
     {
       title: 'Translation',
-      description:'Translate scientific documents into different languages while preserving technical meaning and context.',
+      description:
+        'Translate scientific documents into different languages while preserving technical meaning and context.',
       icon: Languages,
       route: '/results',
     },
-     {
+    {
       title: 'Lifecycle Impact Analysis',
-      description:'Automatically identify downstream document impacts from CMC changes, track required updates across eCTD sequences, and ensure compliance with intelligent redaction of sensitive data.',
+      description:
+        'Automatically identify downstream document impacts from CMC changes, track required updates across eCTD sequences, and ensure compliance with intelligent redaction of sensitive data.',
       icon: GitBranch,
       route: '/results',
       comingSoon: true,
     },
-     {
+    {
       title: 'Predictive Validation',
-      description:'Act as a mock regulatory reviewer by scanning submissions against global guidelines (FDA, EMA, PMDA) to detect missing documents, formatting issues, and predict potential review queries or rejections.',
+      description:
+        'Simulate a regulatory review of submissions against FDA, EMA, and PMDA guidelines.Identify missing documents, formatting issues, and potential review queries or rejections.',
       icon: ShieldCheck,
       route: '/results',
       comingSoon: true,
@@ -218,8 +220,16 @@ export class Dashboard implements AfterViewInit, OnDestroy {
             backgroundColor: '#1e1b4b',
             padding: 10,
             cornerRadius: 8,
-            titleFont: { family: 'Inter, system-ui, sans-serif', size: 12 },
-            bodyFont: { family: 'Inter, system-ui, sans-serif', size: 12 },
+            callbacks: {
+              label: (context) => {
+                const data = context.dataset.data as number[];
+                const total = data.reduce((a, b) => a + b, 0);
+                const value = context.raw as number;
+                const percentage = ((value / total) * 100).toFixed(0);
+
+                return `${percentage}%`;
+              },
+            },
           },
         },
       },

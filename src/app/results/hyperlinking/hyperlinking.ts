@@ -692,7 +692,7 @@ resolvedStatusLabel(r: any): string {
 downloadEctdBackboneXml(): void {
   this.downloadAsset(
     '/assets/Outputs/ectd-backbone-index.xml',
-    'ectd-backbone-index.xml',
+    'index.xml',
   );
 }
 

@@ -132,7 +132,7 @@ export class Submission implements OnInit {
       id: 'consistency',
       icon: 'ti ti-file-description',
       title: 'Consistency',
-      description: 'Find terminology, numerical, and cross-reference issues.',
+      description: 'Ensure consistency of numerical values throughout the document.',
       selected: false,
     },
     {
