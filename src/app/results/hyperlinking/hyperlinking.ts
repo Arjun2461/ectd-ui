@@ -15,7 +15,9 @@ import {
 } from '@angular/core';
 import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js';
 import { CommonModule, DecimalPipe, isPlatformBrowser } from '@angular/common';
+import { normalizeModuleDistribution } from '../../core/data/job-data';
 import { JobStats, ModuleDistribution } from '../../core/models/job.types';
+import { OVERALL_PROGRESS_CAP } from '../../core/utils/pipeline-progress.util';
 import {
   TerminalEntry,
   PipelineState,
@@ -240,18 +242,7 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   get moduleStats(): ModuleStat[] {
-    const dist = this.moduleDistribution;
-    if (!dist) {
-      return [
-        { name: 'M1', value: 0, percent: 0 },
-        { name: 'M2', value: 0, percent: 0 },
-        { name: 'M3', value: 0, percent: 0 },
-        { name: 'M4', value: 0, percent: 0 },
-        { name: 'M5', value: 0, percent: 0 },
-      ];
-    }
-
-    const max = Math.max(dist.M1, dist.M2, dist.M3, dist.M4, dist.M5, 1);
+    const dist = normalizeModuleDistribution(this.moduleDistribution);
     const modules = [
       { name: 'M1', raw: dist.M1 },
       { name: 'M2', raw: dist.M2 },
@@ -260,12 +251,22 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
       { name: 'M5', raw: dist.M5 },
     ];
 
-    return modules.map((mod, index) => {
-      const factor = this.moduleRevealFactor(index);
+    const totalRaw = modules.reduce((sum, mod) => sum + mod.raw, 0);
+    const revealTotal = this.isAnalysisComplete ? this.totalLinks : this.displayTotal;
+    const max = Math.max(...modules.map((mod) => mod.raw), 1);
+
+    return modules.map((mod) => {
+      const share = totalRaw > 0 ? mod.raw / totalRaw : 0;
+      const value =
+        share > 0 && revealTotal > 0 ?
+          Math.max(1, Math.round(revealTotal * share))
+        : 0;
+      const percent = max > 0 ? Math.round((mod.raw / max) * 100 * this.moduleRevealFactor()) : 0;
+
       return {
         name: mod.name,
-        value: Math.round(mod.raw * factor),
-        percent: Math.round((mod.raw / max) * 100 * factor),
+        value,
+        percent: Math.max(percent, value > 0 ? 4 : 0),
       };
     });
   }
@@ -278,7 +279,9 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   private get isAnalysisComplete(): boolean {
     return (
       !this.isProcessing &&
-      (this.pipelineStatus === 'completed' || this.chartReveal >= 100)
+      (this.pipelineStatus === 'completed' ||
+        this.chartReveal >= 100 ||
+        this.chartReveal >= OVERALL_PROGRESS_CAP)
     );
   }
 
@@ -321,9 +324,9 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   /** Module bars grow in parallel with the donut reveal. */
-  private moduleRevealFactor(_index: number): number {
+  private moduleRevealFactor(): number {
     if (this.isAnalysisComplete) return 1;
-    return this.revealFactor;
+    return Math.min(Math.max(this.smoothReveal / 100, 0), 1);
   }
 
   statPercent(tone: LinkBreakdownItem['tone']): string {

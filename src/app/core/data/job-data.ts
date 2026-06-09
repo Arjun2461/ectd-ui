@@ -7,6 +7,43 @@ import {
   ServiceProgress,
 } from '../models/job.types';
 
+export const DEFAULT_MODULE_DISTRIBUTION: ModuleDistribution = {
+  M1: 18,
+  M2: 28,
+  M3: 22,
+  M4: 20,
+  M5: 21,
+};
+
+/** Ensures every module key exists — missing keys use fallback instead of showing as 0. */
+export function normalizeModuleDistribution(
+  dist?: Partial<ModuleDistribution> | Record<string, number | undefined> | null,
+  fallback: ModuleDistribution = DEFAULT_MODULE_DISTRIBUTION,
+): ModuleDistribution {
+  if (!dist) return { ...fallback };
+
+  const source = dist as Record<string, number | undefined>;
+  const read = (key: keyof ModuleDistribution, altKey: string): number => {
+    const provided = source[key] ?? source[altKey];
+    if (provided != null && Number.isFinite(provided)) {
+      return Math.max(0, provided);
+    }
+    return fallback[key];
+  };
+
+  const normalized: ModuleDistribution = {
+    M1: read('M1', 'm1'),
+    M2: read('M2', 'm2'),
+    M3: read('M3', 'm3'),
+    M4: read('M4', 'm4'),
+    M5: read('M5', 'm5'),
+  };
+
+  const sum =
+    normalized.M1 + normalized.M2 + normalized.M3 + normalized.M4 + normalized.M5;
+  return sum > 0 ? normalized : { ...fallback };
+}
+
 const COMPLETED_RESULTS_TEMPLATE = {
   stats: {
     totalLinks: 109,
@@ -14,13 +51,7 @@ const COMPLETED_RESULTS_TEMPLATE = {
     broken: 31,
     missing: 2,
   },
-  moduleDistribution: {
-    M1: 18,
-    M2: 28,
-    M3: 22,
-    M4: 20,
-    M5: 21,
-  } satisfies ModuleDistribution,
+  moduleDistribution: { ...DEFAULT_MODULE_DISTRIBUTION } satisfies ModuleDistribution,
   hitl: {
     id: 1,
     file: 'M2.5-clinical-overview.pdf',

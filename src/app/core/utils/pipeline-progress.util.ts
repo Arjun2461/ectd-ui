@@ -11,13 +11,13 @@ export const PIPELINE_SERVICE_PHASE: Record<string, number> = {
 export const OVERALL_PROGRESS_CAP = 94;
 
 /** Target time to reach {@link OVERALL_PROGRESS_CAP} in the UI. */
-export const PROGRESS_RAMP_DURATION_MS = 60_000;
+export const PROGRESS_RAMP_DURATION_MS = 120_000;
 
 /** Per-service UI cap while still running — 100% only when the pipeline completes. */
 export const SERVICE_PROGRESS_CAPS: Record<string, number> = {
-  consistency: 97,
+  consistency: 90,
   hyperlinking: 94,
-  translation: 91,
+  translation: 87,
 };
 
 /** Relative speed vs the overall average — keeps bars visibly different while parallel. */

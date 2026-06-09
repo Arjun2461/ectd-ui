@@ -24,7 +24,12 @@ import {
   SERVICE_META,
   ServiceProgress,
 } from '../core/models/job.types';
-import { applyCompletedResults, buildServiceProgress } from '../core/data/job-data';
+import {
+  applyCompletedResults,
+  buildServiceProgress,
+  DEFAULT_MODULE_DISTRIBUTION,
+  normalizeModuleDistribution,
+} from '../core/data/job-data';
 import {
   OVERALL_PROGRESS_CAP,
   PROGRESS_RAMP_DURATION_MS,
@@ -82,13 +87,7 @@ export class Results implements OnInit, OnDestroy {
     missing: 2,
   };
 
-  private readonly previewModules: ModuleDistribution = {
-    M1: 18,
-    M2: 28,
-    M3: 22,
-    M4: 20,
-    M5: 21,
-  };
+  private readonly previewModules: ModuleDistribution = { ...DEFAULT_MODULE_DISTRIBUTION };
 
   private readonly previewHitl: HitlData = {
     id: 1,
@@ -382,11 +381,12 @@ export class Results implements OnInit, OnDestroy {
     return this.job?.stats;
   }
 
-  get moduleDistribution(): ModuleDistribution | undefined {
+  get moduleDistribution(): ModuleDistribution {
+    const fallback = this.previewModules;
     if (this.viewMode === 'processing' || this.viewMode === 'completed') {
-      return this.job?.moduleDistribution ?? this.previewModules;
+      return normalizeModuleDistribution(this.job?.moduleDistribution, fallback);
     }
-    return this.job?.moduleDistribution;
+    return normalizeModuleDistribution(this.job?.moduleDistribution, fallback);
   }
 
   // ── Active HITL indicator (used in template to show/hide the terminal) ──────
