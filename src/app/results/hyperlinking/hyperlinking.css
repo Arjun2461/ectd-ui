@@ -9,7 +9,7 @@
 
 /* ─── Page ─── */
 .hyper-page {
-  max-width: 1180px;
+  /* max-width: 1180px; */
   margin: 0 16px 18px;
   font-family:
     Inter,
