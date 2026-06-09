@@ -26,9 +26,11 @@ import {
 } from '../core/models/job.types';
 import { applyCompletedResults, buildServiceProgress } from '../core/data/job-data';
 import {
-  firstSelectedPipelinePhase,
-  PIPELINE_SERVICE_PHASE,
+  OVERALL_PROGRESS_CAP,
+  PROGRESS_RAMP_DURATION_MS,
+  progressRampEase,
   serviceProgressCap,
+  serviceProgressMultiplier,
 } from '../core/utils/pipeline-progress.util';
 
 // ── NEW: SSE service ──────────────────────────────────────────────────────────
@@ -66,25 +68,26 @@ export class Results implements OnInit, OnDestroy {
   private dummyProgress = 0;
   /** Per-service slow progress during live SSE runs (UI only). */
   private serviceDummyProgress: Record<string, number> = {};
+  private pipelineRampStartedAt: number | null = null;
   private dummyProgressInterval: ReturnType<typeof setInterval> | null = null;
-  private static readonly DUMMY_TICK_MS = 200;
+  private static readonly PROGRESS_TICK_MS = 250;
   // ── Live SSE state (replaces simulation) ───────────────────────────────────
   pipelineState: PipelineState | null = null;
 
   // ── Preview / demo data (used when no real job is running) ─────────────────
   private readonly previewStats = {
-    totalLinks: 434,
-    linked: 304,
-    broken: 122,
-    missing: 52,
+    totalLinks: 109,
+    linked: 76,
+    broken: 31,
+    missing: 2,
   };
 
   private readonly previewModules: ModuleDistribution = {
-    M1: 92,
-    M2: 102,
-    M3: 75,
-    M4: 65,
-    M5: 100,
+    M1: 18,
+    M2: 28,
+    M3: 22,
+    M4: 20,
+    M5: 21,
   };
 
   private readonly previewHitl: HitlData = {
@@ -119,8 +122,7 @@ export class Results implements OnInit, OnDestroy {
       const prevHistoryLen = this.pipelineState?.hitlHistory.length ?? 0;
 
       if (state.taskId && state.taskId !== prevTaskId) {
-        this.serviceDummyProgress = {};
-        this.dummyProgress = 0;
+        this.resetProgressRamp();
       }
 
       this.pipelineState = state;
@@ -145,6 +147,7 @@ export class Results implements OnInit, OnDestroy {
           this.stopDummyProgress();
         }
       } else if (state.status === 'completed') {
+        this.snapAllServicesComplete();
         this.stopDummyProgress();
         this.dummyProgress = 100;
         this.viewMode = 'completed';
@@ -208,11 +211,10 @@ export class Results implements OnInit, OnDestroy {
     return Math.round(Math.max(job, this.dummyProgress));
   }
 
-  /** Scales hyperlink chart / stats reveal (0–100), lagged and stepped behind pipeline %. */
+  /** Scales hyperlink chart / stats reveal (0–100) with the overall pipeline %. */
   get chartReveal(): number {
     if (this.viewMode === 'completed') return 100;
-    const lagged = Math.min(this.displayProgress, 98) * 0.96;
-    return Math.round(lagged);
+    return Math.round(Math.min(this.displayProgress, OVERALL_PROGRESS_CAP));
   }
 
   get pipelineServices(): ServiceProgress[] {
@@ -226,34 +228,26 @@ export class Results implements OnInit, OnDestroy {
       return buildServiceProgress(services, completedRows);
     }
 
-    if (this.viewMode === 'processing' && this.isLivePipeline) {
-      return this.buildLiveServiceProgress(services);
-    }
-
-    const base =
-      this.job?.serviceProgress?.length ?
-        this.job.serviceProgress
-      : buildServiceProgress(services);
-
-    if (!this.job) {
-      return this.advanceServices(buildServiceProgress(services), this.displayProgress);
-    }
-
     if (this.viewMode === 'processing') {
-      return this.advanceServices(base, this.displayProgress);
+      return this.buildServiceProgressFromRamp(services);
     }
 
-    if (this.job.status === 'completed') {
+    const job = this.job;
+    if (!job) {
+      return buildServiceProgress(services);
+    }
+
+    if (job.status === 'completed') {
       return buildServiceProgress(
-        this.job.selectedServices,
-        this.job.selectedServices.map(() => ({
+        job.selectedServices,
+        job.selectedServices.map(() => ({
           progress: 100,
           status: 'completed' as const,
         })),
       );
     }
 
-    return base;
+    return job.serviceProgress?.length ? job.serviceProgress : buildServiceProgress(services);
   }
 
   get pipelineStatusLabel(): string {
@@ -516,46 +510,29 @@ export class Results implements OnInit, OnDestroy {
 
     this.stopSimulation();
     this.simulatingJobId = job.id;
+    this.resetProgressRamp();
     this.progressInterval = setInterval(() => {
       if (!this.job || this.job.id !== job.id) return;
 
-      // Don't simulate if a real SSE pipeline is active
       if (this.pipelineState && this.pipelineState.status !== 'idle') {
         this.stopSimulation();
         return;
       }
 
-      const nextProgress = Math.min(
-        this.job.overallProgress + 0.7 + Math.random() * 0.9,
-        100,
-      );
-      const updatedServices = this.advanceServices(this.job.serviceProgress ?? [], nextProgress);
+      const rampT = this.currentRampT();
+      if (rampT >= 1 && this.dummyProgress >= OVERALL_PROGRESS_CAP - 1) {
+        this.finishSimulation(job.id);
+        return;
+      }
+
       const patch: Job = {
         ...this.job,
-        overallProgress: nextProgress,
-        serviceProgress: updatedServices,
+        overallProgress: this.dummyProgress,
+        serviceProgress: this.buildServiceProgressFromRamp(this.job.selectedServices),
       };
-
       this.job = patch;
       this.jobService.updateJob(patch);
-
-      if (nextProgress >= 100) this.finishSimulation(job.id);
-    }, 170);
-  }
-
-  private advanceServices(services: ServiceProgress[], overall: number): ServiceProgress[] {
-    if (!services.length) return services;
-    const slice = 100 / services.length;
-    return services.map((svc, index) => {
-      const start = index * slice;
-      const end = (index + 1) * slice;
-      if (overall >= end) return { ...svc, progress: 100, status: 'completed' };
-      if (overall > start + slice * 0.15) {
-        const local = ((overall - start) / slice) * 100;
-        return { ...svc, progress: Math.round(Math.min(local, 99)), status: 'processing' };
-      }
-      return { ...svc, progress: 0, status: 'waiting' };
-    });
+    }, Results.PROGRESS_TICK_MS);
   }
 
   private finishSimulation(jobId: string): void {
@@ -598,64 +575,75 @@ export class Results implements OnInit, OnDestroy {
       (sum, id) => sum + (this.serviceDummyProgress[id] ?? 0),
       0,
     );
-    return Math.round(total / selected.length);
+    return Math.min(Math.round(total / selected.length), OVERALL_PROGRESS_CAP);
   }
 
-  private effectivePipelinePhase(selected: string[]): number {
-    const current = this.pipelineState?.currentPhase ?? 0;
-    return current > 0 ? current : firstSelectedPipelinePhase(selected);
+  private currentRampT(): number {
+    if (!this.pipelineRampStartedAt) return 0;
+    return (Date.now() - this.pipelineRampStartedAt) / PROGRESS_RAMP_DURATION_MS;
   }
 
-  private buildLiveServiceProgress(serviceIds: string[]): ServiceProgress[] {
-    const activePhase = this.effectivePipelinePhase(serviceIds);
-    const completedIds = new Set(this.pipelineState?.completedServiceIds ?? []);
+  private targetServiceProgress(serviceId: string, rampT: number): number {
+    const avgTarget = progressRampEase(rampT) * OVERALL_PROGRESS_CAP;
+    const scaled = avgTarget * serviceProgressMultiplier(serviceId);
+    return Math.min(Math.round(scaled), serviceProgressCap(serviceId));
+  }
+
+  private buildServiceProgressFromRamp(serviceIds: string[]): ServiceProgress[] {
+    if (this.pipelineState?.status === 'completed' || this.viewMode === 'completed') {
+      return buildServiceProgress(
+        serviceIds,
+        serviceIds.map(() => ({ progress: 100, status: 'completed' as const })),
+      );
+    }
+
+    const pipelineActive =
+      this.pipelineState?.status === 'running' ||
+      this.pipelineState?.status === 'awaiting_hitl' ||
+      this.viewMode === 'processing';
 
     return buildServiceProgress(
       serviceIds,
       serviceIds.map((id) => {
-        const phase = PIPELINE_SERVICE_PHASE[id];
-        if (phase == null) {
-          return { progress: 0, status: 'waiting' as const };
-        }
-
-        if (completedIds.has(id)) {
+        const progress = Math.round(this.serviceDummyProgress[id] ?? 0);
+        if (progress >= 100) {
           return { progress: 100, status: 'completed' as const };
         }
-
-        if (phase > activePhase) {
-          return { progress: 0, status: 'waiting' as const };
+        if (pipelineActive || progress > 0) {
+          return { progress, status: 'processing' as const };
         }
-
-        return {
-          progress: Math.round(this.serviceDummyProgress[id] ?? 0),
-          status: 'processing' as const,
-        };
+        return { progress: 0, status: 'waiting' as const };
       }),
     );
   }
 
-  private tickLiveServiceProgress(): void {
+  private tickProgressRamp(): void {
     const selected = this.job?.selectedServices ?? ['hyperlinking'];
-    const activePhase = this.effectivePipelinePhase(selected);
+    if (!selected.length) return;
+
+    if (!this.pipelineRampStartedAt) {
+      this.pipelineRampStartedAt = Date.now();
+    }
+
+    const rampT = this.currentRampT();
     let changed = false;
 
     for (const id of selected) {
-      const phase = PIPELINE_SERVICE_PHASE[id];
-      if (phase == null || phase > activePhase) continue;
-
-      const cap = serviceProgressCap(id);
+      const target = this.targetServiceProgress(id, rampT);
       const current = this.serviceDummyProgress[id] ?? 0;
-      if (current >= cap) continue;
+      if (Math.abs(target - current) < 0.25) continue;
 
-      const bump =
-        current < 25 ? 0.28
-        : current < 50 ? 0.18
-        : current < 75 ? 0.12
-        : 0.06;
-      this.serviceDummyProgress[id] = Math.min(
-        current + bump + Math.random() * 0.08,
-        cap,
-      );
+      const step = Math.max(0.06, (target - current) * 0.18);
+      this.serviceDummyProgress[id] = Math.min(current + step, serviceProgressCap(id));
+      changed = true;
+    }
+
+    const avg =
+      selected.reduce((sum, id) => sum + (this.serviceDummyProgress[id] ?? 0), 0) /
+      selected.length;
+    const nextOverall = Math.min(Math.round(avg), OVERALL_PROGRESS_CAP);
+    if (nextOverall !== this.dummyProgress) {
+      this.dummyProgress = nextOverall;
       changed = true;
     }
 
@@ -664,9 +652,26 @@ export class Results implements OnInit, OnDestroy {
     }
   }
 
+  private resetProgressRamp(): void {
+    this.serviceDummyProgress = {};
+    this.dummyProgress = 0;
+    this.pipelineRampStartedAt = null;
+  }
+
+  private snapAllServicesComplete(): void {
+    const services = this.job?.selectedServices ?? this.pipelineState?.selectedServices ?? [];
+    for (const id of services) {
+      this.serviceDummyProgress[id] = 100;
+    }
+  }
+
   private startDummyProgress(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     if (this.dummyProgressInterval) return;
+
+    if (!this.pipelineRampStartedAt) {
+      this.pipelineRampStartedAt = Date.now();
+    }
 
     this.dummyProgressInterval = setInterval(() => {
       if (this.viewMode !== 'processing') {
@@ -674,21 +679,8 @@ export class Results implements OnInit, OnDestroy {
         return;
       }
 
-      if (this.isLivePipeline) {
-        this.tickLiveServiceProgress();
-        return;
-      }
-
-      const cap = 96;
-      if (this.dummyProgress >= cap) return;
-
-      const bump =
-        this.dummyProgress < 30 ? 0.85
-        : this.dummyProgress < 60 ? 0.55
-        : 0.3;
-      this.dummyProgress = Math.min(this.dummyProgress + bump + Math.random() * 0.4, cap);
-      this.cdr.markForCheck();
-    }, Results.DUMMY_TICK_MS);
+      this.tickProgressRamp();
+    }, Results.PROGRESS_TICK_MS);
   }
 
   private stopDummyProgress(): void {
@@ -697,8 +689,7 @@ export class Results implements OnInit, OnDestroy {
       this.dummyProgressInterval = null;
     }
     if (this.viewMode !== 'processing') {
-      this.dummyProgress = 0;
-      this.serviceDummyProgress = {};
+      this.resetProgressRamp();
     }
   }
 

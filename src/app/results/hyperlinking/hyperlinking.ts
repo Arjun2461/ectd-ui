@@ -120,13 +120,13 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
   private stickToBottom = true;
   private static readonly SCROLL_STICK_THRESHOLD_PX = 56;
 
-  /** Slower tick + ease so stats/bars trail pipeline progress. */
-  private static readonly REVEAL_TICK_MS = 50;
-  private static readonly REVEAL_EASE = 0.2;
-  /** Quantized steps for linked / changed / missing and module bars. */
-  private static readonly REVEAL_STEPS = 12;
-  private static readonly CHART_ANIM_MS = 500;
-  private static readonly CHART_UPDATE_MS = 45;
+  /** Tick + ease for stats / bars — trails pipeline progress slightly. */
+  private static readonly REVEAL_TICK_MS = 45;
+  private static readonly REVEAL_EASE = 0.26;
+  /** Quantized steps for linked / changed / missing counts. */
+  private static readonly REVEAL_STEPS = 8;
+  private static readonly CHART_ANIM_MS = 420;
+  private static readonly CHART_UPDATE_MS = 30;
 
   // ─── Pagination ───────────────────────────────────────────────────────────
 
@@ -312,11 +312,7 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
 
   /** Count toward 70% / 28% / 12% while running; final job stats when complete. */
   private countForShare(tone: LinkBreakdownItem['tone']): number {
-    if (this.isAnalysisComplete) return this.statCountForTone(tone);
-    const total = this.stats?.totalLinks ?? 0;
-    if (!total) return 0;
-    const share = (LINK_SHARE_PCT[tone] / 100) * this.categoryRevealFactor(tone);
-    return Math.round(total * share);
+    return this.revealedLinkCounts()[tone];
   }
 
   /** Donut slice weights — counts from total links (70 : 28 : 12 split). */
@@ -324,19 +320,46 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
     return this.countForShare(tone);
   }
 
-  /** Module bars grow in sequence M1 → M5. */
-  private moduleRevealFactor(index: number): number {
+  /** Module bars grow in parallel with the donut reveal. */
+  private moduleRevealFactor(_index: number): number {
     if (this.isAnalysisComplete) return 1;
-    const start = index * 0.04;
-    const local =
-      start >= 1 ? 1 : Math.min(1, Math.max(0, (this.revealFactor - start) / (1 - start)));
-    return Math.floor(local * 6) / 6;
+    return this.revealFactor;
   }
 
   statPercent(tone: LinkBreakdownItem['tone']): string {
-    if (this.isAnalysisComplete) return LINK_SHARE_PCT[tone].toFixed(1);
-    const pct = LINK_SHARE_PCT[tone] * this.categoryRevealFactor(tone);
-    return pct.toFixed(1);
+    const counts = this.revealedLinkCounts();
+    const total = counts.linked + counts.changed + counts.missing;
+    if (!total) return '0.0';
+    const value = tone === 'linked' ? counts.linked : tone === 'changed' ? counts.changed : counts.missing;
+    return ((value / total) * 100).toFixed(1);
+  }
+
+  private revealedLinkCounts(): Record<LinkBreakdownItem['tone'], number> {
+    if (this.isAnalysisComplete) {
+      return {
+        linked: this.statCountForTone('linked'),
+        changed: this.statCountForTone('changed'),
+        missing: this.statCountForTone('missing'),
+      };
+    }
+
+    const totalTarget = Math.round(this.totalLinks * this.revealFactor);
+    if (!totalTarget) {
+      return { linked: 0, changed: 0, missing: 0 };
+    }
+
+    const tones: LinkBreakdownItem['tone'][] = ['linked', 'changed', 'missing'];
+    const weights = tones.map((tone) => LINK_SHARE_PCT[tone] * this.categoryRevealFactor(tone));
+    const weightSum = weights.reduce((sum, weight) => sum + weight, 0);
+    if (!weightSum) {
+      return { linked: 0, changed: 0, missing: 0 };
+    }
+
+    const linked = Math.round((totalTarget * weights[0]) / weightSum);
+    const changed = Math.round((totalTarget * weights[1]) / weightSum);
+    const missing = Math.max(0, totalTarget - linked - changed);
+
+    return { linked, changed, missing };
   }
 
   entryIcon(kind: TerminalEntry['kind']): string {

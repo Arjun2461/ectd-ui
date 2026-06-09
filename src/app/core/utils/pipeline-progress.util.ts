@@ -7,15 +7,38 @@ export const PIPELINE_SERVICE_PHASE: Record<string, number> = {
   translation: 3,
 };
 
-/** Per-service UI cap while still running — 100% only when that service finishes or pipeline completes. */
+/** Overall pipeline UI cap before the backend `completed` event. */
+export const OVERALL_PROGRESS_CAP = 94;
+
+/** Target time to reach {@link OVERALL_PROGRESS_CAP} in the UI. */
+export const PROGRESS_RAMP_DURATION_MS = 60_000;
+
+/** Per-service UI cap while still running — 100% only when the pipeline completes. */
 export const SERVICE_PROGRESS_CAPS: Record<string, number> = {
-  consistency: 87,
-  hyperlinking: 93,
-  translation: 90,
+  consistency: 97,
+  hyperlinking: 94,
+  translation: 91,
+};
+
+/** Relative speed vs the overall average — keeps bars visibly different while parallel. */
+export const SERVICE_PROGRESS_MULTIPLIER: Record<string, number> = {
+  consistency: 1.03,
+  hyperlinking: 1,
+  translation: 0.97,
 };
 
 export function serviceProgressCap(serviceId: string): number {
-  return SERVICE_PROGRESS_CAPS[serviceId] ?? 90;
+  return SERVICE_PROGRESS_CAPS[serviceId] ?? OVERALL_PROGRESS_CAP;
+}
+
+export function serviceProgressMultiplier(serviceId: string): number {
+  return SERVICE_PROGRESS_MULTIPLIER[serviceId] ?? 1;
+}
+
+/** Ease-out curve for the 0 → 1 ramp window. */
+export function progressRampEase(t: number): number {
+  const clamped = Math.min(Math.max(t, 0), 1);
+  return 1 - Math.pow(1 - clamped, 2.4);
 }
 
 export function firstSelectedPipelinePhase(selectedServices: string[]): number {

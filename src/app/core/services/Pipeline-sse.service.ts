@@ -137,6 +137,8 @@ export interface PipelineState {
   completedServiceIds: string[];
   /** Latest phase number from SSE progress events (1 = consistency, 2 = hyperlinking, …). */
   currentPhase: number;
+  /** Services requested when the pipeline was started. */
+  selectedServices: string[];
 }
 
 const INITIAL_STATE: PipelineState = {
@@ -158,6 +160,7 @@ const INITIAL_STATE: PipelineState = {
   progressMilestone:   0,
   completedServiceIds: [],
   currentPhase:        0,
+  selectedServices:    [],
 };
 
 @Injectable({ providedIn: 'root' })
@@ -204,6 +207,7 @@ export class PipelineSseService {
       progressMilestone:   0,
       completedServiceIds: [],
       currentPhase:        0,
+      selectedServices:    payload.services,
     });
 
     this.openStream(res.task_id);
@@ -411,11 +415,12 @@ export class PipelineSseService {
 
       case 'completed':
         this.patch({
-          status:            'completed',
-          overallProgress:   100,
-          progressMilestone: 100,
-          outputs:           event.outputs,
-          activeHitl:        null,
+          status:              'completed',
+          overallProgress:     100,
+          progressMilestone:   100,
+          outputs:             event.outputs,
+          activeHitl:          null,
+          completedServiceIds: [...this.state$.value.selectedServices],
         });
         this.closeStream();
         break;
