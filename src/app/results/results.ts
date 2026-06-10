@@ -123,12 +123,18 @@ export class Results implements OnInit, OnDestroy {
       const prevTaskId = this.pipelineState?.taskId;
       const prevHitlSeq = this.pipelineState?.activeHitl?.hitl_seq_no;
       const prevHistoryLen = this.pipelineState?.hitlHistory.length ?? 0;
+      const prevHyperlinkPhaseComplete =
+        this.pipelineState?.hyperlinkingPhaseComplete ?? false;
 
       if (state.taskId && state.taskId !== prevTaskId) {
         this.resetProgressRamp();
       }
 
       this.pipelineState = state;
+
+      if (state.hyperlinkingPhaseComplete && !prevHyperlinkPhaseComplete) {
+        this.onHyperlinkingBackendComplete();
+      }
 
       if (state.status === 'awaiting_hitl' && state.activeHitl) {
         const seq = state.activeHitl.hitl_seq_no;
@@ -594,14 +600,11 @@ export class Results implements OnInit, OnDestroy {
       return true;
     }
 
-    if (this.pipelineState?.completedServiceIds.includes(TRANSLATION_WAITS_FOR)) {
+    if (this.pipelineState?.hyperlinkingPhaseComplete) {
       return true;
     }
 
-    return (
-      (this.serviceDummyProgress[TRANSLATION_WAITS_FOR] ?? 0) >=
-      HYPERLINKING_COMPLETION_PROGRESS - 0.5
-    );
+    return this.pipelineState?.completedServiceIds.includes(TRANSLATION_WAITS_FOR) ?? false;
   }
 
   private currentRampT(): number {
@@ -615,9 +618,14 @@ export class Results implements OnInit, OnDestroy {
   }
 
   private hyperlinkingTarget(rampT: number): number {
-    const eased = progressRampEase(rampT) * HYPERLINKING_COMPLETION_PROGRESS;
+    const selected = this.job?.selectedServices ?? ['hyperlinking'];
+    if (this.isHyperlinkingUiComplete(selected)) {
+      return HYPERLINKING_COMPLETION_PROGRESS;
+    }
+
+    const eased = progressRampEase(rampT) * OVERALL_PROGRESS_CAP;
     const scaled = eased * serviceProgressMultiplier('hyperlinking');
-    return Math.min(Math.round(scaled), HYPERLINKING_COMPLETION_PROGRESS);
+    return Math.min(Math.round(scaled), OVERALL_PROGRESS_CAP);
   }
 
   private targetServiceProgress(serviceId: string, rampT: number): number {
@@ -724,12 +732,23 @@ export class Results implements OnInit, OnDestroy {
         continue;
       }
 
+      if (id === TRANSLATION_WAITS_FOR && this.isHyperlinkingUiComplete(selected)) {
+        const snapped = HYPERLINKING_COMPLETION_PROGRESS;
+        if ((this.serviceDummyProgress[id] ?? 0) < snapped) {
+          this.serviceDummyProgress[id] = snapped;
+          changed = true;
+        }
+        continue;
+      }
+
       const target = this.targetServiceProgress(id, rampT);
       const current = this.serviceDummyProgress[id] ?? 0;
       if (Math.abs(target - current) < 0.25) continue;
 
+      const cap =
+        id === TRANSLATION_WAITS_FOR ? OVERALL_PROGRESS_CAP : serviceProgressCap(id);
       const step = Math.max(0.06, (target - current) * 0.18);
-      this.serviceDummyProgress[id] = Math.min(current + step, serviceProgressCap(id));
+      this.serviceDummyProgress[id] = Math.min(current + step, cap);
       changed = true;
     }
 
@@ -746,6 +765,14 @@ export class Results implements OnInit, OnDestroy {
     if (changed) {
       this.cdr.markForCheck();
     }
+  }
+
+  private onHyperlinkingBackendComplete(): void {
+    this.serviceDummyProgress[TRANSLATION_WAITS_FOR] = HYPERLINKING_COMPLETION_PROGRESS;
+    if (!this.translationRampStartedAt) {
+      this.translationRampStartedAt = Date.now();
+    }
+    this.cdr.markForCheck();
   }
 
   private resetProgressRamp(): void {

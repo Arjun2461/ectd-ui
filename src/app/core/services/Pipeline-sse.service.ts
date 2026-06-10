@@ -8,6 +8,7 @@ import {
 } from '../models/hitl-history.types';
 import { HitlHistoryStorage } from './hitl-history.storage';
 import {
+  isHyperlinkingPhaseCompleteMessage,
   isProgressMilestoneMessage,
   servicesCompletedBeforePhase,
   servicesCompletedByMilestone,
@@ -139,6 +140,8 @@ export interface PipelineState {
   currentPhase: number;
   /** Services requested when the pipeline was started. */
   selectedServices: string[];
+  /** Set when backend logs phase 1 hyperlinking complete — unlocks translation UI. */
+  hyperlinkingPhaseComplete: boolean;
 }
 
 const INITIAL_STATE: PipelineState = {
@@ -161,6 +164,7 @@ const INITIAL_STATE: PipelineState = {
   completedServiceIds: [],
   currentPhase:        0,
   selectedServices:    [],
+  hyperlinkingPhaseComplete: false,
 };
 
 @Injectable({ providedIn: 'root' })
@@ -207,7 +211,8 @@ export class PipelineSseService {
       progressMilestone:   0,
       completedServiceIds: [],
       currentPhase:        0,
-      selectedServices:    payload.services,
+      selectedServices:          payload.services,
+      hyperlinkingPhaseComplete: false,
     });
 
     this.openStream(res.task_id);
@@ -327,6 +332,15 @@ export class PipelineSseService {
             ...servicesCompletedByMilestone(event.message),
           ]);
           phasePatch.completedServiceIds = [...completed];
+        }
+
+        if (isHyperlinkingPhaseCompleteMessage(event.message)) {
+          const completed = new Set([
+            ...(phasePatch.completedServiceIds ?? this.state$.value.completedServiceIds),
+            'hyperlinking',
+          ]);
+          phasePatch.completedServiceIds = [...completed];
+          phasePatch.hyperlinkingPhaseComplete = true;
         }
 
         if (Object.keys(phasePatch).length) {

@@ -13,13 +13,16 @@ export const OVERALL_PROGRESS_CAP = 94;
 /** Target time to reach {@link OVERALL_PROGRESS_CAP} in the UI. */
 export const PROGRESS_RAMP_DURATION_MS = 120_000;
 
-/** Hyperlinking must reach this before translation starts. */
+/** Hyperlinking UI target while phase 1 is still running (before backend handoff). */
+export const HYPERLINKING_RAMP_CAP = OVERALL_PROGRESS_CAP;
+
+/** Hyperlinking jumps to this when phase 1 completes; translation starts then. */
 export const HYPERLINKING_COMPLETION_PROGRESS = 100;
 
 /** Per-service UI cap while still running — pipeline `completed` sets all to 100%. */
 export const SERVICE_PROGRESS_CAPS: Record<string, number> = {
   consistency: 90,
-  hyperlinking: HYPERLINKING_COMPLETION_PROGRESS,
+  hyperlinking: HYPERLINKING_RAMP_CAP,
   translation: 87,
 };
 
@@ -65,6 +68,12 @@ export function firstSelectedPipelinePhase(selectedServices: string[]): number {
 /** True for "phase N started" kickoff lines — not a completion handoff. */
 export function isPhaseKickoffMessage(message: string): boolean {
   return /phase\s+\d+\s+started/i.test(message);
+}
+
+/** Backend: "Phase 1 completed: all files successfully hyperlinked." */
+export function isHyperlinkingPhaseCompleteMessage(message: string): boolean {
+  const m = message.toLowerCase();
+  return m.includes('phase 1 completed') && m.includes('hyperlinked');
 }
 
 /**
