@@ -97,6 +97,14 @@ export class Dashboard implements AfterViewInit, OnDestroy {
       route: '/results',
     },
     {
+      title: 'Draft Module 2 Summaries',
+      description:
+        'Extracts key data from Module 5 clinical study reports and uses it to automatically draft the high-level summaries required for Module2.',
+      icon: FileText,
+      route: '/results',
+      comingSoon: false,
+    },
+    {
       title: 'Lifecycle Impact Analysis',
       description:
         'Automatically identify downstream document impacts from CMC changes, track required updates across eCTD sequences, and ensure compliance with intelligent redaction of sensitive data.',
