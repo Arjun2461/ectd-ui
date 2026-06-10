@@ -257,16 +257,13 @@ export class Hyperlinking implements AfterViewInit, OnChanges, OnDestroy {
 
     return modules.map((mod) => {
       const share = totalRaw > 0 ? mod.raw / totalRaw : 0;
-      const value =
-        share > 0 && revealTotal > 0 ?
-          Math.max(1, Math.round(revealTotal * share))
-        : 0;
+      const value = share > 0 && revealTotal > 0 ? Math.round(revealTotal * share) : 0;
       const percent = max > 0 ? Math.round((mod.raw / max) * 100 * this.moduleRevealFactor()) : 0;
 
       return {
         name: mod.name,
         value,
-        percent: Math.max(percent, value > 0 ? 4 : 0),
+        percent: value > 0 ? Math.max(percent, 4) : 0,
       };
     });
   }

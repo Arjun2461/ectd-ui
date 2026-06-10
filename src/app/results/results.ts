@@ -31,11 +31,14 @@ import {
   normalizeModuleDistribution,
 } from '../core/data/job-data';
 import {
+  CONSISTENCY_HYPERLINK_LAG_PCT,
+  HYPERLINKING_COMPLETION_PROGRESS,
   OVERALL_PROGRESS_CAP,
   PROGRESS_RAMP_DURATION_MS,
   progressRampEase,
   serviceProgressCap,
   serviceProgressMultiplier,
+  TRANSLATION_WAITS_FOR,
 } from '../core/utils/pipeline-progress.util';
 
 // ── NEW: SSE service ──────────────────────────────────────────────────────────
@@ -74,6 +77,7 @@ export class Results implements OnInit, OnDestroy {
   /** Per-service slow progress during live SSE runs (UI only). */
   private serviceDummyProgress: Record<string, number> = {};
   private pipelineRampStartedAt: number | null = null;
+  private translationRampStartedAt: number | null = null;
   private dummyProgressInterval: ReturnType<typeof setInterval> | null = null;
   private static readonly PROGRESS_TICK_MS = 250;
   // ── Live SSE state (replaces simulation) ───────────────────────────────────
@@ -566,16 +570,38 @@ export class Results implements OnInit, OnDestroy {
     this.simulatingJobId = null;
   }
 
-  /** Average of per-service UI progress — drives the overall bar during live SSE. */
+  /** Average of active service UI progress — drives the overall bar during live SSE. */
   private get liveOverallProgress(): number {
-    const selected = this.job?.selectedServices ?? ['hyperlinking'];
-    if (!selected.length) return 0;
+    const active = this.activeProgressServiceIds();
+    if (!active.length) return 0;
 
-    const total = selected.reduce(
-      (sum, id) => sum + (this.serviceDummyProgress[id] ?? 0),
-      0,
+    const total = active.reduce((sum, id) => sum + (this.serviceDummyProgress[id] ?? 0), 0);
+    return Math.min(Math.round(total / active.length), OVERALL_PROGRESS_CAP);
+  }
+
+  private activeProgressServiceIds(): string[] {
+    const selected = this.job?.selectedServices ?? ['hyperlinking'];
+    return selected.filter((id) => {
+      if (id === 'translation' && !this.isHyperlinkingUiComplete(selected)) {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  private isHyperlinkingUiComplete(selected: string[]): boolean {
+    if (!selected.includes(TRANSLATION_WAITS_FOR)) {
+      return true;
+    }
+
+    if (this.pipelineState?.completedServiceIds.includes(TRANSLATION_WAITS_FOR)) {
+      return true;
+    }
+
+    return (
+      (this.serviceDummyProgress[TRANSLATION_WAITS_FOR] ?? 0) >=
+      HYPERLINKING_COMPLETION_PROGRESS - 0.5
     );
-    return Math.min(Math.round(total / selected.length), OVERALL_PROGRESS_CAP);
   }
 
   private currentRampT(): number {
@@ -583,10 +609,37 @@ export class Results implements OnInit, OnDestroy {
     return (Date.now() - this.pipelineRampStartedAt) / PROGRESS_RAMP_DURATION_MS;
   }
 
+  private currentTranslationRampT(): number {
+    if (!this.translationRampStartedAt) return 0;
+    return (Date.now() - this.translationRampStartedAt) / PROGRESS_RAMP_DURATION_MS;
+  }
+
+  private hyperlinkingTarget(rampT: number): number {
+    const eased = progressRampEase(rampT) * HYPERLINKING_COMPLETION_PROGRESS;
+    const scaled = eased * serviceProgressMultiplier('hyperlinking');
+    return Math.min(Math.round(scaled), HYPERLINKING_COMPLETION_PROGRESS);
+  }
+
   private targetServiceProgress(serviceId: string, rampT: number): number {
-    const avgTarget = progressRampEase(rampT) * OVERALL_PROGRESS_CAP;
-    const scaled = avgTarget * serviceProgressMultiplier(serviceId);
-    return Math.min(Math.round(scaled), serviceProgressCap(serviceId));
+    if (serviceId === 'hyperlinking') {
+      return this.hyperlinkingTarget(rampT);
+    }
+
+    if (serviceId === 'consistency') {
+      const hyper = this.hyperlinkingTarget(rampT);
+      const lagged = Math.max(0, hyper - CONSISTENCY_HYPERLINK_LAG_PCT);
+      return Math.min(lagged, serviceProgressCap('consistency'));
+    }
+
+    if (serviceId === 'translation') {
+      const translationRampT = this.currentTranslationRampT();
+      const eased = progressRampEase(translationRampT) * OVERALL_PROGRESS_CAP;
+      const scaled = eased * serviceProgressMultiplier('translation');
+      return Math.min(Math.round(scaled), serviceProgressCap('translation'));
+    }
+
+    const eased = progressRampEase(rampT) * OVERALL_PROGRESS_CAP;
+    return Math.min(Math.round(eased), serviceProgressCap(serviceId));
   }
 
   private buildServiceProgressFromRamp(serviceIds: string[]): ServiceProgress[] {
@@ -602,12 +655,37 @@ export class Results implements OnInit, OnDestroy {
       this.pipelineState?.status === 'awaiting_hitl' ||
       this.viewMode === 'processing';
 
+    const hyperlinkDone = this.isHyperlinkingUiComplete(serviceIds);
+
     return buildServiceProgress(
       serviceIds,
       serviceIds.map((id) => {
         const progress = Math.round(this.serviceDummyProgress[id] ?? 0);
         if (progress >= 100) {
           return { progress: 100, status: 'completed' as const };
+        }
+        if (
+          id === TRANSLATION_WAITS_FOR &&
+          hyperlinkDone &&
+          progress >= HYPERLINKING_COMPLETION_PROGRESS
+        ) {
+          return { progress: HYPERLINKING_COMPLETION_PROGRESS, status: 'completed' as const };
+        }
+        if (
+          id === 'translation' &&
+          serviceIds.includes(TRANSLATION_WAITS_FOR) &&
+          !hyperlinkDone
+        ) {
+          return { progress: 0, status: 'waiting' as const };
+        }
+        if (
+          id === 'consistency' ||
+          id === 'hyperlinking' ||
+          (id === 'translation' && hyperlinkDone)
+        ) {
+          if (pipelineActive || progress > 0) {
+            return { progress, status: 'processing' as const };
+          }
         }
         if (pipelineActive || progress > 0) {
           return { progress, status: 'processing' as const };
@@ -625,10 +703,27 @@ export class Results implements OnInit, OnDestroy {
       this.pipelineRampStartedAt = Date.now();
     }
 
+    if (
+      selected.includes('translation') &&
+      selected.includes(TRANSLATION_WAITS_FOR) &&
+      this.isHyperlinkingUiComplete(selected) &&
+      !this.translationRampStartedAt
+    ) {
+      this.translationRampStartedAt = Date.now();
+    }
+
     const rampT = this.currentRampT();
     let changed = false;
 
     for (const id of selected) {
+      if (
+        id === 'translation' &&
+        selected.includes(TRANSLATION_WAITS_FOR) &&
+        !this.isHyperlinkingUiComplete(selected)
+      ) {
+        continue;
+      }
+
       const target = this.targetServiceProgress(id, rampT);
       const current = this.serviceDummyProgress[id] ?? 0;
       if (Math.abs(target - current) < 0.25) continue;
@@ -638,9 +733,10 @@ export class Results implements OnInit, OnDestroy {
       changed = true;
     }
 
+    const active = this.activeProgressServiceIds();
     const avg =
-      selected.reduce((sum, id) => sum + (this.serviceDummyProgress[id] ?? 0), 0) /
-      selected.length;
+      active.reduce((sum, id) => sum + (this.serviceDummyProgress[id] ?? 0), 0) /
+      active.length;
     const nextOverall = Math.min(Math.round(avg), OVERALL_PROGRESS_CAP);
     if (nextOverall !== this.dummyProgress) {
       this.dummyProgress = nextOverall;
@@ -656,6 +752,7 @@ export class Results implements OnInit, OnDestroy {
     this.serviceDummyProgress = {};
     this.dummyProgress = 0;
     this.pipelineRampStartedAt = null;
+    this.translationRampStartedAt = null;
   }
 
   private snapAllServicesComplete(): void {

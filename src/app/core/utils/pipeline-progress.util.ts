@@ -13,19 +13,31 @@ export const OVERALL_PROGRESS_CAP = 94;
 /** Target time to reach {@link OVERALL_PROGRESS_CAP} in the UI. */
 export const PROGRESS_RAMP_DURATION_MS = 120_000;
 
-/** Per-service UI cap while still running — 100% only when the pipeline completes. */
+/** Hyperlinking must reach this before translation starts. */
+export const HYPERLINKING_COMPLETION_PROGRESS = 100;
+
+/** Per-service UI cap while still running — pipeline `completed` sets all to 100%. */
 export const SERVICE_PROGRESS_CAPS: Record<string, number> = {
   consistency: 90,
-  hyperlinking: 94,
+  hyperlinking: HYPERLINKING_COMPLETION_PROGRESS,
   translation: 87,
 };
 
-/** Relative speed vs the overall average — keeps bars visibly different while parallel. */
+/** Hyperlinking baseline speed during the parallel phase. */
 export const SERVICE_PROGRESS_MULTIPLIER: Record<string, number> = {
-  consistency: 1.03,
+  consistency: 1,
   hyperlinking: 1,
   translation: 0.97,
 };
+
+/** Consistency runs parallel with hyperlinking but trails by this many points. */
+export const CONSISTENCY_HYPERLINK_LAG_PCT = 10;
+
+/** Translation does not start until this service finishes (UI + SSE). */
+export const TRANSLATION_WAITS_FOR = 'hyperlinking';
+
+/** Services that start together when the pipeline begins. */
+export const PARALLEL_START_SERVICES = ['consistency', 'hyperlinking'] as const;
 
 export function serviceProgressCap(serviceId: string): number {
   return SERVICE_PROGRESS_CAPS[serviceId] ?? OVERALL_PROGRESS_CAP;

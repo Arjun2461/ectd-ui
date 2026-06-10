@@ -8,11 +8,11 @@ import {
 } from '../models/job.types';
 
 export const DEFAULT_MODULE_DISTRIBUTION: ModuleDistribution = {
-  M1: 18,
-  M2: 28,
-  M3: 22,
-  M4: 20,
-  M5: 21,
+  M1: 0,
+  M2: 32,
+  M3: 25,
+  M4: 23,
+  M5: 29,
 };
 
 /** Ensures every module key exists — missing keys use fallback instead of showing as 0. */
