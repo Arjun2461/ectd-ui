@@ -4,64 +4,125 @@
   [class.fab--open]="isOpen"
   (click)="toggle()"
   [attr.aria-label]="isOpen ? 'Close help chat' : 'Open help chat'"
+  [attr.aria-expanded]="isOpen"
 >
+  <span class="fab__pulse" *ngIf="!isOpen && hasUnread"></span>
   <span class="fab__icon">
-    <lucide-icon *ngIf="!isOpen" [img]="Bot"></lucide-icon>
+    <lucide-icon *ngIf="!isOpen" [img]="MessageCircle"></lucide-icon>
     <lucide-icon *ngIf="isOpen" [img]="X"></lucide-icon>
   </span>
-  <span class="fab__label" *ngIf="!isOpen">Ask AI</span>
+  <span class="fab__label" *ngIf="!isOpen">Help</span>
 </button>
 
 <!-- Chat panel -->
-<div class="chat-panel" *ngIf="isOpen">
+<div class="chat-panel" *ngIf="isOpen" role="dialog" aria-label="eCTD Help Assistant">
   <div class="chat-header">
+    <div class="chat-header__glow"></div>
     <div class="chat-header__avatar">
       <lucide-icon [img]="Sparkles"></lucide-icon>
     </div>
     <div class="chat-header__title">
       <h4>eCTD Assistant</h4>
-      <p><span class="status-dot"></span>Online</p>
+      <p>
+        <span class="status-dot"></span>
+        {{ isTyping ? 'Typing…' : 'Online · Ready to help' }}
+      </p>
     </div>
-    <button class="chat-header__close" (click)="close()" aria-label="Close">
+    <button class="chat-header__close" (click)="close()" aria-label="Close chat">
       <lucide-icon [img]="X"></lucide-icon>
     </button>
   </div>
 
   <div class="chat-body">
-    <ng-container *ngFor="let msg of messages">
-      <div class="row" [class.row--user]="msg.from === 'user'">
+    <ng-container *ngFor="let msg of messages; trackBy: trackMessage; let mi = index">
+      <div
+        class="row msg-enter"
+        [class.row--user]="msg.from === 'user'"
+        [style.animation-delay.ms]="mi * 40"
+      >
         <div class="avatar avatar--bot" *ngIf="msg.from === 'bot'">
           <lucide-icon [img]="Bot"></lucide-icon>
         </div>
 
-        <div class="bubble" [class.bubble--bot]="msg.from === 'bot'" [class.bubble--user]="msg.from === 'user'">
+        <div
+          class="bubble"
+          [class.bubble--bot]="msg.from === 'bot'"
+          [class.bubble--user]="msg.from === 'user'"
+        >
           {{ msg.text }}
         </div>
       </div>
 
-      <!-- Numbered question list: shown on the welcome message AND after every bot answer -->
-      <div class="suggestions" *ngIf="msg.suggestions?.length">
+      <!-- Main menu category grid -->
+      <div class="menu-grid msg-enter" *ngIf="msg.showMenu" [style.animation-delay.ms]="mi * 40 + 80">
+        <button
+          class="menu-card"
+          *ngFor="let branch of faqTree; let ci = index"
+          (click)="selectBranch(branch)"
+          [style.animation-delay.ms]="ci * 55"
+        >
+          <span class="menu-card__icon">{{ branch.icon }}</span>
+          <span class="menu-card__text">
+            <span class="menu-card__title">{{ branch.title }}</span>
+            <span class="menu-card__hint">{{ branch.items.length }} questions</span>
+          </span>
+          <lucide-icon class="menu-card__arrow" [img]="ChevronRight"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Follow-up suggestion chips -->
+      <div
+        class="suggestions msg-enter"
+        *ngIf="msg.suggestions?.length && !msg.showMenu"
+        [style.animation-delay.ms]="mi * 40 + 100"
+      >
         <button
           class="suggestion-chip"
-          *ngFor="let s of msg.suggestions; let i = index"
+          *ngFor="let s of msg.suggestions; let si = index"
+          [class.suggestion-chip--action]="s === mainMenuLabel || s === closeLabel"
+          [class.suggestion-chip--close]="s === closeLabel"
           (click)="onSuggestionClick(s)"
+          [style.animation-delay.ms]="si * 45"
         >
-          <span class="suggestion-chip__index">{{ i + 1 }}.</span>
+          <lucide-icon
+            *ngIf="s === mainMenuLabel"
+            class="suggestion-chip__icon"
+            [img]="Home"
+          ></lucide-icon>
           <span>{{ s }}</span>
         </button>
       </div>
     </ng-container>
+
+    <!-- Typing indicator -->
+    <div class="row typing-row msg-enter" *ngIf="isTyping">
+      <div class="avatar avatar--bot">
+        <lucide-icon [img]="Bot"></lucide-icon>
+      </div>
+      <div class="bubble bubble--bot typing-bubble">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+      </div>
+    </div>
+
     <div #scrollAnchor></div>
   </div>
 
   <div class="chat-input">
     <input
       type="text"
-      placeholder="Type your question..."
+      placeholder="Ask about upload, hyperlinking, consistency…"
       [(ngModel)]="draft"
       (keyup.enter)="onSend()"
+      [disabled]="isTyping"
     />
-    <button class="send-btn" (click)="onSend()" aria-label="Send">
+    <button
+      class="send-btn"
+      (click)="onSend()"
+      [disabled]="!draft.trim() || isTyping"
+      aria-label="Send message"
+    >
       <lucide-icon [img]="Send"></lucide-icon>
     </button>
   </div>
