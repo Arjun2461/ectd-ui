@@ -1,0 +1,68 @@
+<!-- Floating launcher -->
+<button
+  class="fab"
+  [class.fab--open]="isOpen"
+  (click)="toggle()"
+  [attr.aria-label]="isOpen ? 'Close help chat' : 'Open help chat'"
+>
+  <span class="fab__icon">
+    <lucide-icon *ngIf="!isOpen" [img]="Bot"></lucide-icon>
+    <lucide-icon *ngIf="isOpen" [img]="X"></lucide-icon>
+  </span>
+  <span class="fab__label" *ngIf="!isOpen">Ask AI</span>
+</button>
+
+<!-- Chat panel -->
+<div class="chat-panel" *ngIf="isOpen">
+  <div class="chat-header">
+    <div class="chat-header__avatar">
+      <lucide-icon [img]="Sparkles"></lucide-icon>
+    </div>
+    <div class="chat-header__title">
+      <h4>eCTD Assistant</h4>
+      <p><span class="status-dot"></span>Online</p>
+    </div>
+    <button class="chat-header__close" (click)="close()" aria-label="Close">
+      <lucide-icon [img]="X"></lucide-icon>
+    </button>
+  </div>
+
+  <div class="chat-body">
+    <ng-container *ngFor="let msg of messages">
+      <div class="row" [class.row--user]="msg.from === 'user'">
+        <div class="avatar avatar--bot" *ngIf="msg.from === 'bot'">
+          <lucide-icon [img]="Bot"></lucide-icon>
+        </div>
+
+        <div class="bubble" [class.bubble--bot]="msg.from === 'bot'" [class.bubble--user]="msg.from === 'user'">
+          {{ msg.text }}
+        </div>
+      </div>
+
+      <!-- Numbered question list: shown on the welcome message AND after every bot answer -->
+      <div class="suggestions" *ngIf="msg.suggestions?.length">
+        <button
+          class="suggestion-chip"
+          *ngFor="let s of msg.suggestions; let i = index"
+          (click)="onSuggestionClick(s)"
+        >
+          <span class="suggestion-chip__index">{{ i + 1 }}.</span>
+          <span>{{ s }}</span>
+        </button>
+      </div>
+    </ng-container>
+    <div #scrollAnchor></div>
+  </div>
+
+  <div class="chat-input">
+    <input
+      type="text"
+      placeholder="Type your question..."
+      [(ngModel)]="draft"
+      (keyup.enter)="onSend()"
+    />
+    <button class="send-btn" (click)="onSend()" aria-label="Send">
+      <lucide-icon [img]="Send"></lucide-icon>
+    </button>
+  </div>
+</div>

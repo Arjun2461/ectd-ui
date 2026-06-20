@@ -201,7 +201,7 @@ export class History {
   }
 
   canDownload(item: HistoryListItem): boolean {
-    return item.kind === 'draft' && item.status === 'completed';
+    return (item.kind === 'draft' && item.status === 'completed') ||  (item.kind === 'job' && item.status === 'completed');
   }
 
   downloadItem(item: HistoryListItem, event: Event): void {

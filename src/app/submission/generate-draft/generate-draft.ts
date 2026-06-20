@@ -36,7 +36,7 @@ interface DraftModule {
 type DraftStatus = 'idle' | 'running' | 'completed';
 
 const ACCEPTED_EXTENSIONS = ['.pdf', '.docx', '.xml'];
-const SIMULATION_DURATION_MS = 120_000;
+const SIMULATION_DURATION_MS = 10_000;
 const PROGRESS_TICK_MS = 500;
 
 const DRAFT_MODULES: Omit<DraftModule, 'files' | 'dragOver'>[] = [

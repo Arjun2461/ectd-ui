@@ -139,14 +139,12 @@
               </td>
               <td class="con-docs-cell">{{ issue.documents }} docs</td>
               <td class="con-values-cell">
-                @for (v of issue.values; track v) {
+                @for (v of issue.values; track $index) {
                   <span class="con-value-chip">{{ v }}</span>
                 }
               </td>
               <td class="con-action-cell">
-                <span class="con-view-link">
-                  View <i class="ti ti-chevron-right"></i>
-                </span>
+                <span class="con-view-link"> View <i class="ti ti-chevron-right"></i> </span>
               </td>
             </tr>
           } @empty {
@@ -253,4 +251,3 @@
     </div>
   </div>
 }
-

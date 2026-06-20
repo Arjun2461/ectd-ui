@@ -6,10 +6,11 @@ import { LucideAngularModule, LayoutDashboard, Upload, History, ShieldCheck, Log
 import { Toast } from '../shared/toast/toast';
 import { HttpClient } from '@angular/common/http';
 import { PipelineSseService } from '../core/services/Pipeline-sse.service'
+import { FaqBot } from '../shared/faq-bot/faq-bot';
 
 @Component({
   selector: 'app-layout',
-  imports: [RouterModule, CommonModule, MatIconModule, LucideAngularModule, Toast],
+  imports: [RouterModule, CommonModule, MatIconModule, LucideAngularModule, Toast,FaqBot],
   templateUrl: './layout.html',
   styleUrl: './layout.css',
 })

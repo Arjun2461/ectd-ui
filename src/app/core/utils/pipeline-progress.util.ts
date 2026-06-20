@@ -34,7 +34,7 @@ export const SERVICE_PROGRESS_MULTIPLIER: Record<string, number> = {
 };
 
 /** Consistency runs parallel with hyperlinking but trails by this many points. */
-export const CONSISTENCY_HYPERLINK_LAG_PCT = 10;
+export const CONSISTENCY_HYPERLINK_LAG_PCT = 12;
 
 /** Translation does not start until this service finishes (UI + SSE). */
 export const TRANSLATION_WAITS_FOR = 'hyperlinking';
@@ -72,8 +72,9 @@ export function isPhaseKickoffMessage(message: string): boolean {
 
 /** Backend: "Phase 1 completed: all files successfully hyperlinked." */
 export function isHyperlinkingPhaseCompleteMessage(message: string): boolean {
+  console.log(message)
   const m = message.toLowerCase();
-  return m.includes('phase 1 completed') && m.includes('hyperlinked');
+  return m.includes('phase 1 complete') && m.includes('hyperlinked');
 }
 
 /**

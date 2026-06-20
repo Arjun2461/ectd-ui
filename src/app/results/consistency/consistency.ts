@@ -86,18 +86,18 @@ export class Consistency implements AfterViewInit, OnDestroy {
       parameter: 'Any TEAE',
       issueType: 'Value mismatch',
       documents: 4,
-      values: ['58.3', '62.4', '60.1', '59.7'],
+      values: ['62.4', '62.4', '60.1', '62.5'],
       references: [
-        { document: '5.3.4.2-phase3-study1.pdf', value: '58.3', unit: '%', page: 'p. 4' },
+        { document: '5.3.4.2-phase3-study1.pdf', value: '62.4', unit: '%', page: 'p. 4' },
         { document: '2.5-clinical-overview.pdf', value: '62.4', unit: '%', page: 'p. 2' },
         { document: '5.3.4.2-phase3-study2.pdf', value: '60.1', unit: '%', page: 'p. 6' },
-        { document: '2.7.4-safety-summary.pdf', value: '59.7', unit: '%', page: 'p. 11' },
+        { document: '2.7.4-safety-summary.pdf', value: '62.5', unit: '%', page: 'p. 11' },
       ],
       excerpts: [
         {
           document: '5.3.4.2-phase3-study1.pdf',
           page: 'p. 4',
-          text: 'Treatment-emergent adverse events (Any TEAE) were reported in <span class="hl-red">58.3</span> % of subjects in the Nexivarin 10 mg group (Safety Results).',
+          text: 'Treatment-emergent adverse events (Any TEAE) were reported in <span class="hl-red">62.4</span> % of subjects in the Nexivarin 10 mg group (Safety Results).',
         },
         {
           document: '2.5-clinical-overview.pdf',
@@ -112,7 +112,7 @@ export class Consistency implements AfterViewInit, OnDestroy {
         {
           document: '2.7.4-safety-summary.pdf',
           page: 'p. 11',
-          text: 'The pooled TEAE incidence for Nexivarin 10 mg was recorded as <span class="hl-red">59.7</span> % in the integrated safety summary.',
+          text: 'The pooled TEAE incidence for Nexivarin 10 mg was recorded as <span class="hl-red">62.5</span> % in the integrated safety summary.',
         },
       ],
     },
@@ -140,7 +140,7 @@ export class Consistency implements AfterViewInit, OnDestroy {
         {
           document: '3.2.P.1-dp-description.pdf',
           page: 'p. 2',
-          text: 'The proposed commercial tablet strength is listed as <span class="hl-red">50</span> mg in the Drug Product Description.',
+          text: 'The proposed commercial tablet strength is listed as <span class="hl-red">10</span> mg in the Drug Product Description.',
         },
       ],
     },
@@ -169,12 +169,12 @@ export class Consistency implements AfterViewInit, OnDestroy {
         {
           document: '4.2.3.1-single-dose-tox.pdf',
           page: 'p. 7',
-          text: 'The maximum tolerated dose was determined to be <span class="hl-red">10</span> mg/kg/day in the single-dose toxicology study.',
+          text: 'The maximum tolerated dose was determined to be <span class="hl-red">3</span> mg/kg/day in the single-dose toxicology study.',
         },
         {
           document: '2.6.6-tox-summary.pdf',
           page: 'p. 9',
-          text: 'The NOAEL was cited as <span class="hl-red">15</span> mg/kg/day in the written summary of toxicology.',
+          text: 'The NOAEL was cited as <span class="hl-red">3</span> mg/kg/day in the written summary of toxicology.',
         },
       ],
     },
@@ -197,12 +197,12 @@ export class Consistency implements AfterViewInit, OnDestroy {
         {
           document: '5.3.3.1-pk-study.pdf',
           page: 'p. 12',
-          text: 'Total exposure expressed as AUC0-∞ equalled <span class="hl-red">0.54 µg·h/mL</span> in the primary PK analysis.',
+          text: 'Total exposure expressed as AUC0-∞ equalled <span class="hl-red">540 µg·h/mL</span> in the primary PK analysis.',
         },
         {
           document: '2.5-clinical-overview.pdf',
           page: 'p. 9',
-          text: 'The AUC0-∞ was reported as <span class="hl-red">0.00054 mg·h/L</span> in the clinical overview PK section.',
+          text: 'The AUC0-∞ was reported as <span class="hl-red">54 mg·h/L</span> in the clinical overview PK section.',
         },
       ],
     },
@@ -232,27 +232,27 @@ export class Consistency implements AfterViewInit, OnDestroy {
       parameter: 'Vd',
       issueType: 'Unit mismatch',
       documents: 3,
-      values: ['80 L', '1.1 L/kg', '  0.0011 m³/kg'],
+      values: ['1.1 m³/g', '1.1 cm³/kg', '  1.1 m³/kg'],
       references: [
-        { document: '2.7.2-pk-summary.pdf', value: '80', unit: 'L', page: 'p. 8' },
-        { document: '5.3.3.1-pk-study.pdf', value: '1.1', unit: 'L/kg', page: 'p. 15' },
-        { document: '2.4-nonclinical-overview.pdf', value: '0.0011', unit: 'm³/kg', page: 'p. 6' },
+        { document: '2.7.2-pk-summary.pdf', value: '1.1', unit: 'm³/g', page: 'p. 8' },
+        { document: '5.3.3.1-pk-study.pdf', value: '1.1', unit: 'cm³/kg', page: 'p. 15' },
+        { document: '2.4-nonclinical-overview.pdf', value: '1.1', unit: 'm³/kg', page: 'p. 6' },
       ],
       excerpts: [
         {
           document: '2.7.2-pk-summary.pdf',
           page: 'p. 8',
-          text: 'Apparent volume of distribution (Vd) was estimated at <span class="hl-red">80 L</span> in the population PK model.',
+          text: 'Apparent volume of distribution (Vd) was estimated at <span class="hl-red">1.1 m³/g</span> in the population PK model.',
         },
         {
           document: '5.3.3.1-pk-study.pdf',
           page: 'p. 15',
-          text: 'Weight-normalised Vd was reported as <span class="hl-red">1.1 L/kg</span> across the studied cohort.',
+          text: 'Weight-normalised Vd was reported as <span class="hl-red">1.1 cm³/kg</span> across the studied cohort.',
         },
         {
           document: '2.4-nonclinical-overview.pdf',
           page: 'p. 6',
-          text: 'The volume of distribution was expressed as <span class="hl-red">0.0011 m³/kg</span> in the nonclinical overview PK section.',
+          text: 'The volume of distribution was expressed as <span class="hl-red">1.1 m³/kg</span> in the nonclinical overview PK section.',
         },
       ],
     },
@@ -260,11 +260,11 @@ export class Consistency implements AfterViewInit, OnDestroy {
       parameter: 'Dizziness',
       issueType: 'Value mismatch',
       documents: 3,
-      values: ['1.3', '1.5', '1.8'],
+      values: ['1.3', '1.5', '1.3'],
       references: [
         { document: '5.3.4.2-phase3-study1.pdf', value: '1.3', unit: '%', page: 'p. 2' },
         { document: '2.5-clinical-overview.pdf', value: '1.5', unit: '%', page: 'p. 4' },
-        { document: '2.7.4-safety-summary.pdf', value: '1.8', unit: '%', page: 'p. 14' },
+        { document: '2.7.4-safety-summary.pdf', value: '1.3', unit: '%', page: 'p. 14' },
       ],
       excerpts: [
         {
@@ -280,7 +280,7 @@ export class Consistency implements AfterViewInit, OnDestroy {
         {
           document: '2.7.4-safety-summary.pdf',
           page: 'p. 14',
-          text: 'Dizziness was noted in <span class="hl-red">1.8</span> % of Placebo subjects in the integrated safety summary.',
+          text: 'Dizziness was noted in <span class="hl-red">1.3</span> % of Placebo subjects in the integrated safety summary.',
         },
       ],
     },
@@ -350,18 +350,18 @@ export class Consistency implements AfterViewInit, OnDestroy {
       parameter: 'hERG IC50',
       issueType: 'Value mismatch',
       documents: 4,
-      values: ['10,000', '10', '1,000', '100'],
+      values: ['100', '10', '100', '100'],
       references: [
-        { document: '4.2.1.3-safety-pharm.pdf', value: '10,000', unit: 'nM', page: 'p. 2' },
+        { document: '4.2.1.3-safety-pharm.pdf', value: '100', unit: 'nM', page: 'p. 2' },
         { document: '2.4-nonclinical-overview.pdf', value: '10', unit: 'nM', page: 'p. 3' },
-        { document: '2.6.3-pharm-summary.pdf', value: '1,000', unit: 'nM', page: 'p. 5' },
+        { document: '2.6.3-pharm-summary.pdf', value: '100', unit: 'nM', page: 'p. 5' },
         { document: '4.2.1.4-safety-add.pdf', value: '100', unit: 'nM', page: 'p. 8' },
       ],
       excerpts: [
         {
           document: '4.2.1.3-safety-pharm.pdf',
           page: 'p. 2',
-          text: 'The hERG IC50 safety margin was recorded as <span class="hl-red">10,000</span> nM in Safety Pharmacology — Nexivarin Hydrochloride.',
+          text: 'The hERG IC50 safety margin was recorded as <span class="hl-red">100</span> nM in Safety Pharmacology — Nexivarin Hydrochloride.',
         },
         {
           document: '2.4-nonclinical-overview.pdf',
@@ -371,7 +371,7 @@ export class Consistency implements AfterViewInit, OnDestroy {
         {
           document: '2.6.3-pharm-summary.pdf',
           page: 'p. 5',
-          text: 'The hERG IC50 was noted as <span class="hl-red">1,000</span> nM in the written summary of pharmacology.',
+          text: 'The hERG IC50 was noted as <span class="hl-red">100</span> nM in the written summary of pharmacology.',
         },
         {
           document: '4.2.1.4-safety-add.pdf',
