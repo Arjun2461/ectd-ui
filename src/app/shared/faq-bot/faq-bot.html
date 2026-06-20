@@ -1,28 +1,45 @@
-<!-- Floating launcher -->
-<button
-  class="fab"
-  [class.fab--open]="isOpen"
-  (click)="toggle()"
-  [attr.aria-label]="isOpen ? 'Close help chat' : 'Open help chat'"
-  [attr.aria-expanded]="isOpen"
->
-  <span class="fab__pulse" *ngIf="!isOpen && hasUnread"></span>
-
-  <span class="fab__icon" *ngIf="!isOpen">
-    <span class="bot-logo bot-logo--fab" aria-hidden="true">
-      <span class="bot-logo__antenna"></span>
-      <span class="bot-logo__head">
-        <span class="bot-logo__eye"></span>
-        <span class="bot-logo__eye"></span>
-        <span class="bot-logo__smile"></span>
+<!-- Floating launcher + friendly nudge -->
+<div class="fab-wrap">
+  <div class="nudge-bubble" *ngIf="showNudge && !isOpen" role="status">
+    <span class="nudge-bubble__icon" aria-hidden="true">
+      <span class="bot-logo bot-logo--nudge">
+        <span class="bot-logo__head">
+          <span class="bot-logo__eye"></span>
+          <span class="bot-logo__eye"></span>
+          <span class="bot-logo__smile"></span>
+        </span>
       </span>
     </span>
-  </span>
+    <span class="nudge-bubble__text">{{ nudgeMessage }}</span>
+    <span class="nudge-bubble__tail" aria-hidden="true"></span>
+  </div>
 
-  <span class="fab__icon fab__icon--close" *ngIf="isOpen">
-    <lucide-icon [img]="X"></lucide-icon>
-  </span>
-</button>
+  <button
+    class="fab"
+    [class.fab--open]="isOpen"
+    (click)="toggle()"
+    (mouseenter)="onFabHover()"
+    [attr.aria-label]="isOpen ? 'Close help chat' : 'Open help chat'"
+    [attr.aria-expanded]="isOpen"
+  >
+    <span class="fab__pulse" *ngIf="!isOpen && hasUnread"></span>
+
+    <span class="fab__icon" *ngIf="!isOpen">
+      <span class="bot-logo bot-logo--fab" aria-hidden="true">
+        <span class="bot-logo__antenna"></span>
+        <span class="bot-logo__head">
+          <span class="bot-logo__eye"></span>
+          <span class="bot-logo__eye"></span>
+          <span class="bot-logo__smile"></span>
+        </span>
+      </span>
+    </span>
+
+    <span class="fab__icon fab__icon--close" *ngIf="isOpen">
+      <lucide-icon [img]="X"></lucide-icon>
+    </span>
+  </button>
+</div>
 
 <!-- Chat panel -->
 <div class="chat-panel" *ngIf="isOpen" role="dialog" aria-label="eCTD Help Assistant">

@@ -3,6 +3,7 @@ import {
   ElementRef,
   ViewChild,
   OnDestroy,
+  OnInit,
   ChangeDetectorRef,
   NgZone,
 } from '@angular/core';
@@ -37,7 +38,7 @@ interface ChatMessage {
   templateUrl: './faq-bot.html',
   styleUrl: './faq-bot.css',
 })
-export class FaqBot implements OnDestroy {
+export class FaqBot implements OnInit, OnDestroy {
   @ViewChild('scrollAnchor') private scrollAnchor!: ElementRef<HTMLDivElement>;
 
   X = X;
@@ -53,8 +54,20 @@ export class FaqBot implements OnDestroy {
   draft = '';
   isTyping = false;
   hasUnread = true;
+  showNudge = false;
+  nudgeMessage = '';
+  private nudgeIndex = 0;
+  private nudgeInterval: ReturnType<typeof setInterval> | null = null;
+  private nudgeHideTimer: ReturnType<typeof setTimeout> | null = null;
   private messageSeq = 0;
   private typingTimer: ReturnType<typeof setTimeout> | null = null;
+
+  readonly nudgeMessages = [
+    'May I help you? 👋',
+    'Need help with eCTD?',
+    'Ask me anything!',
+    'I\'m here if you need me!',
+  ];
 
   currentBranch: Branch | null = null;
 
@@ -65,12 +78,26 @@ export class FaqBot implements OnDestroy {
     private ngZone: NgZone,
   ) {}
 
+  ngOnInit(): void {
+    setTimeout(() => this.displayNudge(), 1200);
+    this.nudgeInterval = setInterval(() => {
+      if (!this.isOpen) {
+        this.displayNudge();
+      }
+    }, 3000);
+  }
+
   toggle(): void {
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
       this.hasUnread = false;
+      this.hideNudge();
       this.scrollToBottom();
     }
+  }
+
+  onFabHover(): void {
+    this.hideNudge();
   }
 
   close(): void {
@@ -172,6 +199,27 @@ export class FaqBot implements OnDestroy {
 
   ngOnDestroy(): void {
     if (this.typingTimer) clearTimeout(this.typingTimer);
+    if (this.nudgeInterval) clearInterval(this.nudgeInterval);
+    if (this.nudgeHideTimer) clearTimeout(this.nudgeHideTimer);
+  }
+
+  private displayNudge(): void {
+    if (this.isOpen) return;
+
+    this.nudgeMessage = this.nudgeMessages[this.nudgeIndex];
+    this.nudgeIndex = (this.nudgeIndex + 1) % this.nudgeMessages.length;
+    this.showNudge = true;
+    this.cdr.detectChanges();
+
+    if (this.nudgeHideTimer) clearTimeout(this.nudgeHideTimer);
+    this.nudgeHideTimer = setTimeout(() => {
+      this.ngZone.run(() => this.hideNudge());
+    }, 2400);
+  }
+
+  private hideNudge(): void {
+    this.showNudge = false;
+    this.cdr.detectChanges();
   }
 
   private buildWelcomeMessage(): ChatMessage {
