@@ -1,0 +1,1080 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<submission
+  xmlns="urn:hl7-org:v3"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  xsi:schemaLocation="urn:hl7-org:v3 ectd-4-0.xsd"
+  classCode="ACT"
+  moodCode="EVN">
+
+
+  <id root="2.16.840.1.113883.3.989.2.1.3.1"
+      extension="NDA123456"/>
+
+  <code code="applicationSubmission"
+        codeSystem="2.16.840.1.113883.3.989.2.1.1.1"
+        displayName="Application Submission"/>
+
+  <title>Nexivarin 10 mg Film-Coated Tablets — Original New Drug Application</title>
+
+  <effectiveTime value="20241118"/>
+
+  <versionNumber value="4.0"/>
+
+  <subject typeCode="SUBJ">
+    <regulatoryApplication classCode="CONY" moodCode="EVN">
+
+      <id root="2.16.840.1.113883.3.989.2.1.3.1"
+          extension="NDA123456"/>
+
+      <code code="NDA"
+            codeSystem="2.16.840.1.113883.3.989.2.1.1.2"
+            displayName="New Drug Application"/>
+
+      <title>NDA123456 — Nexivarin (nexivarin) 10 mg Film-Coated Tablets</title>
+
+      <receiver typeCode="RCV">
+        <receiverOrganization classCode="ORG" determinerCode="INSTANCE">
+          <id root="2.16.840.1.113883.3.989.2.1.3.99" extension="FDA-CDER"/>
+          <name>U.S. Food and Drug Administration — Center for Drug Evaluation and Research (CDER)</name>
+        </receiverOrganization>
+      </receiver>
+
+      <holder typeCode="HLD">
+        <applicantOrganization classCode="ORG" determinerCode="INSTANCE">
+          <id root="2.16.840.1.113883.3.989.2.1.3.2" extension="PCO-001"/>
+          <name>PharmaCorp Inc.</name>
+          <contactParty classCode="CON">
+            <addr>Regulatory Affairs Department</addr>
+            <telecom value="mailto:regulatory@pharmacorp.example.com"/>
+          </contactParty>
+        </applicantOrganization>
+      </holder>
+
+    </regulatoryApplication>
+  </subject>
+
+  <component typeCode="COMP">
+    <submissionUnit classCode="ACT" moodCode="EVN">
+
+      <id root="2.16.840.1.113883.3.989.2.1.3.3"
+          extension="NDA123456-0000"/>
+
+      <code code="originalApplication"
+            codeSystem="2.16.840.1.113883.3.989.2.1.1.3"
+            displayName="Original Application"/>
+
+      <title>Sequence 0000 — Original NDA Submission</title>
+
+      <effectiveTime value="20241118"/>
+
+      <statusCode code="completed"/>
+
+      <text>
+        Original New Drug Application for Nexivarin 10 mg Film-Coated Tablets
+        (NDA123456, Sequence 0000), submitted pursuant to 21 CFR 314.50 for
+        the proposed indications of hypertension and stable angina pectoris.
+        This sequence constitutes the complete initial filing and establishes
+        the baseline eCTD lifecycle for NDA123456.
+      </text>
+
+      <subject typeCode="SUBJ">
+        <reviewableUnit classCode="ACT" moodCode="EVN">
+
+          <id root="2.16.840.1.113883.3.989.2.1.3.4"
+              extension="NDA123456-0000-RU-001"/>
+
+          <code code="drugsHumanPharm"
+                codeSystem="2.16.840.1.113883.3.989.2.1.1.4"
+                displayName="Human Pharmaceutical Drug Product"/>
+
+          <title>Nexivarin (nexivarin) 10 mg Film-Coated Tablets — Oral</title>
+
+          <subject2 typeCode="SUBJ">
+            <substanceAdministration classCode="SBADM" moodCode="EVN">
+              <routeCode code="C38288" codeSystem="2.16.840.1.113883.3.26.1.1"
+                         displayName="Oral"/>
+              <doseQuantity value="10" unit="mg"/>
+              <consumable typeCode="CSM">
+                <manufacturedProduct classCode="MANU">
+                  <manufacturedMaterial classCode="MMAT" determinerCode="KIND">
+                    <code code="C66725" codeSystem="2.16.840.1.113883.3.26.1.1"
+                          displayName="Film-Coated Tablet"/>
+                    <name>Nexivarin</name>
+                    <formCode code="C42998" codeSystem="2.16.840.1.113883.3.26.1.1"
+                              displayName="Tablet, Film Coated"/>
+                  </manufacturedMaterial>
+                </manufacturedProduct>
+              </consumable>
+            </substanceAdministration>
+          </subject2>
+
+          <component typeCode="COMP">
+            <section classCode="DOCSECT" moodCode="EVN">
+
+              <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                  extension="NDA123456-0000-M1"/>
+              <code code="m1RegionalInformation"
+                    codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                    displayName="Module 1 — Regional Administrative Information"/>
+              <title>Module 1 — US Regional Administrative Information</title>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M1-0"/>
+                  <code code="m1-0-coverLetter"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="1.0 Cover Letter"/>
+                  <title>1.0 — Cover Letter</title>
+                  <component typeCode="COMP">
+                    <document classCode="DOC" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                          extension="NDA123456-0000-DOC-M1-0-001"/>
+                      <code code="coverLetter"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                            displayName="Cover Letter"/>
+                      <title>Transmittal Cover Letter — Nexivarin 10 mg Tablets NDA123456</title>
+                      <effectiveTime value="20241118"/>
+                      <text mediaType="application/pdf">
+                        <reference value="m1/cover-letter.pdf"/>
+                      </text>
+                      <hashValue algorithm="SHA-256">
+                        4230f0aed7060b86e10151bcbebbbfec3f841f8dc025aedaeb832e51e63e42e2
+                      </hashValue>
+                      <size value="6005" unit="byte"/>
+                      <desc>
+                        Transmittal cover letter to the FDA summarising the scope of the
+                        original NDA submission, the drug product identity, and the enclosed
+                        documentation. Certifies completeness of the filing per 21 CFR 314.50.
+                      </desc>
+                    </document>
+                  </component>
+                </section>
+              </component>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M1-2"/>
+                  <code code="m1-2-form1571"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="1.2 Application Form — FDA Form 1571"/>
+                  <title>1.2 — FDA Form 1571 (Application Form)</title>
+                  <component typeCode="COMP">
+                    <document classCode="DOC" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                          extension="NDA123456-0000-DOC-M1-2-001"/>
+                      <code code="applicationForm"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                            displayName="Application Form"/>
+                      <title>FDA Form 1571 — IND/NDA Application Form</title>
+                      <effectiveTime value="20241118"/>
+                      <text mediaType="application/pdf">
+                        <reference value="m1/1.2-form1571.pdf"/>
+                      </text>
+                      <hashValue algorithm="SHA-256">
+                        7857fea93640441e53c56707018fa1fc293df7836d31860c02dcfe615c1cfd7f
+                      </hashValue>
+                      <size value="6540" unit="byte"/>
+                      <desc>
+                        Completed FDA Form 1571 constituting the official application form
+                        for NDA123456. Contains applicant information, proposed indications,
+                        regulatory history cross-references, and sponsor certifications
+                        required under 21 CFR 314.50(a).
+                      </desc>
+                    </document>
+                  </component>
+                </section>
+              </component>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M1-3-1"/>
+                  <code code="m1-3-1-labelText"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="1.3.1 Labeling — Prescribing Information"/>
+                  <title>1.3.1 — Proposed Labeling Text (Prescribing Information)</title>
+                  <component typeCode="COMP">
+                    <document classCode="DOC" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                          extension="NDA123456-0000-DOC-M1-3-1-001"/>
+                      <code code="labelingText"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                            displayName="Proposed Labeling Text"/>
+                      <title>Proposed Prescribing Information — Nexivarin 10 mg Film-Coated Tablets</title>
+                      <effectiveTime value="20241118"/>
+                      <text mediaType="application/pdf">
+                        <reference value="m1/1.3.1-labeling.pdf"/>
+                      </text>
+                      <hashValue algorithm="SHA-256">
+                        472c237f873db614149a675e0ff36130834cc88f8df0858631d84061a0309c80
+                      </hashValue>
+                      <size value="12287" unit="byte"/>
+                      <desc>
+                        Draft prescribing information (Package Insert) including Highlights of
+                        Prescribing Information, Full Prescribing Information, and Patient
+                        Counselling Information, prepared in accordance with 21 CFR 201.56 and
+                        201.57 (Physician Labeling Rule format).
+                      </desc>
+                    </document>
+                  </component>
+                </section>
+              </component>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M1-3-2"/>
+                  <code code="m1-3-2-patentCertification"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="1.3.2 Patent Certifications and Exclusivity"/>
+                  <title>1.3.2 — Patent Certifications and Exclusivity Claims</title>
+                  <component typeCode="COMP">
+                    <document classCode="DOC" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                          extension="NDA123456-0000-DOC-M1-3-2-001"/>
+                      <code code="patentCertification"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                            displayName="Patent Certification"/>
+                      <title>Patent Certifications — NDA123456 Nexivarin</title>
+                      <effectiveTime value="20241118"/>
+                      <text mediaType="application/pdf">
+                        <reference value="m1/1.3.2-patents.pdf"/>
+                      </text>
+                      <hashValue algorithm="SHA-256">
+                        cc8e321e3b8f76b722ed85158029049671353e29887e598bbc19e9bfe3fade3f
+                      </hashValue>
+                      <size value="6260" unit="byte"/>
+                      <desc>
+                        Documentation of all listed patents in the FDA Orange Book claiming
+                        the drug substance, drug product, or approved use, with applicable
+                        Paragraph III or IV certifications per 21 CFR 314.50(i).
+                      </desc>
+                    </document>
+                  </component>
+                </section>
+              </component>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M1-7"/>
+                  <code code="m1-7-envAssessment"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="1.7 Environmental Assessment"/>
+                  <title>1.7 — Environmental Assessment / Categorical Exclusion</title>
+                  <component typeCode="COMP">
+                    <document classCode="DOC" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                          extension="NDA123456-0000-DOC-M1-7-001"/>
+                      <code code="environmentalAssessment"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                            displayName="Environmental Assessment"/>
+                      <title>Environmental Assessment — Nexivarin 10 mg Tablets</title>
+                      <effectiveTime value="20241118"/>
+                      <text mediaType="application/pdf">
+                        <reference value="m1/1.7-env-assessment.pdf"/>
+                      </text>
+                      <hashValue algorithm="SHA-256">
+                        a88d0bd462d23d02f2e3b9825c223ee91158773bb9abac593e35ed10d8ff4b70
+                      </hashValue>
+                      <size value="6297" unit="byte"/>
+                      <desc>
+                        Environmental assessment prepared per 21 CFR Part 25 evaluating
+                        potential environmental impact of approval and commercialisation of
+                        Nexivarin, with justification for categorical exclusion.
+                      </desc>
+                    </document>
+                  </component>
+                </section>
+              </component>
+
+            </section>
+          </component>
+
+          <component typeCode="COMP">
+            <section classCode="DOCSECT" moodCode="EVN">
+
+              <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                  extension="NDA123456-0000-M2"/>
+              <code code="m2CTDSummaries"
+                    codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                    displayName="Module 2 — CTD Summaries"/>
+              <title>Module 2 — Common Technical Document Summaries and Overviews</title>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M2-2"/>
+                  <code code="m2-2-introduction"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="2.2 Introduction to the CTD"/>
+                  <title>2.2 — Introduction to the Common Technical Document</title>
+                  <component typeCode="COMP">
+                    <document classCode="DOC" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                          extension="NDA123456-0000-DOC-M2-2-001"/>
+                      <code code="ctdIntroduction"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                            displayName="CTD Introduction"/>
+                      <title>Introduction to the Common Technical Document — Nexivarin NDA123456</title>
+                      <effectiveTime value="20241118"/>
+                      <text mediaType="application/pdf">
+                        <reference value="m2/2.2-introduction.pdf"/>
+                      </text>
+                      <hashValue algorithm="SHA-256">
+                        a0495235efae59355f9d939305e98b2af9da920b35c25ab5585faf19b8b07c58
+                      </hashValue>
+                      <size value="9380" unit="byte"/>
+                      <desc>
+                        Brief CTD introduction describing the overall dossier structure,
+                        drug development programme background, and strategic rationale for
+                        the selected dosage form and target patient population.
+                      </desc>
+                    </document>
+                  </component>
+                </section>
+              </component>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M2-3"/>
+                  <code code="m2-3-qualityOverallSummary"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="2.3 Quality Overall Summary"/>
+                  <title>2.3 — Quality Overall Summary (QOS)</title>
+                  <component typeCode="COMP">
+                    <document classCode="DOC" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                          extension="NDA123456-0000-DOC-M2-3-001"/>
+                      <code code="qualityOverallSummary"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                            displayName="Quality Overall Summary"/>
+                      <title>Quality Overall Summary — Nexivarin 10 mg Film-Coated Tablets</title>
+                      <effectiveTime value="20241118"/>
+                      <text mediaType="application/pdf">
+                        <reference value="m2/2.3-qos.pdf"/>
+                      </text>
+                      <hashValue algorithm="SHA-256">
+                        ab05e3053b4d21544fa112029d4eb99797079ad68a9cb738e9bb98dcc1160de1
+                      </hashValue>
+                      <size value="16573" unit="byte"/>
+                      <desc>
+                        Integrated narrative quality summary covering drug substance and drug
+                        product: manufacturing overview, control strategy, key quality attributes,
+                        and BCS classification supporting the proposed dissolution specification.
+                      </desc>
+                    </document>
+                  </component>
+                </section>
+              </component>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M2-4"/>
+                  <code code="m2-4-nonclinicalOverview"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="2.4 Nonclinical Overview"/>
+                  <title>2.4 — Nonclinical Overview</title>
+                  <component typeCode="COMP">
+                    <document classCode="DOC" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                          extension="NDA123456-0000-DOC-M2-4-001"/>
+                      <code code="nonclinicalOverview"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                            displayName="Nonclinical Overview"/>
+                      <title>Nonclinical Overview — Nexivarin</title>
+                      <effectiveTime value="20241118"/>
+                      <text mediaType="application/pdf">
+                        <reference value="m2/2.4-nonclinical-overview.pdf"/>
+                      </text>
+                      <hashValue algorithm="SHA-256">
+                        89bbaffca7ca4314b0bd49056ae5ea329b933f28d0fb3fb0aa42a3cabd41558e
+                      </hashValue>
+                      <size value="12818" unit="byte"/>
+                      <desc>
+                        Integrated nonclinical overview interpreting pharmacology,
+                        pharmacokinetics, and toxicology study results; identifies NOAELs,
+                        safety margins relative to clinical exposure, and any nonclinical
+                        signals requiring clinical monitoring per ICH M4S.
+                      </desc>
+                    </document>
+                  </component>
+                </section>
+              </component>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M2-5"/>
+                  <code code="m2-5-clinicalOverview"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="2.5 Clinical Overview"/>
+                  <title>2.5 — Clinical Overview</title>
+                  <component typeCode="COMP">
+                    <document classCode="DOC" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                          extension="NDA123456-0000-DOC-M2-5-001"/>
+                      <code code="clinicalOverview"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                            displayName="Clinical Overview"/>
+                      <title>Clinical Overview — Nexivarin Development Programme</title>
+                      <effectiveTime value="20241118"/>
+                      <text mediaType="application/pdf">
+                        <reference value="m2/2.5-clinical-overview.pdf"/>
+                      </text>
+                      <hashValue algorithm="SHA-256">
+                        e505d9e0cdeedb965b433a222300caad277c78d3eaaff9d7203e3d3454ce62e2
+                      </hashValue>
+                      <size value="12713" unit="byte"/>
+                      <desc>
+                        Critical appraisal of the clinical development programme integrating
+                        Phase I–III efficacy and safety findings, benefit–risk assessment,
+                        and regulatory strategy supporting the proposed indication per ICH M4E.
+                      </desc>
+                    </document>
+                  </component>
+                </section>
+              </component>
+
+            </section>
+          </component>
+
+          <component typeCode="COMP">
+            <section classCode="DOCSECT" moodCode="EVN">
+
+              <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                  extension="NDA123456-0000-M3"/>
+              <code code="m3Quality"
+                    codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                    displayName="Module 3 — Quality (CMC)"/>
+              <title>Module 3 — Quality: Chemistry, Manufacturing and Controls</title>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M3-2-S"/>
+                  <code code="m3-2-S-drugSubstance"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="3.2.S Drug Substance"/>
+                  <title>3.2.S — Drug Substance (Nexivarin API)</title>
+
+                  <component typeCode="COMP">
+                    <section classCode="DOCSECT" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                          extension="NDA123456-0000-M3-2-S-1"/>
+                      <code code="m3-2-S-1-generalInformation"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                            displayName="3.2.S.1 General Information"/>
+                      <title>3.2.S.1 — General Information (Nomenclature, Structure, Properties)</title>
+                      <component typeCode="COMP">
+                        <document classCode="DOC" moodCode="EVN">
+                          <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                              extension="NDA123456-0000-DOC-M3-S1-001"/>
+                          <code code="dsGeneralInfo"
+                                codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                                displayName="Drug Substance General Information"/>
+                          <title>Nexivarin API — Nomenclature, Structure, and Physicochemical Properties</title>
+                          <effectiveTime value="20241118"/>
+                          <text mediaType="application/pdf">
+                            <reference value="m3/3.2.S.1-general-info.pdf"/>
+                          </text>
+                          <hashValue algorithm="SHA-256">
+                            50ee99a651109522e937f786a9b919ba34a7c51d706c5f25ef67f2233bacace9
+                          </hashValue>
+                          <size value="8785" unit="byte"/>
+                          <desc>
+                            INN/USAN designation, CAS number, molecular formula and weight,
+                            structural formula, stereochemistry, physicochemical properties,
+                            and general pharmacopoeial classification for Nexivarin.
+                          </desc>
+                        </document>
+                      </component>
+                    </section>
+                  </component>
+
+                  <component typeCode="COMP">
+                    <section classCode="DOCSECT" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                          extension="NDA123456-0000-M3-2-S-2"/>
+                      <code code="m3-2-S-2-manufacture"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                            displayName="3.2.S.2 Manufacture"/>
+                      <title>3.2.S.2 — Manufacture (Drug Substance)</title>
+                      <component typeCode="COMP">
+                        <document classCode="DOC" moodCode="EVN">
+                          <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                              extension="NDA123456-0000-DOC-M3-S2-001"/>
+                          <code code="dsManufacture"
+                                codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                                displayName="Drug Substance Manufacture"/>
+                          <title>Nexivarin API — Manufacturer Details, Synthetic Route, and Process Validation</title>
+                          <effectiveTime value="20241118"/>
+                          <text mediaType="application/pdf">
+                            <reference value="m3/3.2.S.2-manufacture.pdf"/>
+                          </text>
+                          <hashValue algorithm="SHA-256">
+                            b85b04f1866066761708fb673c5c0caccbcaf0fc01374f2e7b3427c6db7a4800
+                          </hashValue>
+                          <size value="7872" unit="byte"/>
+                          <desc>
+                            Manufacturer details, synthetic route description, batch formula,
+                            in-process controls, and process validation summary demonstrating
+                            consistent production of Nexivarin API meeting all specifications.
+                          </desc>
+                        </document>
+                      </component>
+                    </section>
+                  </component>
+
+                  <component typeCode="COMP">
+                    <section classCode="DOCSECT" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                          extension="NDA123456-0000-M3-2-S-4"/>
+                      <code code="m3-2-S-4-controlOfDrugSubstance"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                            displayName="3.2.S.4 Control of Drug Substance"/>
+                      <title>3.2.S.4 — Control of Drug Substance (Specification and Methods)</title>
+                      <component typeCode="COMP">
+                        <document classCode="DOC" moodCode="EVN">
+                          <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                              extension="NDA123456-0000-DOC-M3-S4-001"/>
+                          <code code="dsControl"
+                                codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                                displayName="Drug Substance Control"/>
+                          <title>Nexivarin API — Specification, Analytical Methods, and Batch Data</title>
+                          <effectiveTime value="20241118"/>
+                          <text mediaType="application/pdf">
+                            <reference value="m3/3.2.S.4-control.pdf"/>
+                          </text>
+                          <hashValue algorithm="SHA-256">
+                            a21c2e4a493d360b545bbb3695051838b39889f1c4e1252c0b42bcf71fa8070e
+                          </hashValue>
+                          <size value="9064" unit="byte"/>
+                          <desc>
+                            Specification with acceptance criteria for identity, assay, related
+                            substances, residual solvents, heavy metals, and microbiological
+                            quality; analytical method descriptions, validation summaries, and
+                            batch analysis data supporting the proposed specification.
+                          </desc>
+                        </document>
+                      </component>
+                    </section>
+                  </component>
+
+                  <component typeCode="COMP">
+                    <section classCode="DOCSECT" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                          extension="NDA123456-0000-M3-2-S-7"/>
+                      <code code="m3-2-S-7-stability"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                            displayName="3.2.S.7 Stability (Drug Substance)"/>
+                      <title>3.2.S.7 — Stability (Drug Substance)</title>
+                      <component typeCode="COMP">
+                        <document classCode="DOC" moodCode="EVN">
+                          <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                              extension="NDA123456-0000-DOC-M3-S7-001"/>
+                          <code code="dsStability"
+                                codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                                displayName="Drug Substance Stability"/>
+                          <title>Nexivarin API — ICH Q1A(R2) Stability Data and Retest Period</title>
+                          <effectiveTime value="20241118"/>
+                          <text mediaType="application/pdf">
+                            <reference value="m3/3.2.S.7-stability.pdf"/>
+                          </text>
+                          <hashValue algorithm="SHA-256">
+                            6ee9bc1ae0140d5741812ea5f914f83224c71df9efd0373af2c1f00943d2f1d2
+                          </hashValue>
+                          <size value="8113" unit="byte"/>
+                          <desc>
+                            ICH Q1A(R2) stability data under long-term (25 °C/60% RH),
+                            accelerated (40 °C/75% RH), and stress conditions; proposed
+                            retest period; post-approval stability protocol and commitment.
+                          </desc>
+                        </document>
+                      </component>
+                    </section>
+                  </component>
+
+                </section>
+              </component>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M3-2-P"/>
+                  <code code="m3-2-P-drugProduct"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="3.2.P Drug Product"/>
+                  <title>3.2.P — Drug Product (Nexivarin 10 mg Film-Coated Tablets)</title>
+
+                  <component typeCode="COMP">
+                    <section classCode="DOCSECT" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                          extension="NDA123456-0000-M3-2-P-2"/>
+                      <code code="m3-2-P-2-pharmaceuticalDevelopment"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                            displayName="3.2.P.2 Pharmaceutical Development"/>
+                      <title>3.2.P.2 — Pharmaceutical Development</title>
+                      <component typeCode="COMP">
+                        <document classCode="DOC" moodCode="EVN">
+                          <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                              extension="NDA123456-0000-DOC-M3-P2-001"/>
+                          <code code="dpPharmDev"
+                                codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                                displayName="Drug Product Pharmaceutical Development"/>
+                          <title>Nexivarin 10 mg Tablets — Pharmaceutical Development Report</title>
+                          <effectiveTime value="20241118"/>
+                          <text mediaType="application/pdf">
+                            <reference value="m3/3.2.P.2-pharm-dev.pdf"/>
+                          </text>
+                          <hashValue algorithm="SHA-256">
+                            21540d20f1da5eceac214d3491657a0dfc1b9b5641dbb3e291c35718e43c7159
+                          </hashValue>
+                          <size value="9201" unit="byte"/>
+                          <desc>
+                            Formulation development history, excipient selection and functional
+                            roles, BCS classification, dissolution method development, and
+                            compatibility studies supporting the commercial formulation per ICH Q8.
+                          </desc>
+                        </document>
+                      </component>
+                    </section>
+                  </component>
+
+                  <component typeCode="COMP">
+                    <section classCode="DOCSECT" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                          extension="NDA123456-0000-M3-2-P-3"/>
+                      <code code="m3-2-P-3-manufacture"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                            displayName="3.2.P.3 Manufacture"/>
+                      <title>3.2.P.3 — Manufacture (Drug Product)</title>
+                      <component typeCode="COMP">
+                        <document classCode="DOC" moodCode="EVN">
+                          <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                              extension="NDA123456-0000-DOC-M3-P3-001"/>
+                          <code code="dpManufacture"
+                                codeSystem="2.16.840.1.113883.3.989.2.1.12"
+                                displayName="Drug Product Manufacture"/>
+                          <title>Nexivarin 10 mg Tablets — Manufacturing Process and Process Validation</title>
+                          <effectiveTime value="20241118"/>
+                          <text mediaType="application/pdf">
+                            <reference value="m3/3.2.P.3-manufacture.pdf"/>
+                          </text>
+                          <hashValue algorithm="SHA-256">
+                            d143141cfa02c7d174f2fe8ebea18ea0186117b9de893e4d7a796c6740aefb21
+                          </hashValue>
+                          <size value="9122" unit="byte"/>
+                          <desc>
+                            Manufacturer and packaging site details, batch formula (clinical and
+                            commercial scale), manufacturing process description (wet granulation,
+                            compression, film coating, packaging), critical process parameters,
+                            in-process controls, and commercial-scale process validation data.
+                          </desc>
+                        </document>
+                      </component>
+                    </section>
+                  </component>
+
+                  <component typeCode="COMP">
+                    <section classCode="DOCSECT" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                          extension="NDA123456-0000-M3-2-P-8"/>
+                      <code code="m3-2-P-8-stability"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                            displayName="3.2.P.8 Stability (Drug Product)"/>
+                      <title>3.2.P.8 — Stability (Drug Product)</title>
+                      <component typeCode="COMP">
+                        <document classCode="DOC" moodCode="EVN">
+                          <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                              extension="NDA123456-0000-DOC-M3-P8-001"/>
+                          <code code="dpStability"
+                                codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                                displayName="Drug Product Stability"/>
+                          <title>Nexivarin 10 mg Tablets — ICH Q1A(R2) Stability Data and Shelf Life Proposal</title>
+                          <effectiveTime value="20241118"/>
+                          <text mediaType="application/pdf">
+                            <reference value="m3/3.2.P.8-stability.pdf"/>
+                          </text>
+                          <hashValue algorithm="SHA-256">
+                            7a3c1926694c4e32a3f293772d32d657965fa55a5463562bdbfe34cfb860b774
+                          </hashValue>
+                          <size value="7480" unit="byte"/>
+                          <desc>
+                            Stability data for the proposed commercial packaging (HDPE bottle
+                            and alu/alu blister); photostability per ICH Q1B; proposed 24-month
+                            shelf life; post-approval stability commitment and protocol.
+                          </desc>
+                        </document>
+                      </component>
+                    </section>
+                  </component>
+
+                </section>
+              </component>
+
+            </section>
+          </component>
+
+          <component typeCode="COMP">
+            <section classCode="DOCSECT" moodCode="EVN">
+
+              <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                  extension="NDA123456-0000-M4"/>
+              <code code="m4NonclinicalStudyReports"
+                    codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                    displayName="Module 4 — Nonclinical Study Reports"/>
+              <title>Module 4 — Nonclinical Study Reports</title>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M4-2-1"/>
+                  <code code="m4-2-1-pharmacologyStudyReports"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="4.2.1 Pharmacology"/>
+                  <title>4.2.1 — Pharmacology Study Reports</title>
+
+                  <component typeCode="COMP">
+                    <section classCode="DOCSECT" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                          extension="NDA123456-0000-M4-2-1-1"/>
+                      <code code="m4-2-1-1-primaryPharmacodynamics"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                            displayName="4.2.1.1 Primary Pharmacodynamics"/>
+                      <title>4.2.1.1 — Primary Pharmacodynamics</title>
+                      <component typeCode="COMP">
+                        <document classCode="DOC" moodCode="EVN">
+                          <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                              extension="NDA123456-0000-DOC-M4-211-001"/>
+                          <code code="primaryPharmacodynamicsStudy"
+                                codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                                displayName="Primary Pharmacodynamics Study Report"/>
+                          <title>Nexivarin — Primary Pharmacodynamics: Receptor Binding, Mechanism of Action, and In Vivo Efficacy</title>
+                          <effectiveTime value="20241118"/>
+                          <text mediaType="application/pdf">
+                            <reference value="m4/4.2.1.1-primary-pd.pdf"/>
+                          </text>
+                          <hashValue algorithm="SHA-256">
+                            e32c34cdb9cf1ee185e4ff590519d99bfa7423ef85c9b253576ed262e66f0cdd
+                          </hashValue>
+                          <size value="9149" unit="byte"/>
+                          <desc>
+                            In vitro and in vivo studies: L-type VGCC binding affinity and
+                            selectivity, mechanism of action, and functional antihypertensive
+                            efficacy in isolated tissue and conscious animal models.
+                          </desc>
+                        </document>
+                      </component>
+                    </section>
+                  </component>
+
+                  <component typeCode="COMP">
+                    <section classCode="DOCSECT" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                          extension="NDA123456-0000-M4-2-1-3"/>
+                      <code code="m4-2-1-3-safetyPharmacology"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                            displayName="4.2.1.3 Safety Pharmacology"/>
+                      <title>4.2.1.3 — Safety Pharmacology</title>
+                      <component typeCode="COMP">
+                        <document classCode="DOC" moodCode="EVN">
+                          <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                              extension="NDA123456-0000-DOC-M4-213-001"/>
+                          <code code="safetyPharmacologyStudy"
+                                codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                                displayName="Safety Pharmacology Study Report"/>
+                          <title>Nexivarin — ICH S7A/S7B Core Battery Safety Pharmacology Studies</title>
+                          <effectiveTime value="20241118"/>
+                          <text mediaType="application/pdf">
+                            <reference value="m4/4.2.1.3-safety-pharm.pdf"/>
+                          </text>
+                          <hashValue algorithm="SHA-256">
+                            cbeefa8c34d1f6b5351068b1b128fb76b86bdd953ee1c2e3db58a2c7540fac0d
+                          </hashValue>
+                          <size value="7487" unit="byte"/>
+                          <desc>
+                            Core battery per ICH S7A/S7B: hERG inhibition and in vivo QTc
+                            telemetry, CNS Irwin test, and respiratory function; supplemental
+                            renal safety study evaluating urinary electrolyte excretion. GLP.
+                          </desc>
+                        </document>
+                      </component>
+                    </section>
+                  </component>
+
+                </section>
+              </component>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M4-2-3"/>
+                  <code code="m4-2-3-toxicologyStudyReports"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="4.2.3 Toxicology"/>
+                  <title>4.2.3 — Toxicology Study Reports</title>
+
+                  <component typeCode="COMP">
+                    <section classCode="DOCSECT" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                          extension="NDA123456-0000-M4-2-3-2"/>
+                      <code code="m4-2-3-2-repeatDoseToxicity"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                            displayName="4.2.3.2 Repeat-Dose Toxicity"/>
+                      <title>4.2.3.2 — Repeat-Dose Toxicity</title>
+                      <component typeCode="COMP">
+                        <document classCode="DOC" moodCode="EVN">
+                          <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                              extension="NDA123456-0000-DOC-M4-232-001"/>
+                          <code code="repeatDoseToxicityStudy"
+                                codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                                displayName="Repeat-Dose Toxicity Study Report"/>
+                          <title>Nexivarin — 28-Day and 90-Day Oral Repeat-Dose Toxicity Studies (Rat and Dog), GLP</title>
+                          <effectiveTime value="20241118"/>
+                          <text mediaType="application/pdf">
+                            <reference value="m4/4.2.3.2-repeat-dose-tox.pdf"/>
+                          </text>
+                          <hashValue algorithm="SHA-256">
+                            190b8e3c0472819c454d378fe83c522a77c05d82f784a028284d3cab922bc686
+                          </hashValue>
+                          <size value="10197" unit="byte"/>
+                          <desc>
+                            GLP-compliant 28-day and 90-day rat studies and 90-day dog study:
+                            clinical observations, body weight, food consumption, clinical
+                            pathology, organ weights, macroscopic and microscopic pathology,
+                            NOAEL determination, and toxicokinetics.
+                          </desc>
+                        </document>
+                      </component>
+                    </section>
+                  </component>
+
+                  <component typeCode="COMP">
+                    <section classCode="DOCSECT" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                          extension="NDA123456-0000-M4-2-3-3"/>
+                      <code code="m4-2-3-3-genotoxicity"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                            displayName="4.2.3.3 Genotoxicity"/>
+                      <title>4.2.3.3 — Genotoxicity</title>
+                      <component typeCode="COMP">
+                        <document classCode="DOC" moodCode="EVN">
+                          <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                              extension="NDA123456-0000-DOC-M4-233-001"/>
+                          <code code="genotoxicityStudy"
+                                codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                                displayName="Genotoxicity Study Report"/>
+                          <title>Nexivarin — ICH S2(R1) Genotoxicity Battery (Ames, CA, Mouse MN), GLP</title>
+                          <effectiveTime value="20241118"/>
+                          <text mediaType="application/pdf">
+                            <reference value="m4/4.2.3.3-genotoxicity.pdf"/>
+                          </text>
+                          <hashValue algorithm="SHA-256">
+                            c32eaecb1221f02a996c53f2b24111e3b97cabd8fb95e43bf6653b65e324cdfd
+                          </hashValue>
+                          <size value="6405" unit="byte"/>
+                          <desc>
+                            ICH S2(R1) standard battery: Ames bacterial reverse mutation assay,
+                            in vitro mammalian chromosomal aberration (CHO cells), and in vivo
+                            mouse micronucleus test. ICH M7 TTC interpretation included.
+                          </desc>
+                        </document>
+                      </component>
+                    </section>
+                  </component>
+
+                </section>
+              </component>
+
+            </section>
+          </component>
+
+          <component typeCode="COMP">
+            <section classCode="DOCSECT" moodCode="EVN">
+
+              <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                  extension="NDA123456-0000-M5"/>
+              <code code="m5ClinicalStudyReports"
+                    codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                    displayName="Module 5 — Clinical Study Reports"/>
+              <title>Module 5 — Clinical Study Reports</title>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M5-2"/>
+                  <code code="m5-2-tabularListingClinicalStudies"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="5.2 Tabular Listing of All Clinical Studies"/>
+                  <title>5.2 — Tabular Listing of All Clinical Studies</title>
+                  <component typeCode="COMP">
+                    <document classCode="DOC" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                          extension="NDA123456-0000-DOC-M5-2-001"/>
+                      <code code="clinicalStudyTabularListing"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                            displayName="Tabular Listing of Clinical Studies"/>
+                      <title>Nexivarin — Tabular Listing of All Clinical Studies</title>
+                      <effectiveTime value="20241118"/>
+                      <text mediaType="application/pdf">
+                        <reference value="m5/5.2-tabular-listing.pdf"/>
+                      </text>
+                      <hashValue algorithm="SHA-256">
+                        007d428839562d2a5ea46723fe70d980eaeb6ee55e258f50dcf55ef69e695846
+                      </hashValue>
+                      <size value="7254" unit="byte"/>
+                      <desc>
+                        Comprehensive tabular listing of all Phase I–III clinical studies:
+                        identifiers, phase, design, population, treatment arms, primary
+                        endpoints, enrolment numbers, and cross-references to Section 5.3.
+                      </desc>
+                    </document>
+                  </component>
+                </section>
+              </component>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M5-3"/>
+                  <code code="m5-3-clinicalStudyReports"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="5.3 Reports of Controlled Clinical Studies"/>
+                  <title>5.3 — Reports of Controlled Clinical Studies</title>
+
+                  <component typeCode="COMP">
+                    <section classCode="DOCSECT" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                          extension="NDA123456-0000-M5-3-4"/>
+                      <code code="m5-3-4-controlledClinicalStudies"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                            displayName="5.3.4 Controlled Clinical Studies"/>
+                      <title>5.3.4 — Controlled Clinical Studies</title>
+
+                      <component typeCode="COMP">
+                        <section classCode="DOCSECT" moodCode="EVN">
+                          <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                              extension="NDA123456-0000-M5-3-4-2"/>
+                          <code code="m5-3-4-2-pivotalStudyReport"
+                                codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                                displayName="5.3.4.2 Pivotal Phase III Clinical Study Report"/>
+                          <title>5.3.4.2 — Phase III Pivotal Study: NXV-301 Full Clinical Study Report</title>
+                          <component typeCode="COMP">
+                            <document classCode="DOC" moodCode="EVN">
+                              <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                                  extension="NDA123456-0000-DOC-M5-342-001"/>
+                              <code code="clinicalStudyReport"
+                                    codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                                    displayName="Clinical Study Report (ICH E3)"/>
+                              <title>Study NXV-301 CSR — Randomised, Double-Blind, Placebo-Controlled Phase III Trial of Nexivarin 10 mg in Hypertension</title>
+                              <effectiveTime value="20241118"/>
+                              <text mediaType="application/pdf">
+                                <reference value="m5/5.3.4.2-phase3-study1.pdf"/>
+                              </text>
+                              <hashValue algorithm="SHA-256">
+                                b2cd614425255b68526e7a63589577e1d5d5eec4a50b19d7fe1032944546f575
+                              </hashValue>
+                              <size value="10467" unit="byte"/>
+                              <desc>
+                                Full CSR for Study NXV-301 (ICH E3 format): 52-week, randomised,
+                                double-blind, placebo-controlled, multicentre Phase III trial,
+                                n=1,240, mild-to-moderate hypertension. Primary endpoint: change
+                                from baseline in seated SBP at Week 12. GCP ICH E6(R2) compliant.
+                              </desc>
+                            </document>
+                          </component>
+                        </section>
+                      </component>
+
+                      <component typeCode="COMP">
+                        <section classCode="DOCSECT" moodCode="EVN">
+                          <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                              extension="NDA123456-0000-M5-3-4-ISS"/>
+                          <code code="m5-3-4-integratedSafetySummary"
+                                codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                                displayName="5.3.4 Integrated Summary of Safety"/>
+                          <title>5.3.4 — Integrated Summary of Safety (ISS)</title>
+                          <component typeCode="COMP">
+                            <document classCode="DOC" moodCode="EVN">
+                              <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                                  extension="NDA123456-0000-DOC-M5-34-ISS-001"/>
+                              <code code="integratedSafetySummary"
+                                    codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                                    displayName="Integrated Summary of Safety"/>
+                              <title>Integrated Summary of Safety — Nexivarin Phase II/III Pool (n ≈ 2,400)</title>
+                              <effectiveTime value="20241118"/>
+                              <text mediaType="application/pdf">
+                                <reference value="m5/5.3.4-integrated-safety.pdf"/>
+                              </text>
+                              <hashValue algorithm="SHA-256">
+                                5fe55701ef4bf9e8c24c40d90b9ccf65759456a18a4c6454a698244897a1fd22
+                              </hashValue>
+                              <size value="8508" unit="byte"/>
+                              <desc>
+                                Pooled ISS (Phase II/III, n ≈ 2,400): exposure data, TEAEs,
+                                SAEs, deaths, discontinuations, laboratory abnormalities, vital
+                                signs, ECG findings, and special populations; benefit–risk
+                                context for proposed prescribing information.
+                              </desc>
+                            </document>
+                          </component>
+                        </section>
+                      </component>
+
+                    </section>
+                  </component>
+                </section>
+              </component>
+
+              <component typeCode="COMP">
+                <section classCode="DOCSECT" moodCode="EVN">
+                  <id root="2.16.840.1.113883.3.989.2.1.3.4"
+                      extension="NDA123456-0000-M5-4"/>
+                  <code code="m5-4-literatureReferences"
+                        codeSystem="2.16.840.1.113883.3.989.2.1.1.7"
+                        displayName="5.4 Literature References"/>
+                  <title>5.4 — Literature References</title>
+                  <component typeCode="COMP">
+                    <document classCode="DOC" moodCode="EVN">
+                      <id root="2.16.840.1.113883.3.989.2.1.3.5"
+                          extension="NDA123456-0000-DOC-M5-4-001"/>
+                      <code code="literatureReferences"
+                            codeSystem="2.16.840.1.113883.3.989.2.1.1.12"
+                            displayName="Literature References"/>
+                      <title>Literature References — NDA123456 Nexivarin Modules 2–5</title>
+                      <effectiveTime value="20241118"/>
+                      <text mediaType="application/pdf">
+                        <reference value="m5/5.4-references.pdf"/>
+                      </text>
+                      <hashValue algorithm="SHA-256">
+                        34fda6e3dc7bcd401c94e8e46ea23cf541ab8fb287af08fad82f9d67bfc33263
+                      </hashValue>
+                      <size value="6367" unit="byte"/>
+                      <desc>
+                        Compiled bibliography cited throughout Modules 2–5: peer-reviewed
+                        journal articles, FDA/ICH guidance documents, pharmacopoeial
+                        monographs, and WHO/ICH technical reports relevant to Nexivarin's
+                        pharmacology, toxicology, and clinical profile.
+                      </desc>
+                    </document>
+                  </component>
+                </section>
+              </component>
+
+            </section>
+          </component>
+
+        </reviewableUnit>
+      </subject>
+
+    </submissionUnit>
+  </component>
+
+</submission>
