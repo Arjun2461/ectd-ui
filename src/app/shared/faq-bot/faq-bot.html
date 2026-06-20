@@ -7,11 +7,21 @@
   [attr.aria-expanded]="isOpen"
 >
   <span class="fab__pulse" *ngIf="!isOpen && hasUnread"></span>
-  <span class="fab__icon">
-    <lucide-icon *ngIf="!isOpen" [img]="MessageCircle"></lucide-icon>
-    <lucide-icon *ngIf="isOpen" [img]="X"></lucide-icon>
+
+  <span class="fab__icon" *ngIf="!isOpen">
+    <span class="bot-logo bot-logo--fab" aria-hidden="true">
+      <span class="bot-logo__antenna"></span>
+      <span class="bot-logo__head">
+        <span class="bot-logo__eye"></span>
+        <span class="bot-logo__eye"></span>
+        <span class="bot-logo__smile"></span>
+      </span>
+    </span>
   </span>
-  <span class="fab__label" *ngIf="!isOpen">Help</span>
+
+  <span class="fab__icon fab__icon--close" *ngIf="isOpen">
+    <lucide-icon [img]="X"></lucide-icon>
+  </span>
 </button>
 
 <!-- Chat panel -->
@@ -19,13 +29,20 @@
   <div class="chat-header">
     <div class="chat-header__glow"></div>
     <div class="chat-header__avatar">
-      <lucide-icon [img]="Sparkles"></lucide-icon>
+      <span class="bot-logo bot-logo--header" aria-hidden="true">
+        <span class="bot-logo__antenna"></span>
+        <span class="bot-logo__head">
+          <span class="bot-logo__eye"></span>
+          <span class="bot-logo__eye"></span>
+          <span class="bot-logo__smile"></span>
+        </span>
+      </span>
     </div>
     <div class="chat-header__title">
       <h4>eCTD Assistant</h4>
       <p>
         <span class="status-dot"></span>
-        {{ isTyping ? 'Typing…' : 'Online · Ready to help' }}
+        {{ isTyping ? 'Typing…' : 'Online' }}
       </p>
     </div>
     <button class="chat-header__close" (click)="close()" aria-label="Close chat">
@@ -38,10 +55,15 @@
       <div
         class="row msg-enter"
         [class.row--user]="msg.from === 'user'"
-        [style.animation-delay.ms]="mi * 40"
+        [style.animation-delay.ms]="mi * 30"
       >
         <div class="avatar avatar--bot" *ngIf="msg.from === 'bot'">
-          <lucide-icon [img]="Bot"></lucide-icon>
+          <span class="bot-logo bot-logo--xs" aria-hidden="true">
+            <span class="bot-logo__head">
+              <span class="bot-logo__eye"></span>
+              <span class="bot-logo__eye"></span>
+            </span>
+          </span>
         </div>
 
         <div
@@ -53,28 +75,30 @@
         </div>
       </div>
 
-      <!-- Main menu category grid -->
-      <div class="menu-grid msg-enter" *ngIf="msg.showMenu" [style.animation-delay.ms]="mi * 40 + 80">
+      <!-- Main menu -->
+      <div class="menu-grid msg-enter" *ngIf="msg.showMenu" [style.animation-delay.ms]="mi * 30 + 60">
         <button
           class="menu-card"
           *ngFor="let branch of faqTree; let ci = index"
           (click)="selectBranch(branch)"
-          [style.animation-delay.ms]="ci * 55"
+          [style.animation-delay.ms]="ci * 40"
         >
           <span class="menu-card__icon">{{ branch.icon }}</span>
           <span class="menu-card__text">
             <span class="menu-card__title">{{ branch.title }}</span>
-            <span class="menu-card__hint">{{ branch.items.length }} questions</span>
+            <span class="menu-card__hint">{{ branch.items.length }} Q&A</span>
           </span>
-          <lucide-icon class="menu-card__arrow" [img]="ChevronRight"></lucide-icon>
+          <span class="menu-card__arrow-wrap">
+            <lucide-icon [img]="ChevronRight"></lucide-icon>
+          </span>
         </button>
       </div>
 
-      <!-- Follow-up suggestion chips -->
+      <!-- Suggestion chips -->
       <div
         class="suggestions msg-enter"
         *ngIf="msg.suggestions?.length && !msg.showMenu"
-        [style.animation-delay.ms]="mi * 40 + 100"
+        [style.animation-delay.ms]="mi * 30 + 70"
       >
         <button
           class="suggestion-chip"
@@ -82,13 +106,11 @@
           [class.suggestion-chip--action]="s === mainMenuLabel || s === closeLabel"
           [class.suggestion-chip--close]="s === closeLabel"
           (click)="onSuggestionClick(s)"
-          [style.animation-delay.ms]="si * 45"
+          [style.animation-delay.ms]="si * 35"
         >
-          <lucide-icon
-            *ngIf="s === mainMenuLabel"
-            class="suggestion-chip__icon"
-            [img]="Home"
-          ></lucide-icon>
+          <span class="suggestion-chip__icon-wrap" *ngIf="s === mainMenuLabel">
+            <lucide-icon [img]="Home"></lucide-icon>
+          </span>
           <span>{{ s }}</span>
         </button>
       </div>
@@ -97,7 +119,12 @@
     <!-- Typing indicator -->
     <div class="row typing-row msg-enter" *ngIf="isTyping">
       <div class="avatar avatar--bot">
-        <lucide-icon [img]="Bot"></lucide-icon>
+        <span class="bot-logo bot-logo--xs" aria-hidden="true">
+          <span class="bot-logo__head">
+            <span class="bot-logo__eye bot-logo__eye--blink"></span>
+            <span class="bot-logo__eye bot-logo__eye--blink"></span>
+          </span>
+        </span>
       </div>
       <div class="bubble bubble--bot typing-bubble">
         <span class="typing-dot"></span>
@@ -112,7 +139,7 @@
   <div class="chat-input">
     <input
       type="text"
-      placeholder="Ask about upload, hyperlinking, consistency…"
+      placeholder="Type a question…"
       [(ngModel)]="draft"
       (keyup.enter)="onSend()"
       [disabled]="isTyping"

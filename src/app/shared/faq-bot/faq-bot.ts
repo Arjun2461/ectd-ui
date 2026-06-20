@@ -2,20 +2,18 @@ import {
   Component,
   ElementRef,
   ViewChild,
-  AfterViewChecked,
   OnDestroy,
+  ChangeDetectorRef,
+  NgZone,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   LucideAngularModule,
-  Bot,
   X,
   Send,
-  Sparkles,
   ChevronRight,
   Home,
-  MessageCircle,
 } from 'lucide-angular';
 import {
   FAQ_TREE,
@@ -39,16 +37,13 @@ interface ChatMessage {
   templateUrl: './faq-bot.html',
   styleUrl: './faq-bot.css',
 })
-export class FaqBot implements AfterViewChecked, OnDestroy {
+export class FaqBot implements OnDestroy {
   @ViewChild('scrollAnchor') private scrollAnchor!: ElementRef<HTMLDivElement>;
 
-  Bot = Bot;
   X = X;
   Send = Send;
-  Sparkles = Sparkles;
   ChevronRight = ChevronRight;
   Home = Home;
-  MessageCircle = MessageCircle;
 
   readonly faqTree = FAQ_TREE;
   readonly mainMenuLabel = MAIN_MENU_LABEL;
@@ -60,22 +55,27 @@ export class FaqBot implements AfterViewChecked, OnDestroy {
   hasUnread = true;
   private messageSeq = 0;
   private typingTimer: ReturnType<typeof setTimeout> | null = null;
-  private shouldScroll = false;
 
   currentBranch: Branch | null = null;
 
   messages: ChatMessage[] = [this.buildWelcomeMessage()];
 
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone,
+  ) {}
+
   toggle(): void {
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
       this.hasUnread = false;
-      this.shouldScroll = true;
+      this.scrollToBottom();
     }
   }
 
   close(): void {
     this.isOpen = false;
+    this.cdr.detectChanges();
   }
 
   ask(text: string): void {
@@ -97,7 +97,7 @@ export class FaqBot implements AfterViewChecked, OnDestroy {
 
     if (trimmed === CLOSE_LABEL) {
       this.botReply('Glad I could help! Reach out anytime you need assistance.', {
-        delay: 400,
+        delay: 350,
         onComplete: () => this.close(),
       });
       return;
@@ -170,16 +170,6 @@ export class FaqBot implements AfterViewChecked, OnDestroy {
     return msg.id;
   }
 
-  ngAfterViewChecked(): void {
-    if (this.shouldScroll) {
-      this.scrollAnchor?.nativeElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'end',
-      });
-      this.shouldScroll = false;
-    }
-  }
-
   ngOnDestroy(): void {
     if (this.typingTimer) clearTimeout(this.typingTimer);
   }
@@ -188,7 +178,7 @@ export class FaqBot implements AfterViewChecked, OnDestroy {
     return {
       id: ++this.messageSeq,
       from: 'bot',
-      text: 'Hi there! I\'m your eCTD Assistant. Choose a topic below or type a question.',
+      text: 'Hi! I\'m your eCTD Assistant. Pick a topic or type a question.',
       showMenu: true,
       suggestions: this.rootSuggestions(),
     };
@@ -210,15 +200,18 @@ export class FaqBot implements AfterViewChecked, OnDestroy {
   }
 
   private pushMessage(partial: Omit<ChatMessage, 'id'>): void {
-    this.messages.push({ ...partial, id: ++this.messageSeq });
-    this.shouldScroll = true;
+    this.messages = [...this.messages, { ...partial, id: ++this.messageSeq }];
+    this.cdr.detectChanges();
+    this.scrollToBottom();
   }
 
   private clearSuggestions(): void {
-    this.messages.forEach((m) => {
-      m.suggestions = undefined;
-      m.showMenu = false;
-    });
+    this.messages = this.messages.map((m) => ({
+      ...m,
+      suggestions: undefined,
+      showMenu: false,
+    }));
+    this.cdr.detectChanges();
   }
 
   private botReply(
@@ -230,22 +223,34 @@ export class FaqBot implements AfterViewChecked, OnDestroy {
       onComplete?: () => void;
     } = {},
   ): void {
-    const delay = options.delay ?? 700 + Math.min(text.length * 8, 900);
+    const delay = options.delay ?? 500 + Math.min(text.length * 5, 600);
     this.isTyping = true;
-    this.shouldScroll = true;
+    this.cdr.detectChanges();
+    this.scrollToBottom();
 
     if (this.typingTimer) clearTimeout(this.typingTimer);
 
     this.typingTimer = setTimeout(() => {
-      this.isTyping = false;
-      this.pushMessage({
-        from: 'bot',
-        text,
-        suggestions: options.suggestions,
-        showMenu: options.showMenu,
+      this.ngZone.run(() => {
+        this.isTyping = false;
+        this.pushMessage({
+          from: 'bot',
+          text,
+          suggestions: options.suggestions,
+          showMenu: options.showMenu,
+        });
+        options.onComplete?.();
       });
-      options.onComplete?.();
     }, delay);
+  }
+
+  private scrollToBottom(): void {
+    requestAnimationFrame(() => {
+      this.scrollAnchor?.nativeElement?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end',
+      });
+    });
   }
 
   private findFuzzyMatch(query: string):
